@@ -13,10 +13,17 @@
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
+            text-align: center;
+        }
+
+        #intro-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         #game-container {
-            display: flex;
+            display: none;
             flex-direction: column;
             align-items: center;
         }
@@ -36,12 +43,12 @@
             height: 100%;
         }
 
-        .dark {
-            background-color: #8e8e8e;
+        .yellow {
+            background-color: #ffff00;
         }
 
-        .light {
-            background-color: #f2f2f2;
+        .black {
+            background-color: #000000;
         }
 
         .piece {
@@ -52,12 +59,12 @@
             transform: translate(-50%, -50%);
         }
 
-        .white-piece {
-            background-color: white;
+        .blue-piece {
+            background-color: blue;
         }
 
-        .black-piece {
-            background-color: black;
+        .red-piece {
+            background-color: red;
         }
 
         #controls {
@@ -75,6 +82,12 @@
     </style>
 </head>
 <body>
+    <div id="intro-container">
+        <h1>Welcome to Draughts (Checkers)!</h1>
+        <p>Do you want to play against Wonder?</p>
+        <button id="yes">Yes</button>
+        <button id="no">No</button>
+    </div>
     <div id="game-container">
         <div id="board"></div>
         <div id="controls">
@@ -87,20 +100,35 @@
     </div>
 
     <script>
+        const introContainer = document.getElementById('intro-container');
+        const gameContainer = document.getElementById('game-container');
         const board = document.getElementById('board');
         const status = document.getElementById('status');
         const undoButton = document.getElementById('undo');
         const redoButton = document.getElementById('redo');
         const saveButton = document.getElementById('save');
         const loadButton = document.getElementById('load');
+        const yesButton = document.getElementById('yes');
+        const noButton = document.getElementById('no');
 
         const rows = 12;
         const cols = 10;
 
-        let currentPlayer = 'white';
+        let currentPlayer = 'blue';
         let boardState = [];
         let moveHistory = [];
         let redoHistory = [];
+
+        // Introduction Logic
+        yesButton.addEventListener('click', () => {
+            introContainer.style.display = 'none';
+            gameContainer.style.display = 'flex';
+            initializeBoard();
+        });
+
+        noButton.addEventListener('click', () => {
+            introContainer.innerHTML = '<h2>You\'re scared! 😂</h2>';
+        });
 
         // Initialize the board
         function initializeBoard() {
@@ -108,8 +136,8 @@
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
                     const cell = document.createElement('div');
-                    const isDark = (row + col) % 2 === 1;
-                    cell.className = isDark ? 'dark' : 'light';
+                    const isBlack = (row + col) % 2 === 0;
+                    cell.className = isBlack ? 'black' : 'yellow';
                     cell.dataset.row = row;
                     cell.dataset.col = col;
                     cell.addEventListener('click', () => handleCellClick(row, col));
@@ -122,16 +150,16 @@
         // Set up initial pieces
         function setupInitialPieces() {
             boardState = Array.from({ length: rows }, () => Array(cols).fill(null));
-            // Place pieces for player white
+            // Place pieces for player blue
             for (let row = 0; row < 3; row++) {
                 for (let col = (row % 2); col < cols; col += 2) {
-                    placePiece(row, col, 'white');
+                    placePiece(row, col, 'blue');
                 }
             }
-            // Place pieces for player black
+            // Place pieces for player red
             for (let row = rows - 3; row < rows; row++) {
                 for (let col = (row % 2); col < cols; col += 2) {
-                    placePiece(row, col, 'black');
+                    placePiece(row, col, 'red');
                 }
             }
         }
@@ -189,17 +217,10 @@
             setupInitialPieces();
             // Update pieces based on boardState
         }
-
-        // Initialize the board when the page loads
-        initializeBoard();
-
-        undoButton.addEventListener('click', undoMove);
-        redoButton.addEventListener('click', redoMove);
-        saveButton.addEventListener('click', saveGame);
-        loadButton.addEventListener('click', loadGame);
     </script>
 </body>
 </html>
+
 
 
 
