@@ -12,7 +12,7 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f8ff; /* Light blue background for the entire page */
+            background-color: #f0f8ff; /* Light blue background */
             color: white;
             font-family: Arial, sans-serif;
             text-align: center;
@@ -44,6 +44,7 @@
         }
 
         #board {
+            position: relative;
             display: grid;
             grid-template-columns: repeat(10, 30px);
             grid-template-rows: repeat(12, 30px);
@@ -91,6 +92,17 @@
         .highlight {
             background-color: rgba(0, 255, 0, 0.5); /* Highlight valid moves */
         }
+
+        .watermark {
+            position: absolute;
+            color: rgba(0, 0, 0, 0.1);
+            font-size: 3em;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -103,7 +115,9 @@
 
     <div id="game-container" style="display: none;">
         <div id="welcome"></div>
-        <div id="board"></div>
+        <div id="board">
+            <div class="watermark">WONDER WORLD</div>
+        </div>
         <div id="game-record"></div>
         <div id="move-log"></div>
     </div>
@@ -155,9 +169,9 @@
             // Initialize pieces
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
-                    if ((row + col) % 2 !== 0 && ((row < 2) || (row >= rows - 2))) {
+                    if ((row + col) % 2 !== 0 && ((row < 4) || (row >= rows - 4))) {
                         const piece = document.createElement('div');
-                        piece.className = 'piece ' + (row < 2 ? 'red' : 'blue');
+                        piece.className = 'piece ' + (row < 4 ? 'red' : 'blue');
                         piece.dataset.row = row;
                         piece.dataset.col = col;
                         piece.addEventListener('click', () => selectPiece(piece));
@@ -173,9 +187,10 @@
         }
 
         let selectedPiece = null;
+        let canMove = true;
 
         function selectPiece(piece) {
-            if (piece.classList.contains(currentPlayer)) {
+            if (piece.classList.contains(currentPlayer) && canMove) {
                 selectedPiece = piece;
                 highlightValidMoves(piece);
             }
@@ -235,7 +250,8 @@
                     return;
                 }
 
-                // AI's turn
+                // Disable user moves and make AI move
+                canMove = false;
                 setTimeout(aiMove, 1000); // Delay AI move
             }
         }
@@ -274,6 +290,7 @@
                     endGame('Wonder');
                 } else {
                     currentPlayer = 'red'; // Return to user
+                    canMove = true; // Allow user to make a move
                 }
             }
         }
