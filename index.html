@@ -141,7 +141,7 @@
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
                     const cell = document.createElement('div');
-                    const isBlack = (row + col) % 2 === 0;
+                    const isBlack = (row + col) % 2 === 1;
                     cell.className = isBlack ? 'black' : 'yellow';
                     cell.dataset.row = row;
                     cell.dataset.col = col;
@@ -285,7 +285,6 @@
         function updateBoard() {
             board.querySelectorAll('.piece').forEach(piece => piece.remove());
             setupInitialPieces();
-            // Reapply pieces based on boardState
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
                     if (boardState[row][col]) {
@@ -302,6 +301,7 @@
     </script>
 </body>
 </html>
+
 
 
 
