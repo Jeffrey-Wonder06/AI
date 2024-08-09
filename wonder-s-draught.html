@@ -3,6 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Draughts Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: red; /* Red background */
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        button {
+            background-color: #007bff; /* Blue color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3; /* Darker blue */
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Wonder says...</h1>
+    <p>Welcome to the Draughts Game! Would you like to play against Wonder?</p>
+    <button id="play-yes">Yes</button>
+    <button id="play-no">No</button>
+
+    <script>
+        document.getElementById('play-yes').addEventListener('click', () => {
+            window.location.href = 'game.html'; // Redirect to the game page
+        });
+
+        document.getElementById('play-no').addEventListener('click', () => {
+            alert('Maybe next time!');
+        });
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Draughts Game</title>
     <style>
         body {
@@ -12,27 +70,24 @@
             margin: 0;
             font-family: Arial, sans-serif;
             background: linear-gradient(to right, #f0f8ff, #e6e6e6); /* Gradient background */
-            color: #333;
-            padding: 20px;
         }
 
         h1 {
             color: #333;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         #board {
             display: grid;
-            grid-template-columns: repeat(10, 50px);
-            grid-template-rows: repeat(8, 50px);
+            grid-template-columns: repeat(16, 30px);
+            grid-template-rows: repeat(16, 30px);
             gap: 0;
             border: 4px solid #333; /* Border around the board */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Shadow for depth */
         }
 
         .square {
-            width: 50px;
-            height: 50px;
+            width: 30px;
+            height: 30px;
             box-sizing: border-box;
         }
 
@@ -45,14 +100,13 @@
         }
 
         .piece {
-            width: 40px;
-            height: 40px;
+            width: 25px;
+            height: 25px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* Shadow for pieces */
         }
 
         .red {
@@ -87,7 +141,7 @@
             background-color: #0056b3; /* Darker blue */
         }
 
-        #welcome, #game-record, #move-log {
+        #game-record, #move-log {
             margin: 20px 0;
             padding: 10px;
             background-color: #fff;
@@ -96,57 +150,42 @@
         }
 
         #welcome {
+            margin: 20px 0;
             font-size: 18px;
             font-weight: bold;
-        }
-
-        #move-log p {
-            margin: 5px 0;
         }
     </style>
 </head>
 <body>
     <h1>Draughts Game</h1>
     <div id="welcome"></div>
-    <div class="button-group">
-        <button id="play-yes">Yes</button>
-        <button id="play-no">No</button>
-    </div>
     <div id="board"></div>
     <div id="game-record"></div>
     <div id="move-log"></div>
 
     <script>
-        let currentPlayer = 'red';
         let board, squares, pieces;
+        let currentPlayer = 'red';
         let userName = '';
         let gameCount = 0;
         let userWins = 0;
-        let aiWins = 0;
+        let wonderWins = 0;
 
-        document.getElementById('play-yes').addEventListener('click', () => {
-            initBoard();
-            document.getElementById('game-record').innerText = `Games Played: ${gameCount}\nUser Wins: ${userWins}\nAI Wins: ${aiWins}`;
-            document.getElementById('welcome').innerText = `Welcome ${userName}. Let's play against Wonder!`;
-        });
-
-        document.getElementById('play-no').addEventListener('click', () => {
-            document.getElementById('welcome').innerText = "Maybe next time!";
-        });
-
-        function startGame() {
+        document.addEventListener('DOMContentLoaded', () => {
             userName = prompt("Enter your name:");
-            document.getElementById('welcome').innerHTML = `Welcome ${userName}. Would you like to play against Wonder?`;
-        }
+            document.getElementById('welcome').innerHTML = `Welcome ${userName}. Let's play against Wonder!`;
+            initBoard();
+        });
 
         function initBoard() {
             board = document.getElementById('board');
             squares = [];
             pieces = [];
-            const rows = 8;
+            const rows = 16;
             const cols = 10;
 
-            board.style.gridTemplateColumns = `repeat(${cols}, 50px)`;
+            board.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
+            board.style.gridTemplateRows = `repeat(${rows}, 30px)`;
 
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
@@ -162,14 +201,12 @@
             // Initialize pieces
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
-                    if ((row + col) % 2 !== 0 && (row < 3 || row > 4)) {
+                    if ((row + col) % 2 !== 0 && (row < 3 || row > 12)) {
                         const piece = document.createElement('div');
                         piece.className = 'piece ' + (row < 3 ? 'red' : 'blue');
-                        piece.draggable = true;
                         piece.dataset.row = row;
                         piece.dataset.col = col;
-                        piece.addEventListener('dragstart', dragStart);
-                        piece.addEventListener('dragend', dragEnd);
+                        piece.addEventListener('click', () => selectPiece(piece));
                         squares[row * cols + col].appendChild(piece);
                         pieces.push(piece);
                     }
@@ -178,56 +215,79 @@
 
             // Update game count
             gameCount++;
+            updateGameRecord();
         }
 
-        function dragStart(e) {
-            e.dataTransfer.setData('text', `${this.dataset.row},${this.dataset.col}`);
-        }
+        let selectedPiece = null;
 
-        function dragEnd(e) {
-            const [fromRow, fromCol] = e.dataTransfer.getData('text').split(',').map(Number);
-            const toSquare = document.elementFromPoint(e.clientX, e.clientY);
-            if (toSquare && toSquare.classList.contains('square')) {
-                const toRow = Number(toSquare.dataset.row);
-                const toCol = Number(toSquare.dataset.col);
-
-                if (isValidMove(fromRow, fromCol, toRow, toCol)) {
-                    movePiece(fromRow, fromCol, toRow, toCol);
-                    if (toRow === 0 && currentPlayer === 'red' || toRow === 7 && currentPlayer === 'blue') {
-                        promoteToKing(toRow, toCol);
-                    }
-                    logMove(fromRow, fromCol, toRow, toCol);
-                    currentPlayer = currentPlayer === 'red' ? 'blue' : 'red';
-                    if (currentPlayer === 'blue') {
-                        setTimeout(aiMove, 500); // AI move with delay
-                    }
-                }
+        function selectPiece(piece) {
+            if (piece.classList.contains(currentPlayer)) {
+                selectedPiece = piece;
+                highlightValidMoves(piece);
             }
         }
 
-        function isValidMove(fromRow, fromCol, toRow, toCol) {
-            const fromSquare = squares[fromRow * 10 + fromCol];
-            const toSquare = squares[toRow * 10 + toCol];
-            return (Math.abs(fromRow - toRow) === 1 && Math.abs(fromCol - toCol) === 1) && toSquareEmpty(toRow, toCol);
+        function highlightValidMoves(piece) {
+            const row = Number(piece.dataset.row);
+            const col = Number(piece.dataset.col);
+            const validMoves = getValidMoves(row, col);
+
+            squares.forEach(square => {
+                if (validMoves.some(move => move.row === Number(square.dataset.row) && move.col === Number(square.dataset.col))) {
+                    square.classList.add('highlight');
+                    square.addEventListener('click', () => movePiece(piece, square));
+                } else {
+                    square.classList.remove('highlight');
+                }
+            });
         }
 
-        function toSquareEmpty(row, col) {
-            return !squares[row * 10 + col].hasChildNodes();
+        function getValidMoves(row, col) {
+            const moves = [];
+            const directions = [1, -1];
+            directions.forEach(rowDir => {
+                directions.forEach(colDir => {
+                    const newRow = row + rowDir;
+                    const newCol = col + colDir;
+                    if (newRow >= 0 && newRow < 16 && newCol >= 0 && newCol < 10 && !squares[newRow * 10 + newCol].hasChildNodes()) {
+                        moves.push({ row: newRow, col: newCol });
+                    }
+                });
+            });
+            return moves;
         }
 
-        function movePiece(fromRow, fromCol, toRow, toCol) {
-            const piece = squares[fromRow * 10 + fromCol].removeChild(squares[fromRow * 10 + fromCol].firstChild);
-            squares[toRow * 10 + toCol].appendChild(piece);
-            piece.dataset.row = toRow;
-            piece.dataset.col = toCol;
-        }
+        function movePiece(piece, square) {
+            const fromRow = Number(piece.dataset.row);
+            const fromCol = Number(piece.dataset.col);
+            const toRow = Number(square.dataset.row);
+            const toCol = Number(square.dataset.col);
 
-        function promoteToKing(row, col) {
-            const piece = squares[row * 10 + col].firstChild;
-            piece.classList.add('king');
+            if (selectedPiece && isValidMove(fromRow, fromCol, toRow, toCol)) {
+                // Move the piece
+                squares[toRow * 10 + toCol].appendChild(selectedPiece);
+                squares[fromRow * 10 + fromCol].removeChild(selectedPiece);
+
+                // Update piece data
+                selectedPiece.dataset.row = toRow;
+                selectedPiece.dataset.col = toCol;
+
+                // Log move
+                logMove(fromRow, fromCol, toRow, toCol, 'User');
+
+                // Check for end game
+                if (pieces.filter(piece => piece.classList.contains('red')).length === 0) {
+                    endGame('Wonder');
+                    return;
+                }
+
+                // AI's turn
+                setTimeout(aiMove, 1000); // Delay AI move
+            }
         }
 
         function aiMove() {
+            // AI logic (random move for simplicity)
             const availableMoves = pieces.filter(piece => piece.classList.contains('blue')).map(piece => ({
                 fromRow: Number(piece.dataset.row),
                 fromCol: Number(piece.dataset.col),
@@ -244,7 +304,7 @@
                 for (let colOffset of [-1, 1]) {
                     const toRow = move.fromRow + rowOffset;
                     const toCol = move.fromCol + colOffset;
-                    if (toRow >= 0 && toRow < 8 && toCol >= 0 && toCol < 10 && isValidMove(move.fromRow, move.fromCol, toRow, toCol)) {
+                    if (toRow >= 0 && toRow < 16 && toCol >= 0 && toCol < 10 && isValidMove(move.fromRow, move.fromCol, toRow, toCol)) {
                         moveOptions.push({ toRow, toCol });
                     }
                 }
@@ -252,12 +312,12 @@
 
             if (moveOptions.length > 0) {
                 const { toRow, toCol } = moveOptions[Math.floor(Math.random() * moveOptions.length)];
-                movePiece(move.fromRow, move.fromCol, toRow, toCol);
-                logMove(move.fromRow, move.fromCol, toRow, toCol, 'AI');
+                movePiece(pieces.find(piece => piece.dataset.row == move.fromRow && piece.dataset.col == move.fromCol), squares[toRow * 10 + toCol]);
+                logMove(move.fromRow, move.fromCol, toRow, toCol, 'Wonder');
 
                 // End game if AI wins
                 if (pieces.filter(piece => piece.classList.contains('blue')).length === 0) {
-                    endGame('AI');
+                    endGame('Wonder');
                 } else {
                     currentPlayer = 'red'; // Return to user
                 }
@@ -268,7 +328,7 @@
             if (winner === 'User') {
                 userWins++;
             } else {
-                aiWins++;
+                wonderWins++;
             }
             updateGameRecord();
             alert(`${winner} wins!`);
@@ -276,7 +336,7 @@
         }
 
         function updateGameRecord() {
-            document.getElementById('game-record').innerText = `Games Played: ${gameCount}\nUser Wins: ${userWins}\nAI Wins: ${aiWins}`;
+            document.getElementById('game-record').innerText = `Games Played: ${gameCount}\nUser Wins: ${userWins}\nWonder Wins: ${wonderWins}`;
         }
 
         function logMove(fromRow, fromCol, toRow, toCol, player = 'User') {
@@ -286,11 +346,15 @@
             log.appendChild(move);
         }
 
-        // Start the game
-        startGame();
+        function isValidMove(fromRow, fromCol, toRow, toCol) {
+            // Basic validation: check if destination is empty and within bounds
+            const toSquare = squares[toRow * 10 + toCol];
+            return !toSquare.hasChildNodes() && Math.abs(fromRow - toRow) === 1 && Math.abs(fromCol - toCol) === 1;
+        }
     </script>
 </body>
 </html>
+
 
 
 
