@@ -174,7 +174,9 @@
 
         // Set up initial pieces
         function setupInitialPieces() {
-            boardState = Array.from({ length: rows }, () => Array(cols).fill(null));
+            // Clear existing pieces
+            board.querySelectorAll('.piece').forEach(piece => piece.remove());
+
             // Place pieces for player blue
             for (let row = 0; row < 3; row++) {
                 for (let col = (row % 2); col < cols; col += 2) {
@@ -324,4 +326,5 @@
     </script>
 </body>
 </html>
+
 
