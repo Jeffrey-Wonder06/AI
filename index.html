@@ -165,7 +165,7 @@
             // Initialize pieces
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
-                    if ((row + col) % 2 !== 0 && ((row < 4) || (row >= rows - 4))) {
+                    if ((row + col) % 2 !== 0 && (row < 4 || row >= rows - 4)) {
                         const piece = document.createElement('div');
                         piece.className = 'piece ' + (row < 4 ? 'red' : 'blue');
                         piece.dataset.row = row;
@@ -314,13 +314,13 @@
         }
 
         function isValidMove(fromRow, fromCol, toRow, toCol) {
-            // Basic validation: check if destination is empty and within bounds
             const toSquare = squares[toRow * 10 + toCol];
             return !toSquare.hasChildNodes() && Math.abs(fromRow - toRow) === 1 && Math.abs(fromCol - toCol) === 1;
         }
     </script>
 </body>
 </html>
+
 
 
 
