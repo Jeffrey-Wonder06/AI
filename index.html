@@ -121,24 +121,8 @@
             border: 2px solid gold;
         }
 
-        .button-group {
-            margin: 20px;
-        }
-
-        .button-group button {
-            background-color: #007bff; /* Blue color */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            margin: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .button-group button:hover {
-            background-color: #0056b3; /* Darker blue */
+        .highlight {
+            background-color: rgba(0, 255, 0, 0.5); /* Highlight valid moves */
         }
 
         #game-record, #move-log {
@@ -201,7 +185,7 @@
             // Initialize pieces
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
-                    if ((row + col) % 2 !== 0 && ((row < 2 && row < 10) || (row >= rows - 2 && row < 10))) {
+                    if ((row + col) % 2 !== 0 && ((row < 2) || (row >= rows - 2))) {
                         const piece = document.createElement('div');
                         piece.className = 'piece ' + (row < 2 ? 'red' : 'blue');
                         piece.dataset.row = row;
@@ -354,6 +338,7 @@
     </script>
 </body>
 </html>
+
 
 
 
