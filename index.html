@@ -85,10 +85,6 @@
             background-color: blue;
         }
 
-        .king {
-            border: 2px solid gold;
-        }
-
         .highlight {
             background-color: rgba(0, 255, 0, 0.5); /* Highlight valid moves */
         }
@@ -213,7 +209,7 @@
 
         function getValidMoves(row, col) {
             const moves = [];
-            const directions = [1, -1];
+            const directions = [-1, 1]; // Diagonal moves
             directions.forEach(rowDir => {
                 directions.forEach(colDir => {
                     const newRow = row + rowDir;
@@ -325,6 +321,7 @@
     </script>
 </body>
 </html>
+
 
 
 
