@@ -19,7 +19,7 @@
         }
 
         button {
-            background-color: #007bff; /* Blue color */
+            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 5px;
@@ -31,7 +31,7 @@
         }
 
         button:hover {
-            background-color: #0056b3; /* Darker blue */
+            background-color: #0056b3;
         }
 
         #welcome, #game-record, #move-log {
@@ -40,17 +40,17 @@
             background-color: #fff;
             color: #333;
             border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* Shadow for boxes */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
         }
 
         #board {
             position: relative;
             display: grid;
             grid-template-columns: repeat(10, 30px);
-            grid-template-rows: repeat(12, 30px);
+            grid-template-rows: repeat(10, 30px);
             gap: 0;
-            border: 4px solid #333; /* Border around the board */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+            border: 4px solid #333;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
 
         .square {
@@ -86,7 +86,7 @@
         }
 
         .highlight {
-            background-color: rgba(0, 255, 0, 0.5); /* Highlight valid moves */
+            background-color: rgba(0, 255, 0, 0.5);
         }
 
         .watermark {
@@ -119,7 +119,6 @@
     </div>
 
     <script>
-        // Game variables
         let board, squares, pieces;
         let currentPlayer = 'red';
         let userName = '';
@@ -127,7 +126,6 @@
         let userWins = 0;
         let wonderWins = 0;
 
-        // Set up start menu event listeners
         document.getElementById('play-yes').addEventListener('click', () => {
             document.getElementById('start-menu').style.display = 'none';
             document.getElementById('game-container').style.display = 'block';
@@ -140,12 +138,11 @@
             alert('Maybe next time!');
         });
 
-        // Initialize game board
         function initBoard() {
             board = document.getElementById('board');
             squares = [];
             pieces = [];
-            const rows = 12;
+            const rows = 10;
             const cols = 10;
 
             board.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
@@ -162,7 +159,6 @@
                 }
             }
 
-            // Initialize pieces
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
                     if ((row + col) % 2 !== 0 && (row < 4 || row >= rows - 4)) {
@@ -177,7 +173,6 @@
                 }
             }
 
-            // Update game count
             gameCount++;
             updateGameRecord();
         }
@@ -209,12 +204,12 @@
 
         function getValidMoves(row, col) {
             const moves = [];
-            const directions = [-1, 1]; // Diagonal moves
+            const directions = [-1, 1];
             directions.forEach(rowDir => {
                 directions.forEach(colDir => {
                     const newRow = row + rowDir;
                     const newCol = col + colDir;
-                    if (newRow >= 0 && newRow < 12 && newCol >= 0 && newCol < 10 && !squares[newRow * 10 + newCol].hasChildNodes()) {
+                    if (newRow >= 0 && newRow < 10 && newCol >= 0 && newCol < 10 && !squares[newRow * 10 + newCol].hasChildNodes()) {
                         moves.push({ row: newRow, col: newCol });
                     }
                 });
@@ -229,31 +224,25 @@
             const toCol = Number(square.dataset.col);
 
             if (selectedPiece && isValidMove(fromRow, fromCol, toRow, toCol)) {
-                // Move the piece
                 squares[toRow * 10 + toCol].appendChild(selectedPiece);
                 squares[fromRow * 10 + fromCol].removeChild(selectedPiece);
 
-                // Update piece data
                 selectedPiece.dataset.row = toRow;
                 selectedPiece.dataset.col = toCol;
 
-                // Log move
                 logMove(fromRow, fromCol, toRow, toCol, 'User');
+                canMove = false; // Prevent additional moves until AI has moved
 
-                // Check for end game
-                if (pieces.filter(piece => piece.classList.contains('red')).length === 0) {
-                    endGame('Wonder');
+                if (pieces.filter(piece => piece.classList.contains('blue')).length === 0) {
+                    endGame('User');
                     return;
                 }
 
-                // Disable user moves and make AI move
-                canMove = false;
                 setTimeout(aiMove, 1000); // Delay AI move
             }
         }
 
         function aiMove() {
-            // AI logic (random move for simplicity)
             const availableMoves = pieces.filter(piece => piece.classList.contains('blue')).map(piece => ({
                 fromRow: Number(piece.dataset.row),
                 fromCol: Number(piece.dataset.col),
@@ -270,7 +259,7 @@
                 for (let colOffset of [-1, 1]) {
                     const toRow = move.fromRow + rowOffset;
                     const toCol = move.fromCol + colOffset;
-                    if (toRow >= 0 && toRow < 12 && toCol >= 0 && toCol < 10 && isValidMove(move.fromRow, move.fromCol, toRow, toCol)) {
+                    if (toRow >= 0 && toRow < 10 && toCol >= 0 && toCol < 10 && isValidMove(move.fromRow, move.fromCol, toRow, toCol)) {
                         moveOptions.push({ toRow, toCol });
                     }
                 }
@@ -281,8 +270,7 @@
                 movePiece(pieces.find(piece => piece.dataset.row == move.fromRow && piece.dataset.col == move.fromCol), squares[toRow * 10 + toCol]);
                 logMove(move.fromRow, move.fromCol, toRow, toCol, 'Wonder');
 
-                // End game if AI wins
-                if (pieces.filter(piece => piece.classList.contains('blue')).length === 0) {
+                if (pieces.filter(piece => piece.classList.contains('red')).length === 0) {
                     endGame('Wonder');
                 } else {
                     currentPlayer = 'red'; // Return to user
