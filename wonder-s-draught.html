@@ -10,19 +10,24 @@
             flex-direction: column;
             align-items: center;
             margin: 0;
-            background-color: #f0f0f0;
             font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #f0f8ff, #e6e6e6); /* Gradient background */
+            color: #333;
+            padding: 20px;
         }
 
-        h1, p {
-            margin: 20px 0;
+        h1 {
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         #board {
             display: grid;
-            grid-template-columns: repeat(8, 50px);
+            grid-template-columns: repeat(10, 50px);
             grid-template-rows: repeat(8, 50px);
             gap: 0;
+            border: 4px solid #333; /* Border around the board */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Shadow for depth */
         }
 
         .square {
@@ -47,6 +52,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* Shadow for pieces */
         }
 
         .red {
@@ -61,16 +67,55 @@
             border: 2px solid gold;
         }
 
-        #welcome, #game-record {
+        .button-group {
+            margin: 20px;
+        }
+
+        .button-group button {
+            background-color: #007bff; /* Blue color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .button-group button:hover {
+            background-color: #0056b3; /* Darker blue */
+        }
+
+        #welcome, #game-record, #move-log {
             margin: 20px 0;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* Shadow for boxes */
+        }
+
+        #welcome {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #move-log p {
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
     <h1>Draughts Game</h1>
     <div id="welcome"></div>
+    <div class="button-group">
+        <button id="play-yes">Yes</button>
+        <button id="play-no">No</button>
+    </div>
     <div id="board"></div>
     <div id="game-record"></div>
+    <div id="move-log"></div>
+
     <script>
         let currentPlayer = 'red';
         let board, squares, pieces;
@@ -79,26 +124,29 @@
         let userWins = 0;
         let aiWins = 0;
 
-        // Initialize the game
+        document.getElementById('play-yes').addEventListener('click', () => {
+            initBoard();
+            document.getElementById('game-record').innerText = `Games Played: ${gameCount}\nUser Wins: ${userWins}\nAI Wins: ${aiWins}`;
+            document.getElementById('welcome').innerText = `Welcome ${userName}. Let's play against Wonder!`;
+        });
+
+        document.getElementById('play-no').addEventListener('click', () => {
+            document.getElementById('welcome').innerText = "Maybe next time!";
+        });
+
         function startGame() {
             userName = prompt("Enter your name:");
-            document.getElementById('welcome').innerHTML = `Welcome ${userName}. Would you like to play against Wonder? (yes/no)`;
-            const playAgainstWonder = prompt("Would you like to play against Wonder? (yes/no)").toLowerCase() === 'yes';
-            if (playAgainstWonder) {
-                initBoard();
-                document.getElementById('game-record').innerText = `Games Played: ${gameCount}\nUser Wins: ${userWins}\nAI Wins: ${aiWins}`;
-            } else {
-                document.getElementById('welcome').innerHTML = "Maybe next time!";
-            }
+            document.getElementById('welcome').innerHTML = `Welcome ${userName}. Would you like to play against Wonder?`;
         }
 
-        // Initialize board and pieces
         function initBoard() {
             board = document.getElementById('board');
             squares = [];
             pieces = [];
             const rows = 8;
-            const cols = 8;
+            const cols = 10;
+
+            board.style.gridTemplateColumns = `repeat(${cols}, 50px)`;
 
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
@@ -132,7 +180,6 @@
             gameCount++;
         }
 
-        // Drag and drop functions
         function dragStart(e) {
             e.dataTransfer.setData('text', `${this.dataset.row},${this.dataset.col}`);
         }
@@ -149,6 +196,7 @@
                     if (toRow === 0 && currentPlayer === 'red' || toRow === 7 && currentPlayer === 'blue') {
                         promoteToKing(toRow, toCol);
                     }
+                    logMove(fromRow, fromCol, toRow, toCol);
                     currentPlayer = currentPlayer === 'red' ? 'blue' : 'red';
                     if (currentPlayer === 'blue') {
                         setTimeout(aiMove, 500); // AI move with delay
@@ -158,24 +206,24 @@
         }
 
         function isValidMove(fromRow, fromCol, toRow, toCol) {
-            const fromSquare = squares[fromRow * 8 + fromCol];
-            const toSquare = squares[toRow * 8 + toCol];
+            const fromSquare = squares[fromRow * 10 + fromCol];
+            const toSquare = squares[toRow * 10 + toCol];
             return (Math.abs(fromRow - toRow) === 1 && Math.abs(fromCol - toCol) === 1) && toSquareEmpty(toRow, toCol);
         }
 
         function toSquareEmpty(row, col) {
-            return !squares[row * 8 + col].hasChildNodes();
+            return !squares[row * 10 + col].hasChildNodes();
         }
 
         function movePiece(fromRow, fromCol, toRow, toCol) {
-            const piece = squares[fromRow * 8 + fromCol].removeChild(squares[fromRow * 8 + fromCol].firstChild);
-            squares[toRow * 8 + toCol].appendChild(piece);
+            const piece = squares[fromRow * 10 + fromCol].removeChild(squares[fromRow * 10 + fromCol].firstChild);
+            squares[toRow * 10 + toCol].appendChild(piece);
             piece.dataset.row = toRow;
             piece.dataset.col = toCol;
         }
 
         function promoteToKing(row, col) {
-            const piece = squares[row * 8 + col].firstChild;
+            const piece = squares[row * 10 + col].firstChild;
             piece.classList.add('king');
         }
 
@@ -197,46 +245,4 @@
                 for (let col = -1; col <= 1; col += 2) {
                     const toRow = fromRow + row;
                     const toCol = fromCol + col;
-                    if (toRow >= 0 && toRow < 8 && toCol >= 0 && toCol < 8) {
-                        if (toSquareEmpty(toRow, toCol)) {
-                            moveOptions.push({ toRow, toCol });
-                        }
-                    }
-                }
-            }
-
-            if (moveOptions.length > 0) {
-                const { toRow, toCol } = moveOptions[Math.floor(Math.random() * moveOptions.length)];
-                movePiece(fromRow, fromCol, toRow, toCol);
-                if (toRow === 0) {
-                    promoteToKing(toRow, toCol);
-                }
-                currentPlayer = 'red';
-                if (checkGameEnd()) {
-                    endGame('Wonder'); // AI wins if the user has no pieces
-                }
-            }
-        }
-
-        function checkGameEnd() {
-            // Check if any red pieces are left
-            return !document.querySelectorAll('.red').length;
-        }
-
-        function endGame(winner) {
-            if (winner === 'User') {
-                userWins++;
-                document.getElementById('welcome').innerText = `${userName} wins!`;
-            } else if (winner === 'Wonder') {
-                aiWins++;
-                document.getElementById('welcome').innerText = `Wonder wins!`;
-            }
-            document.getElementById('game-record').innerText = `Games Played: ${gameCount}\nUser Wins: ${userWins}\nAI Wins: ${aiWins}`;
-        }
-
-        // Start the game
-        startGame();
-    </script>
-</body>
-</html>
 
