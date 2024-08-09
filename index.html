@@ -16,7 +16,7 @@
             text-align: center;
         }
 
-        #intro-container {
+        #intro-container, #name-input-container {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -86,8 +86,13 @@
     </style>
 </head>
 <body>
-    <div id="intro-container">
-        <h1>Welcome to Draughts (Checkers)!</h1>
+    <div id="name-input-container">
+        <h1>Enter Your Name</h1>
+        <input type="text" id="username-input" placeholder="Your Name" />
+        <button id="submit-name">Submit</button>
+    </div>
+    <div id="intro-container" style="display:none;">
+        <h1>Welcome, <span id="username-display"></span>!</h1>
         <p>Do you want to play against Wonder?</p>
         <button id="yes">Yes</button>
         <button id="no">No</button>
@@ -104,9 +109,12 @@
     </div>
 
     <script>
+        const nameInputContainer = document.getElementById('name-input-container');
         const introContainer = document.getElementById('intro-container');
         const gameContainer = document.getElementById('game-container');
-        const board = document.getElementById('board');
+        const usernameInput = document.getElementById('username-input');
+        const submitNameButton = document.getElementById('submit-name');
+        const usernameDisplay = document.getElementById('username-display');
         const status = document.getElementById('status');
         const undoButton = document.getElementById('undo');
         const redoButton = document.getElementById('redo');
@@ -123,6 +131,17 @@
         let moveHistory = [];
         let redoHistory = [];
         let selectedPiece = null;
+        let username = '';
+
+        // Handle name submission
+        submitNameButton.addEventListener('click', () => {
+            username = usernameInput.value.trim();
+            if (username) {
+                usernameDisplay.textContent = username;
+                nameInputContainer.style.display = 'none';
+                introContainer.style.display = 'flex';
+            }
+        });
 
         // Introduction Logic
         yesButton.addEventListener('click', () => {
@@ -132,7 +151,7 @@
         });
 
         noButton.addEventListener('click', () => {
-            introContainer.innerHTML = '<h2>You\'re scared! 😂</h2>';
+            introContainer.innerHTML = `<h2>You're scared, ${username}! 😂</h2>`;
         });
 
         // Initialize the board
@@ -241,11 +260,9 @@
 
         function aiMove() {
             console.log("AI is making a move...");
-            // Example move logic: Replace with actual AI logic
+            // Example move logic (should be replaced with actual AI)
             const moves = [[5, 5], [6, 6]]; // Example move coordinates
-            if (moves.length === 2) {
-                movePiece(moves[0][0], moves[0][1], moves[1][0], moves[1][1]);
-            }
+            movePiece(moves[0][0], moves[0][1], moves[1][0], moves[1][1]);
             currentPlayer = 'blue';
             status.textContent = "Blue's turn";
         }
@@ -253,16 +270,22 @@
         // Undo and Redo functionality
         function undoMove() {
             if (moveHistory.length > 0) {
-                redoHistory.push({ boardState: JSON.stringify(boardState), move: moveHistory.pop() });
-                loadGame();
+                const lastMove = moveHistory.pop();
+                redoHistory.push(lastMove);
+                // Revert move
+                boardState[lastMove.startRow][lastMove.startCol] = boardState[lastMove.endRow][lastMove.endCol];
+                boardState[lastMove.endRow][lastMove.endCol] = null;
+                updateBoard();
             }
         }
 
         function redoMove() {
             if (redoHistory.length > 0) {
-                const redo = redoHistory.pop();
-                moveHistory.push(redo.move);
-                boardState = JSON.parse(redo.boardState);
+                const move = redoHistory.pop();
+                moveHistory.push(move);
+                // Apply move
+                boardState[move.endRow][move.endCol] = boardState[move.startRow][move.startCol];
+                boardState[move.startRow][move.startCol] = null;
                 updateBoard();
             }
         }
@@ -277,6 +300,7 @@
             if (savedState) {
                 boardState = savedState.boardState;
                 moveHistory = savedState.moveHistory || [];
+                redoHistory = [];
                 updateBoard();
             }
         }
@@ -301,3 +325,4 @@
     </script>
 </body>
 </html>
+
