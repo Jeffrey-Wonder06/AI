@@ -3,311 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Draughts Game</title>
+    <title>Draughts (Checkers) Game</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #game-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #003366; /* Dark blue background */
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            margin: 10px;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        #welcome, #game-record, #move-log {
-            margin: 20px 0;
-            padding: 10px;
-            background-color: #fff;
-            color: #333;
-            border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
         }
 
         #board {
-            position: relative;
+            width: 480px;
+            height: 400px;
             display: grid;
-            grid-template-columns: repeat(10, 30px);
-            grid-template-rows: repeat(10, 30px);
-            gap: 0;
-            border: 4px solid #333;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(12, 1fr);
+            border: 2px solid #333;
+            position: relative;
         }
 
-        .square {
-            width: 30px;
-            height: 30px;
-            box-sizing: border-box;
+        #board div {
+            width: 100%;
+            height: 100%;
         }
 
         .dark {
-            background-color: black;
+            background-color: #8e8e8e;
         }
 
         .light {
-            background-color: yellow;
+            background-color: #f2f2f2;
         }
 
         .piece {
-            width: 25px;
-            height: 25px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .red {
-            background-color: red;
-        }
-
-        .blue {
-            background-color: blue;
-        }
-
-        .highlight {
-            background-color: rgba(0, 255, 0, 0.5);
-        }
-
-        .watermark {
+            width: 80%;
+            height: 80%;
             position: absolute;
-            color: rgba(255, 255, 255, 0.1);
-            font-size: 3em;
-            font-weight: bold;
-            top: 50%;
-            left: 50%;
             transform: translate(-50%, -50%);
-            pointer-events: none;
+        }
+
+        .white-piece {
+            background-color: white;
+        }
+
+        .black-piece {
+            background-color: black;
+        }
+
+        #controls {
+            margin-top: 20px;
+        }
+
+        button {
+            margin: 0 5px;
+        }
+
+        #status {
+            margin-top: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div id="start-menu">
-        <h1>Wonder says...</h1>
-        <p>Welcome to the Draughts Game!</p>
-        <button id="play-yes">Yes</button>
-        <button id="play-no">No</button>
-    </div>
-
-    <div id="game-container" style="display: none;">
-        <div id="welcome"></div>
-        <div id="board">
-            <div class="watermark">WONDER WORLD</div>
+    <div id="game-container">
+        <div id="board"></div>
+        <div id="controls">
+            <button id="undo">Undo</button>
+            <button id="redo">Redo</button>
+            <button id="save">Save</button>
+            <button id="load">Load</button>
+            <p id="status">Player's turn</p>
         </div>
-        <div id="game-record"></div>
-        <div id="move-log"></div>
     </div>
 
     <script>
-        let board, squares, pieces;
-        let currentPlayer = 'red';
-        let userName = '';
-        let gameCount = 0;
-        let userWins = 0;
-        let wonderWins = 0;
+        const board = document.getElementById('board');
+        const status = document.getElementById('status');
+        const undoButton = document.getElementById('undo');
+        const redoButton = document.getElementById('redo');
+        const saveButton = document.getElementById('save');
+        const loadButton = document.getElementById('load');
 
-        document.getElementById('play-yes').addEventListener('click', () => {
-            document.getElementById('start-menu').style.display = 'none';
-            document.getElementById('game-container').style.display = 'block';
-            userName = prompt("Enter your name:");
-            document.getElementById('welcome').innerHTML = `Welcome ${userName}.`;
-            initBoard();
-        });
+        const rows = 12;
+        const cols = 10;
 
-        document.getElementById('play-no').addEventListener('click', () => {
-            alert('Maybe next time!');
-        });
+        let currentPlayer = 'white';
+        let boardState = [];
+        let moveHistory = [];
+        let redoHistory = [];
 
-        function initBoard() {
-            board = document.getElementById('board');
-            squares = [];
-            pieces = [];
-            const rows = 10;
-            const cols = 10;
-
-            board.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
-            board.style.gridTemplateRows = `repeat(${rows}, 30px)`;
-
+        // Initialize the board
+        function initializeBoard() {
+            board.innerHTML = '';
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
-                    const square = document.createElement('div');
-                    square.className = 'square ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
-                    square.dataset.row = row;
-                    square.dataset.col = col;
-                    board.appendChild(square);
-                    squares.push(square);
+                    const cell = document.createElement('div');
+                    const isDark = (row + col) % 2 === 1;
+                    cell.className = isDark ? 'dark' : 'light';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.addEventListener('click', () => handleCellClick(row, col));
+                    board.appendChild(cell);
                 }
             }
+            setupInitialPieces();
+        }
 
-            for (let row = 0; row < rows; row++) {
-                for (let col = 0; col < cols; col++) {
-                    if ((row + col) % 2 !== 0 && (row < 4 || row >= rows - 4)) {
-                        const piece = document.createElement('div');
-                        piece.className = 'piece ' + (row < 4 ? 'red' : 'blue');
-                        piece.dataset.row = row;
-                        piece.dataset.col = col;
-                        piece.addEventListener('click', () => selectPiece(piece));
-                        squares[row * cols + col].appendChild(piece);
-                        pieces.push(piece);
-                    }
+        // Set up initial pieces
+        function setupInitialPieces() {
+            boardState = Array.from({ length: rows }, () => Array(cols).fill(null));
+            // Place pieces for player white
+            for (let row = 0; row < 3; row++) {
+                for (let col = (row % 2); col < cols; col += 2) {
+                    placePiece(row, col, 'white');
                 }
             }
-
-            gameCount++;
-            updateGameRecord();
-        }
-
-        let selectedPiece = null;
-        let canMove = true;
-
-        function selectPiece(piece) {
-            if (piece.classList.contains(currentPlayer) && canMove) {
-                selectedPiece = piece;
-                highlightValidMoves(piece);
-            }
-        }
-
-        function highlightValidMoves(piece) {
-            const row = Number(piece.dataset.row);
-            const col = Number(piece.dataset.col);
-            const validMoves = getValidMoves(row, col);
-
-            squares.forEach(square => {
-                if (validMoves.some(move => move.row === Number(square.dataset.row) && move.col === Number(square.dataset.col))) {
-                    square.classList.add('highlight');
-                    square.addEventListener('click', () => movePiece(piece, square));
-                } else {
-                    square.classList.remove('highlight');
-                }
-            });
-        }
-
-        function getValidMoves(row, col) {
-            const moves = [];
-            const directions = [-1, 1];
-            directions.forEach(rowDir => {
-                directions.forEach(colDir => {
-                    const newRow = row + rowDir;
-                    const newCol = col + colDir;
-                    if (newRow >= 0 && newRow < 10 && newCol >= 0 && newCol < 10 && !squares[newRow * 10 + newCol].hasChildNodes()) {
-                        moves.push({ row: newRow, col: newCol });
-                    }
-                });
-            });
-            return moves;
-        }
-
-        function movePiece(piece, square) {
-            const fromRow = Number(piece.dataset.row);
-            const fromCol = Number(piece.dataset.col);
-            const toRow = Number(square.dataset.row);
-            const toCol = Number(square.dataset.col);
-
-            if (selectedPiece && isValidMove(fromRow, fromCol, toRow, toCol)) {
-                squares[toRow * 10 + toCol].appendChild(selectedPiece);
-                squares[fromRow * 10 + fromCol].removeChild(selectedPiece);
-
-                selectedPiece.dataset.row = toRow;
-                selectedPiece.dataset.col = toCol;
-
-                logMove(fromRow, fromCol, toRow, toCol, 'User');
-                canMove = false; // Prevent additional moves until AI has moved
-
-                if (pieces.filter(piece => piece.classList.contains('blue')).length === 0) {
-                    endGame('User');
-                    return;
-                }
-
-                setTimeout(aiMove, 1000); // Delay AI move
-            }
-        }
-
-        function aiMove() {
-            const availableMoves = pieces.filter(piece => piece.classList.contains('blue')).map(piece => ({
-                fromRow: Number(piece.dataset.row),
-                fromCol: Number(piece.dataset.col),
-            }));
-
-            if (availableMoves.length === 0) {
-                endGame('User');
-                return;
-            }
-
-            const move = availableMoves[Math.floor(Math.random() * availableMoves.length)];
-            const moveOptions = [];
-            for (let rowOffset of [-1, 1]) {
-                for (let colOffset of [-1, 1]) {
-                    const toRow = move.fromRow + rowOffset;
-                    const toCol = move.fromCol + colOffset;
-                    if (toRow >= 0 && toRow < 10 && toCol >= 0 && toCol < 10 && isValidMove(move.fromRow, move.fromCol, toRow, toCol)) {
-                        moveOptions.push({ toRow, toCol });
-                    }
-                }
-            }
-
-            if (moveOptions.length > 0) {
-                const { toRow, toCol } = moveOptions[Math.floor(Math.random() * moveOptions.length)];
-                movePiece(pieces.find(piece => piece.dataset.row == move.fromRow && piece.dataset.col == move.fromCol), squares[toRow * 10 + toCol]);
-                logMove(move.fromRow, move.fromCol, toRow, toCol, 'Wonder');
-
-                if (pieces.filter(piece => piece.classList.contains('red')).length === 0) {
-                    endGame('Wonder');
-                } else {
-                    currentPlayer = 'red'; // Return to user
-                    canMove = true; // Allow user to make a move
+            // Place pieces for player black
+            for (let row = rows - 3; row < rows; row++) {
+                for (let col = (row % 2); col < cols; col += 2) {
+                    placePiece(row, col, 'black');
                 }
             }
         }
 
-        function endGame(winner) {
-            if (winner === 'User') {
-                userWins++;
-            } else {
-                wonderWins++;
+        // Place a piece on the board
+        function placePiece(row, col, color) {
+            const cell = board.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            const piece = document.createElement('div');
+            piece.className = `piece ${color}-piece`;
+            cell.appendChild(piece);
+            boardState[row][col] = color;
+        }
+
+        // Handle cell click
+        function handleCellClick(row, col) {
+            // Logic for piece movement, selection, and capturing
+            // Update boardState and moveHistory
+            console.log(`Cell clicked: Row ${row}, Col ${col}`);
+        }
+
+        // Undo and Redo functionality
+        function undoMove() {
+            if (moveHistory.length > 0) {
+                redoHistory.push(moveHistory.pop());
+                // Apply last move from moveHistory
+                updateBoard();
             }
-            updateGameRecord();
-            alert(`${winner} wins!`);
-            initBoard(); // Reset the board for a new game
         }
 
-        function updateGameRecord() {
-            document.getElementById('game-record').innerText = `Games Played: ${gameCount}\nUser Wins: ${userWins}\nWonder Wins: ${wonderWins}`;
+        function redoMove() {
+            if (redoHistory.length > 0) {
+                const move = redoHistory.pop();
+                moveHistory.push(move);
+                // Apply move from redoHistory
+                updateBoard();
+            }
         }
 
-        function logMove(fromRow, fromCol, toRow, toCol, player = 'User') {
-            const log = document.getElementById('move-log');
-            const move = document.createElement('p');
-            move.textContent = `${player} moved from (${fromRow}, ${fromCol}) to (${toRow}, ${toCol})`;
-            log.appendChild(move);
+        // Save and Load functionality
+        function saveGame() {
+            localStorage.setItem('draughtsGame', JSON.stringify(boardState));
         }
 
-        function isValidMove(fromRow, fromCol, toRow, toCol) {
-            const toSquare = squares[toRow * 10 + toCol];
-            return !toSquare.hasChildNodes() && Math.abs(fromRow - toRow) === 1 && Math.abs(fromCol - toCol) === 1;
+        function loadGame() {
+            const savedState = JSON.parse(localStorage.getItem('draughtsGame'));
+            if (savedState) {
+                boardState = savedState;
+                updateBoard();
+            }
         }
+
+        // Update the board based on the current boardState
+        function updateBoard() {
+            board.querySelectorAll('.piece').forEach(piece => piece.remove());
+            setupInitialPieces();
+            // Update pieces based on boardState
+        }
+
+        // Initialize the board when the page loads
+        initializeBoard();
+
+        undoButton.addEventListener('click', undoMove);
+        redoButton.addEventListener('click', redoMove);
+        saveButton.addEventListener('click', saveGame);
+        loadButton.addEventListener('click', loadGame);
     </script>
 </body>
 </html>
+
 
 
 
