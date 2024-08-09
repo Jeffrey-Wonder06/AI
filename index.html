@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to Draughts Game</title>
+    <title>Draughts Game</title>
     <style>
         body {
             display: flex;
@@ -12,7 +12,7 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: red; /* Red background */
+            background-color: #f0f8ff; /* Light blue background for the entire page */
             color: white;
             font-family: Arial, sans-serif;
             text-align: center;
@@ -34,46 +34,13 @@
             background-color: #0056b3; /* Darker blue */
         }
 
-        h1 {
-            margin-bottom: 20px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Wonder says...</h1>
-    <p>Welcome to the Draughts Game!</p>
-    <button id="play-yes">Yes</button>
-    <button id="play-no">No</button>
-
-    <script>
-        document.getElementById('play-yes').addEventListener('click', () => {
-            window.location.href = 'game.html'; // Redirect to the game page
-        });
-
-        document.getElementById('play-no').addEventListener('click', () => {
-            alert('Maybe next time!');
-        });
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Draughts Game</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #f0f8ff, #e6e6e6); /* Gradient background */
-        }
-
-        h1 {
+        #welcome, #game-record, #move-log {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #fff;
             color: #333;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* Shadow for boxes */
         }
 
         #board {
@@ -124,30 +91,25 @@
         .highlight {
             background-color: rgba(0, 255, 0, 0.5); /* Highlight valid moves */
         }
-
-        #game-record, #move-log {
-            margin: 20px 0;
-            padding: 10px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* Shadow for boxes */
-        }
-
-        #welcome {
-            margin: 20px 0;
-            font-size: 18px;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
-    <h1>Draughts Game</h1>
-    <div id="welcome"></div>
-    <div id="board"></div>
-    <div id="game-record"></div>
-    <div id="move-log"></div>
+    <div id="start-menu">
+        <h1>Wonder says...</h1>
+        <p>Welcome to the Draughts Game!</p>
+        <button id="play-yes">Yes</button>
+        <button id="play-no">No</button>
+    </div>
+
+    <div id="game-container" style="display: none;">
+        <div id="welcome"></div>
+        <div id="board"></div>
+        <div id="game-record"></div>
+        <div id="move-log"></div>
+    </div>
 
     <script>
+        // Game variables
         let board, squares, pieces;
         let currentPlayer = 'red';
         let userName = '';
@@ -155,12 +117,20 @@
         let userWins = 0;
         let wonderWins = 0;
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // Set up start menu event listeners
+        document.getElementById('play-yes').addEventListener('click', () => {
+            document.getElementById('start-menu').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
             userName = prompt("Enter your name:");
             document.getElementById('welcome').innerHTML = `Welcome ${userName}.`;
             initBoard();
         });
 
+        document.getElementById('play-no').addEventListener('click', () => {
+            alert('Maybe next time!');
+        });
+
+        // Initialize game board
         function initBoard() {
             board = document.getElementById('board');
             squares = [];
@@ -338,6 +308,7 @@
     </script>
 </body>
 </html>
+
 
 
 
