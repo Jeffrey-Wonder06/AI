@@ -16,7 +16,7 @@
             text-align: center;
         }
 
-        #intro-container, #name-input-container {
+        #name-input-container, #intro-container, #game-container {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -30,10 +30,10 @@
 
         #board {
             width: 480px;
-            height: 400px;
+            height: 480px;
             display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            grid-template-rows: repeat(12, 1fr);
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
             border: 2px solid #333;
             position: relative;
         }
@@ -112,6 +112,7 @@
         const nameInputContainer = document.getElementById('name-input-container');
         const introContainer = document.getElementById('intro-container');
         const gameContainer = document.getElementById('game-container');
+        const board = document.getElementById('board');
         const usernameInput = document.getElementById('username-input');
         const submitNameButton = document.getElementById('submit-name');
         const usernameDisplay = document.getElementById('username-display');
@@ -123,8 +124,8 @@
         const yesButton = document.getElementById('yes');
         const noButton = document.getElementById('no');
 
-        const rows = 12;
-        const cols = 10;
+        const rows = 8;
+        const cols = 8;
 
         let currentPlayer = 'blue';
         let boardState = Array.from({ length: rows }, () => Array(cols).fill(null));
@@ -251,7 +252,7 @@
                 const newCol = col + colDir;
                 if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols) {
                     const cell = board.querySelector(`[data-row="${newRow}"][data-col="${newCol}"]`);
-                    if (cell && !boardState[newRow][newCol]) {
+                    if (!cell.querySelector('.piece')) {
                         cell.classList.add('highlight');
                     }
                 }
@@ -259,8 +260,8 @@
         }
 
         function aiMove() {
+            // Basic AI logic (should be replaced with actual AI)
             console.log("AI is making a move...");
-            // Example move logic (should be replaced with actual AI)
             const moves = [[5, 5], [6, 6]]; // Example move coordinates
             movePiece(moves[0][0], moves[0][1], moves[1][0], moves[1][1]);
             currentPlayer = 'blue';
@@ -272,7 +273,6 @@
             if (moveHistory.length > 0) {
                 const lastMove = moveHistory.pop();
                 redoHistory.push(lastMove);
-                // Revert move
                 boardState[lastMove.startRow][lastMove.startCol] = boardState[lastMove.endRow][lastMove.endCol];
                 boardState[lastMove.endRow][lastMove.endCol] = null;
                 updateBoard();
@@ -283,7 +283,6 @@
             if (redoHistory.length > 0) {
                 const move = redoHistory.pop();
                 moveHistory.push(move);
-                // Apply move
                 boardState[move.endRow][move.endCol] = boardState[move.startRow][move.startCol];
                 boardState[move.startRow][move.startCol] = null;
                 updateBoard();
