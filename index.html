@@ -119,7 +119,7 @@
         const cols = 10;
 
         let currentPlayer = 'blue';
-        let boardState = [];
+        let boardState = Array.from({ length: rows }, () => Array(cols).fill(null));
         let moveHistory = [];
         let redoHistory = [];
         let selectedPiece = null;
@@ -184,6 +184,8 @@
                 const [startRow, startCol] = selectedPiece;
                 if (isValidMove(startRow, startCol, row, col)) {
                     movePiece(startRow, startCol, row, col);
+                    moveHistory.push({ startRow, startCol, endRow: row, endCol: col });
+                    redoHistory = []; // Clear redo history on new move
                     if (currentPlayer === 'blue') {
                         currentPlayer = 'red';
                         status.textContent = "Red's turn";
@@ -202,27 +204,48 @@
         }
 
         function isValidMove(startRow, startCol, endRow, endCol) {
-            // Implement move validation logic (e.g., valid Draughts moves)
-            return true; // Simplified for demonstration
+            const piece = boardState[startRow][startCol];
+            if (!piece) return false;
+            const direction = piece === 'blue' ? 1 : -1;
+
+            // Check if move is diagonal
+            const rowDiff = Math.abs(endRow - startRow);
+            const colDiff = Math.abs(endCol - startCol);
+            if (rowDiff !== colDiff || rowDiff !== 1) return false;
+
+            // Check if destination is empty
+            if (boardState[endRow][endCol] !== null) return false;
+
+            return true;
         }
 
         function movePiece(startRow, startCol, endRow, endCol) {
-            // Implement piece movement logic (e.g., update boardState and UI)
             boardState[endRow][endCol] = boardState[startRow][startCol];
             boardState[startRow][startCol] = null;
         }
 
         function highlightMoves(row, col) {
-            // Highlight possible moves (simplified)
-            console.log(`Highlight moves from ${row}, ${col}`);
+            board.querySelectorAll('.highlight').forEach(cell => cell.classList.remove('highlight'));
+            const directions = [[1, -1], [1, 1], [-1, -1], [-1, 1]];
+            directions.forEach(([rowDir, colDir]) => {
+                const newRow = row + rowDir;
+                const newCol = col + colDir;
+                if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols) {
+                    const cell = board.querySelector(`[data-row="${newRow}"][data-col="${newCol}"]`);
+                    if (cell && !boardState[newRow][newCol]) {
+                        cell.classList.add('highlight');
+                    }
+                }
+            });
         }
 
         function aiMove() {
-            // Basic AI using Minimax (simplified)
             console.log("AI is making a move...");
-            // Example move (this should be replaced with actual AI logic)
+            // Example move logic: Replace with actual AI logic
             const moves = [[5, 5], [6, 6]]; // Example move coordinates
-            movePiece(moves[0][0], moves[0][1], moves[1][0], moves[1][1]);
+            if (moves.length === 2) {
+                movePiece(moves[0][0], moves[0][1], moves[1][0], moves[1][1]);
+            }
             currentPlayer = 'blue';
             status.textContent = "Blue's turn";
         }
@@ -230,28 +253,30 @@
         // Undo and Redo functionality
         function undoMove() {
             if (moveHistory.length > 0) {
-                redoHistory.push(moveHistory.pop());
-                updateBoard();
+                redoHistory.push({ boardState: JSON.stringify(boardState), move: moveHistory.pop() });
+                loadGame();
             }
         }
 
         function redoMove() {
             if (redoHistory.length > 0) {
-                const move = redoHistory.pop();
-                moveHistory.push(move);
+                const redo = redoHistory.pop();
+                moveHistory.push(redo.move);
+                boardState = JSON.parse(redo.boardState);
                 updateBoard();
             }
         }
 
         // Save and Load functionality
         function saveGame() {
-            localStorage.setItem('draughtsGame', JSON.stringify(boardState));
+            localStorage.setItem('draughtsGame', JSON.stringify({ boardState, moveHistory }));
         }
 
         function loadGame() {
             const savedState = JSON.parse(localStorage.getItem('draughtsGame'));
             if (savedState) {
-                boardState = savedState;
+                boardState = savedState.boardState;
+                moveHistory = savedState.moveHistory || [];
                 updateBoard();
             }
         }
