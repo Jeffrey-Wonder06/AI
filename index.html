@@ -245,4 +245,52 @@
                 for (let col = -1; col <= 1; col += 2) {
                     const toRow = fromRow + row;
                     const toCol = fromCol + col;
+                    if (toRow >= 0 && toRow < 8 && toCol >= 0 && toCol < 10 && isValidMove(fromRow, fromCol, toRow, toCol)) {
+                        moveOptions.push({ toRow, toCol });
+                    }
+                }
+            }
+
+            if (moveOptions.length > 0) {
+                const { toRow, toCol } = moveOptions[Math.floor(Math.random() * moveOptions.length)];
+                movePiece(fromRow, fromCol, toRow, toCol);
+                logMove(fromRow, fromCol, toRow, toCol, 'AI');
+
+                // End game if AI wins
+                if (pieces.filter(piece => piece.classList.contains('blue')).length === 0) {
+                    endGame('AI');
+                } else {
+                    currentPlayer = 'red'; // Return to user
+                }
+            }
+        }
+
+        function endGame(winner) {
+            if (winner === 'User') {
+                userWins++;
+            } else {
+                aiWins++;
+            }
+            updateGameRecord();
+            alert(`${winner} wins!`);
+            initBoard(); // Reset the board for a new game
+        }
+
+        function updateGameRecord() {
+            document.getElementById('game-record').innerText = `Games Played: ${gameCount}\nUser Wins: ${userWins}\nAI Wins: ${aiWins}`;
+        }
+
+        function logMove(fromRow, fromCol, toRow, toCol, player = 'User') {
+            const log = document.getElementById('move-log');
+            const move = document.createElement('p');
+            move.textContent = `${player} moved from (${fromRow}, ${fromCol}) to (${toRow}, ${toCol})`;
+            log.appendChild(move);
+        }
+
+        // Start the game
+        startGame();
+    </script>
+</body>
+</html>
+
 
