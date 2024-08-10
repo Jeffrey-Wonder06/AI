@@ -23,7 +23,7 @@
         }
 
         #game-container {
-            display: none;
+            display: none; /* Ensure this is set to flex when needed */
             flex-direction: column;
             align-items: center;
         }
@@ -147,7 +147,6 @@
         let selectedPiece = null;
         let username = '';
 
-        // Handle name submission
         submitNameButton.addEventListener('click', () => {
             username = usernameInput.value.trim();
             if (username) {
@@ -157,7 +156,6 @@
             }
         });
 
-        // Introduction Logic
         yesButton.addEventListener('click', () => {
             introContainer.style.display = 'none';
             gameContainer.style.display = 'flex';
@@ -168,9 +166,8 @@
             introContainer.innerHTML = `<h2>You're scared, ${username}! 😂</h2>`;
         });
 
-        // Initialize the board
         function initializeBoard() {
-            board.innerHTML = '';
+            board.innerHTML = ''; // Clear existing cells
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
                     const cell = document.createElement('div');
@@ -185,7 +182,6 @@
             setupInitialPieces();
         }
 
-        // Set up initial pieces
         function setupInitialPieces() {
             // Place pieces for player blue
             for (let row = 0; row < 4; row++) {
@@ -201,7 +197,6 @@
             }
         }
 
-        // Place a piece on the board
         function placePiece(row, col, color) {
             const cell = board.querySelector(`[data-row="${row}"][data-col="${col}"]`);
             const piece = document.createElement('div');
@@ -210,7 +205,6 @@
             boardState[row][col] = color;
         }
 
-        // Handle cell click
         function handleCellClick(row, col) {
             if (selectedPiece) {
                 const [startRow, startCol] = selectedPiece;
@@ -280,7 +274,6 @@
             status.textContent = "Blue's turn";
         }
 
-        // Undo and Redo functionality
         function undoMove() {
             if (moveHistory.length > 0) {
                 const lastMove = moveHistory.pop();
@@ -301,7 +294,6 @@
             }
         }
 
-        // Save and Load functionality
         function saveGame() {
             localStorage.setItem('draughtsGame', JSON.stringify({ boardState, moveHistory }));
         }
@@ -316,7 +308,6 @@
             }
         }
 
-        // Update the board based on the current boardState
         function updateBoard() {
             board.querySelectorAll('.piece').forEach(piece => piece.remove());
             setupInitialPieces();
@@ -336,3 +327,4 @@
     </script>
 </body>
 </html>
+
