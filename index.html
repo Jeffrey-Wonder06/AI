@@ -52,9 +52,6 @@
             margin-top: 20px;
         }
         .dws { background-color: #ffddcc; }
-        .tls { background-color: #ddffcc; }
-        .dls { background-color: #ccffdd; }
-        .tls { background-color: #ddffcc; }
     </style>
 </head>
 <body>
@@ -62,9 +59,9 @@
         <h1>Scrabble Game with AI</h1>
         <div class="board" id="board"></div>
         <div class="rack" id="rack"></div>
-        <button onclick="placeWord()">Place Word</button>
-        <button onclick="drawTiles()" disabled id="drawButton">Draw Tiles</button>
+        <button onclick="drawTiles()">Draw Tiles</button>
         <button onclick="aiTurn()">AI Turn</button>
+        <button onclick="placeWord()">Place Word</button>
         <div id="result"></div>
     </div>
     <script>
@@ -85,8 +82,9 @@
             { letter: 'Y', count: 2, value: 4 }, { letter: 'Z', count: 1, value: 10 },
             { letter: '_', count: 2, value: 0 } // Blank tiles
         ];
+        const dictionary = new Set(["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE"]); // Simulated dictionary
+        const predefinedWords = ["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE"]; // Simplified word list for AI
 
-        const dictionary = new Set(["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE", "HELLO", "WORLD"]); // Example dictionary
         let currentRack = [];
         let board = [];
         let firstMove = true; // Flag to check if the first move is made
@@ -128,7 +126,6 @@
                 };
                 rack.appendChild(tileElement);
             }
-            document.getElementById('drawButton').disabled = true;
         }
 
         function drawRandomTile() {
@@ -155,42 +152,36 @@
 
         function placeWord() {
             const result = document.getElementById('result');
+            // Simplified validation
             if (firstMove) {
+                // Ensure the first word covers the center square
                 if (!isFirstWordValid()) {
                     result.textContent = 'The first word must cover the center square.';
                     return;
                 }
                 firstMove = false;
             }
-
+            // Basic validation
             if (!isPlacementValid()) {
                 result.textContent = 'Invalid word placement.';
                 return;
             }
-
-            // Calculate and display score
-            const placedTiles = getPlacedTiles();
-            const word = placedTiles.map(tile => tile.textContent).join('');
-            const row = parseInt(placedTiles[0].dataset.row);
-            const col = parseInt(placedTiles[0].dataset.col);
-            const direction = getDirection(placedTiles);
-            const score = calculateScore(word, row, col, direction);
-
-            result.textContent = `Word placed successfully! Score: ${score}`;
-            document.getElementById('drawButton').disabled = false; // Enable draw tiles button
-
-            // Update the board, rack, etc.
+            result.textContent = 'Word placed successfully!';
+            // Here, you'd implement scoring and updating the board
+            drawTiles(); // Allow drawing tiles only after a valid move
         }
 
         function isFirstWordValid() {
+            // Check if the first word covers the center square
             const centerTile = board[7][7];
             return centerTile.textContent !== '';
         }
 
         function isPlacementValid() {
+            // Basic validation example: Check if placed word is in the dictionary
             const placedTiles = getPlacedTiles();
             const word = placedTiles.map(tile => tile.textContent).join('');
-            return checkWord(word) && validateConnections(placedTiles);
+            return dictionary.has(word);
         }
 
         function getPlacedTiles() {
@@ -206,68 +197,146 @@
             return tiles;
         }
 
-        function getDirection(tiles) {
-            const rows = tiles.map(t => parseInt(t.dataset.row));
-            const cols = tiles.map(t => parseInt(t.dataset.col));
-            return (new Set(rows).size === 1) ? 'horizontal' : 'vertical';
+        function aiTurn() {
+            const aiRack = ['A', 'P', 'P', 'L', 'E']; // Example rack
+            const possibleWords = findPossibleWords(aiRack, dictionary);
+            const validMoves = findValidPlacements(board, possibleWords);
+            const bestMove = evaluateMoves(validMoves, board);
+            if (bestMove) {
+                const [word, position] = bestMove;
+                placeWordOnBoard(word, position);
+                refillRack(aiRack, tileBag);
+                updateAIResult('AI placed word: ' + word);
+            } else {
+                updateAIResult('AI could not find a valid move.');
+            }
         }
 
-        function validateConnections(tiles) {
-            // Implement connection validation logic
-            return true; // Placeholder
-        }
-
-        function calculateScore(word, row, col, direction) {
-            let score = 0;
-            let wordMultiplier = 1;
-
+        function placeWordOnBoard(word, position) {
+            const [startPos, direction] = position;
+            const [row, col] = startPos;
             for (let i = 0; i < word.length; i++) {
-                const r = direction === 'horizontal' ? row : row + i;
-                const c = direction === 'vertical' ? col : col + i;
-                const tile = board[r][c];
-                const letterValue = tileBag.find(t => t.letter === word[i] || t.letter === '_').value;
-
-                if (tile.classList.contains('dws')) {
-                    wordMultiplier *= 2;
-                } else if (tile.classList.contains('tls')) {
-                    score += letterValue * 2;
-                } else if (tile.classList.contains('dls')) {
-                    score += letterValue * 3;
+                if (direction === 'horizontal') {
+                    board[row][col + i].textContent = word[i];
                 } else {
-                    score += letterValue;
+                    board[row + i][col].textContent = word[i];
                 }
             }
-            return score * wordMultiplier;
         }
 
-        function checkWord(word) {
-            // Implement comprehensive dictionary check
-            return dictionary.has(word);
-        }
-
-        function aiTurn() {
-            // Example AI: Randomly place a word from predefinedWords
-            const aiWord = predefinedWords[Math.floor(Math.random() * predefinedWords.length)];
-            placeWordOnBoard(aiWord);
-
-            // Mark AI turn as completed
-            document.getElementById('drawButton').disabled = false;
-        }
-
-        function placeWordOnBoard(word) {
-            // Simple example: place word horizontally at the top row, starting at column 0
-            const row = 0;
-            for (let col = 0; col < word.length; col++) {
-                const tile = board[row][col];
-                tile.textContent = word[col];
-                tile.className = 'tile'; // Reset to default tile class
+        function refillRack(rack, bag) {
+            while (rack.length < 7 && bag.length > 0) {
+                rack.push(drawRandomTile().letter);
             }
         }
 
-        createBoard();
+        function findPossibleWords(rack, dictionary) {
+            const possibleWords = new Set();
+            for (let length = 1; length <= rack.length; length++) {
+                for (const word of permutations(rack, length)) {
+                    if (dictionary.has(word)) {
+                        possibleWords.add(word);
+                    }
+                }
+            }
+            return possibleWords;
+        }
+
+        function permutations(arr, length) {
+            if (length === 1) {
+                return arr.map(e => [e]);
+            }
+            const result = [];
+            for (let i = 0; i < arr.length; i++) {
+                const element = arr[i];
+                const remaining = arr.slice(0, i).concat(arr.slice(i + 1));
+                for (const perm of permutations(remaining, length - 1)) {
+                    result.push([element].concat(perm));
+                }
+            }
+            return result.map(e => e.join(''));
+        }
+
+        function findValidPlacements(board, words) {
+            const validMoves = [];
+            for (const word of words) {
+                for (const position of findOpenPositions(board, word)) {
+                    if (isValidPlacement(board, word, position)) {
+                        validMoves.push([word, position]);
+                    }
+                }
+            }
+            return validMoves;
+        }
+
+        function findOpenPositions(board, word) {
+            const positions = [];
+            for (let row = 0; row < boardSize; row++) {
+                for (let col = 0; col < boardSize; col++) {
+                    if (canPlaceWord(board, word, [row, col], 'horizontal')) {
+                        positions.push([[row, col], 'horizontal']);
+                    }
+                    if (canPlaceWord(board, word, [row, col], 'vertical')) {
+                        positions.push([[row, col], 'vertical']);
+                    }
+                }
+            }
+            return positions;
+        }
+
+        function canPlaceWord(board, word, [row, col], direction) {
+            if (direction === 'horizontal') {
+                if (col + word.length > boardSize) return false;
+                for (let i = 0; i < word.length; i++) {
+                    if (board[row][col + i].textContent !== '' && board[row][col + i].textContent !== word[i]) {
+                        return false;
+                    }
+                }
+            } else {
+                if (row + word.length > boardSize) return false;
+                for (let i = 0; i < word.length; i++) {
+                    if (board[row + i][col].textContent !== '' && board[row + i][col].textContent !== word[i]) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function isValidPlacement(board, word, position) {
+            return true; // Placeholder for more complex placement logic
+        }
+
+        function evaluateMoves(moves, board) {
+            let bestMove = null;
+            let bestScore = 0;
+            for (const [word, position] of moves) {
+                const score = calculateScore(board, word, position);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = [word, position];
+                }
+            }
+            return bestMove;
+        }
+
+        function calculateScore(board, word, position) {
+            return word.length; // Simplified score calculation
+        }
+
+        function updateAIResult(message) {
+            const result = document.getElementById('result');
+            result.textContent = message;
+        }
+
+        window.onload = () => {
+            createBoard();
+            drawTiles();
+        };
     </script>
 </body>
 </html>
+
 
 
 
