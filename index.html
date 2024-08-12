@@ -132,7 +132,7 @@
             updateRack();
         }
 
-        // Function to update rack and other parts of the code
+        // Function to update rack
         function updateRack() {
             const rackElement = document.getElementById('rack');
             rackElement.innerHTML = '';
@@ -245,11 +245,10 @@
         }
 
         function canPlaceHorizontally(board, word, row, col) {
-            for (let i =function canPlaceHorizontally(board, word, row, col) {
             if (col + word.length > boardSize) return false; // Out of bounds
             for (let i = 0; i < word.length; i++) {
                 const cell = board[row][col + i];
-                if (cell !== ' ' && cell !== word[i]) return false; // Conflict with existing tiles
+                 if (cell !== ' ' && cell !== word[i]) return false; // Conflict with existing tiles
             }
             return true;
         }
