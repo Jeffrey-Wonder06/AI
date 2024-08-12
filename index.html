@@ -37,8 +37,6 @@
         }
         .rack {
             margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
         }
         .rack .tile {
             display: inline-block;
@@ -48,9 +46,6 @@
             background-color: #fff;
             border: 1px solid #ccc;
             cursor: pointer;
-            text-align: center;
-            line-height: 40px;
-            font-size: 18px;
         }
         #result {
             font-weight: bold;
@@ -87,10 +82,7 @@
             { letter: 'Y', count: 2, value: 4 }, { letter: 'Z', count: 1, value: 10 },
             { letter: '_', count: 2, value: 0 } // Blank tiles
         ];
-
-        // Example dictionary; replace with a comprehensive dictionary for real use
-        const dictionary = new Set(["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE", "GRAPEFRUIT", "LEMON", "ORANGE"]);
-        const predefinedWords = ["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE"];
+        const dictionary = new Set(["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE"]); // Simplified dictionary
 
         let currentRack = [];
         let board = [];
@@ -159,32 +151,28 @@
 
         function placeWord() {
             const result = document.getElementById('result');
-            // Simplified validation
             if (firstMove) {
-                // Ensure the first word covers the center square
                 if (!isFirstWordValid()) {
                     result.textContent = 'The first word must cover the center square.';
                     return;
                 }
                 firstMove = false;
             }
-            // Basic validation
             if (!isPlacementValid()) {
                 result.textContent = 'Invalid word placement.';
                 return;
             }
             result.textContent = 'Word placed successfully!';
-            drawTiles(); // Allow drawing tiles only after a valid move
+            // Here, you'd implement scoring and updating the board
+            drawTiles(); // Allow player to draw tiles after placing a word
         }
 
         function isFirstWordValid() {
-            // Check if the first word covers the center square
             const centerTile = board[7][7];
             return centerTile.textContent !== '';
         }
 
         function isPlacementValid() {
-            // Basic validation example: Check if placed word is in the dictionary
             const placedTiles = getPlacedTiles();
             const word = placedTiles.map(tile => tile.textContent).join('');
             return dictionary.has(word);
@@ -206,46 +194,24 @@
         function aiTurn() {
             const aiRack = currentRack; // Example rack, replace with AI's actual rack
             const possibleWords = findPossibleWords(aiRack, dictionary);
+            if (possibleWords.size === 0) {
+                updateAIResult('No possible words for AI');
+                return;
+            }
             const validMoves = findValidPlacements(board, possibleWords);
+            if (validMoves.length === 0) {
+                updateAIResult('No valid placements for AI');
+                return;
+            }
             const bestMove = evaluateMoves(validMoves, board);
-
             if (bestMove) {
                 const [word, position] = bestMove;
                 placeWordOnBoard(word, position);
                 refillRack(currentRack, tileBag); // Refill AI rack (if implemented)
                 updateAIResult(`AI played: ${word}`);
+                drawTiles(); // Allow AI to draw tiles after placing a word
             } else {
                 updateAIResult('No valid moves for AI');
-            }
-        }
-
-        function placeWordOnBoard(word, [startPos, direction]) {
-            const [row, col] = startPos;
-            for (let i = 0; i < word.length; i++) {
-                if (direction === 'horizontal') {
-                    board[row][col + i].textContent = word[i];
-                } else {
-                    board[row + i][col].textContent = word[i];
-                }
-            }
-        }
-
-        function refillRack(rack, bag) {
-            while (rack.length < 7 && bag.length > 0) {
-                const tile = drawRandomTile();
-                rack.push(tile.letter);
-            }
-            const rackElement = document.getElementById('rack');
-            rackElement.innerHTML = '';
-            for (const letter of rack) {
-                const tileElement = document.createElement('div');
-                tileElement.className = 'tile';
-                tileElement.textContent = letter;
-                tileElement.draggable = true;
-                tileElement.ondragstart = (event) => {
-                    event.dataTransfer.setData('text/plain', letter);
-                };
-                rackElement.appendChild(tileElement);
             }
         }
 
@@ -322,8 +288,23 @@
             return true;
         }
 
-        function isValidPlacement(board, word, position) {
-            // Placeholder for more complex placement logic
+        function isValidPlacement(board, word, [startPos, direction]) {
+            const [row, col] = startPos;
+            if (direction === 'horizontal') {
+                if (col + word.length > boardSize) return false;
+                for (let i = 0; i < word.length; i++) {
+                    if (board[row][col + i].textContent !== '' && board[row][col + i].textContent !== word[i]) {
+                        return false;
+                    }
+                }
+            } else {
+                if (row + word.length > boardSize) return false;
+                for (let i = 0; i < word.length; i++) {
+                    if (board[row + i][col].textContent !== '' && board[row + i][col].textContent !== word[i]) {
+                        return false;
+                    }
+                }
+            }
             return true;
         }
 
@@ -341,19 +322,56 @@
         }
 
         function calculateScore(board, word, position) {
-            // Simplified scoring based on length; implement real scoring if needed
-            return word.length;
+            // Simplified scoring function
+            return word.length; // Replace with actual scoring logic
+        }
+
+        function placeWordOnBoard(word, position) {
+            const [startPos, direction] = position;
+            const [row, col] = startPos;
+            for (let i = 0; i < word.length; i++) {
+                if (direction === 'horizontal') {
+                    board[row][col + i].textContent = word[i];
+                } else {
+                    board[row + i][col].textContent = word[i];
+                }
+            }
+        }
+
+        function refillRack(rack, bag) {
+            while (rack.length < 7 && bag.length > 0) {
+                const tile = drawRandomTile();
+                rack.push(tile);
+            }
+            updateRackDisplay();
+        }
+
+        function updateRackDisplay() {
+            const rackElement = document.getElementById('rack');
+            rackElement.innerHTML = '';
+            for (const tile of currentRack) {
+                const tileElement = document.createElement('div');
+                tileElement.className = 'tile';
+                tileElement.textContent = tile.letter;
+                tileElement.draggable = true;
+                tileElement.ondragstart = (event) => {
+                    event.dataTransfer.setData('text/plain', tile.letter);
+                };
+                rackElement.appendChild(tileElement);
+            }
         }
 
         function updateAIResult(message) {
-            const result = document.getElementById('result');
-            result.textContent = message;
+            document.getElementById('result').textContent = message;
         }
 
-        window.onload = () => {
-            createBoard();
-            drawTiles(); // Initial draw for the player
-        };
+        function handleChallenge(word) {
+            return dictionary.has(word);
+        }
+
+        // Initialize the game board
+        createBoard();
+        drawTiles(); // Initialize player's rack on load
     </script>
 </body>
 </html>
