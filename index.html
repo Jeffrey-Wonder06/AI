@@ -3,332 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scrabble Game</title>
+    <title>Scrabble Game with AI</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #f06, #4a90e2);
-            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
             text-align: center;
-        }
-        #game-container {
-            padding: 20px;
-        }
-        #rack-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin: 20px 0;
-        }
-        #rack-top, #rack-bottom {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        #rack-top {
-            order: -1; /* Moves the top rack above the board */
-        }
-        #player-rack, #wonder-rack {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        .rack-tile, .board-cell {
-            width: 50px;
-            height: 50px;
-            background: #fff;
-            color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #ddd;
-            cursor: pointer;
-            user-select: none;
-            border-radius: 5px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-        }
-        .selected {
-            border-color: #4a90e2;
-        }
-        .hidden {
-            display: none;
-        }
-        .board-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
         .board {
             display: grid;
-            grid-template-columns: repeat(15, 50px);
-            grid-gap: 1px;
+            grid-template-columns: repeat(15, 40px);
+            grid-template-rows: repeat(15, 40px);
+            gap: 1px;
             margin-bottom: 20px;
         }
-        .dl { background-color: #ffeb3b; } /* Double Letter */
-        .tl { background-color: #ff9800; } /* Triple Letter */
-        .dw { background-color: #f44336; } /* Double Word */
-        .tw { background-color: #9c27b0; } /* Triple Word */
+        .tile {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border: 1px solid #ccc;
+            font-size: 18px;
+        }
+        .rack {
+            margin-bottom: 20px;
+        }
+        .rack .tile {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            margin: 2px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        #result {
+            font-weight: bold;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <h1>Welcome to Scrabble</h1>
-        <div id="intro">
-            <input type="text" id="playerName" placeholder="Enter your name">
-            <button onclick="startGame()">Start Game</button>
-        </div>
-        <div id="welcome-message" class="hidden">
-            <p id="message"></p>
-            <button id="play-btn" class="hidden" onclick="startPlay()">Yes, let's play!</button>
-            <button id="no-btn" class="hidden" onclick="showScared()">No, I'm scared!</button>
-        </div>
-        <div id="rack-container" class="hidden">
-            <div id="rack-top"></div>
-            <div class="board-container">
-                <div id="game-board" class="board"></div>
-            </div>
-            <div id="rack-bottom"></div>
-            <input type="text" id="wordInput" placeholder="Enter your word" class="hidden">
-            <button onclick="submitWord()">Submit Word</button>
-            <button onclick="refillRack()">Refill Rack</button>
-        </div>
-        <div id="status">
-            <p id="score">Player Score: 0 | Wonder Score: 0</p>
-            <p id="player-words">Your Words: </p>
-            <p id="wonder-words">Wonder's Words: </p>
-        </div>
+    <div class="container">
+        <h1>Scrabble Game with AI</h1>
+        <div class="board" id="board"></div>
+        <div class="rack" id="rack"></div>
+        <button onclick="drawTiles()">Draw Tiles</button>
+        <button onclick="aiTurn()">AI Turn</button>
+        <div id="result"></div>
     </div>
     <script>
-        let playerRack = [];
-        let wonderRack = [];
-        let board = [];
-        let playerScore = 0;
-        let wonderScore = 0;
-        let selectedTile = null;
-        let playerWords = [];
-        let wonderWords = [];
         const boardSize = 15;
-        const letterValues = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
-        const tiles = Object.keys(letterValues).reduce((acc, letter) => acc.concat(Array(9).fill(letter)), []);
-        tiles.push(...Array(2).fill('')); // Adding 2 blank tiles
-        const premiumSquares = { 1: 'dl', 2: 'tl', 4: 'dl', 6: 'tl', 11: 'dl', 12: 'tl', 14: 'dl', 16: 'tl', 20: 'dw', 24: 'dl', 26: 'tl', 28: 'dw', 30: 'tl', 33: 'dw', 36: 'tl', 40: 'dl', 42: 'dw', 44: 'dl', 47: 'tl', 49: 'dw', 51: 'tl', 54: 'dl', 55: 'tl', 56: 'dw', 60: 'tl', 62: 'dl', 63: 'tl', 66: 'dl', 69: 'tl', 72: 'dw', 75: 'dl', 76: 'tl', 80: 'dw' };
-        const dictionary = ["HELLO", "WORLD", "SCRABBLE", "GAME", "FUN"]; // Example dictionary
+        const tileBag = [
+            { letter: 'A', count: 9, value: 1 }, { letter: 'B', count: 2, value: 3 },
+            { letter: 'C', count: 2, value: 3 }, { letter: 'D', count: 4, value: 2 },
+            { letter: 'E', count: 12, value: 1 }, { letter: 'F', count: 2, value: 4 },
+            { letter: 'G', count: 3, value: 2 }, { letter: 'H', count: 2, value: 4 },
+            { letter: 'I', count: 9, value: 1 }, { letter: 'J', count: 1, value: 8 },
+            { letter: 'K', count: 1, value: 5 }, { letter: 'L', count: 4, value: 1 },
+            { letter: 'M', count: 2, value: 3 }, { letter: 'N', count: 6, value: 1 },
+            { letter: 'O', count: 8, value: 1 }, { letter: 'P', count: 2, value: 3 },
+            { letter: 'Q', count: 1, value: 10 }, { letter: 'R', count: 6, value: 1 },
+            { letter: 'S', count: 4, value: 1 }, { letter: 'T', count: 6, value: 1 },
+            { letter: 'U', count: 4, value: 1 }, { letter: 'V', count: 2, value: 4 },
+            { letter: 'W', count: 2, value: 4 }, { letter: 'X', count: 1, value: 8 },
+            { letter: 'Y', count: 2, value: 4 }, { letter: 'Z', count: 1, value: 10 },
+            { letter: '_', count: 2, value: 0 } // Blank tiles
+        ];
+        const predefinedWords = ["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE"]; // Simplified word list for AI
 
-        function initializeBoard() {
-            const boardElement = document.getElementById('game-board');
+        let currentRack = [];
+        let board = [];
+
+        function createBoard() {
+            const boardElement = document.getElementById('board');
             boardElement.innerHTML = '';
-            for (let i = 0; i < boardSize * boardSize; i++) {
-                const cell = document.createElement('div');
-                cell.classList.add('board-cell');
-                cell.dataset.index = i;
-                if (premiumSquares[i]) cell.classList.add(premiumSquares[i]);
-                cell.addEventListener('click', () => handleCellClick(i));
-                boardElement.appendChild(cell);
-                board.push('');
+            for (let row = 0; row < boardSize; row++) {
+                board[row] = [];
+                for (let col = 0; col < boardSize; col++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    board[row][col] = tile;
+                    boardElement.appendChild(tile);
+                }
             }
         }
 
-        function initializeRack() {
-            const playerRackElement = document.getElementById('rack-bottom');
-            playerRackElement.innerHTML = '';
-            playerRack.forEach(tile => {
+        function drawTiles() {
+            const rack = document.getElementById('rack');
+            rack.innerHTML = '';
+            currentRack = [];
+            for (let i = 0; i < 7; i++) {
+                const tile = drawRandomTile();
+                currentRack.push(tile);
                 const tileElement = document.createElement('div');
-                tileElement.classList.add('rack-tile');
-                tileElement.innerText = tile;
-                tileElement.dataset.tile = tile;
-                tileElement.addEventListener('click', () => selectTile(tileElement));
-                playerRackElement.appendChild(tileElement);
-            });
+                tileElement.className = 'tile';
+                tileElement.textContent = tile.letter;
+                tileElement.onclick = () => selectTile(tileElement);
+                rack.appendChild(tileElement);
+            }
+        }
 
-            const wonderRackElement = document.getElementById('rack-top');
-            wonderRackElement.innerHTML = '';
-            wonderRack.forEach(() => {
-                const tileElement = document.createElement('div');
-                tileElement.classList.add('rack-tile');
-                tileElement.innerText = '?';
-                wonderRackElement.appendChild(tileElement);
-            });
+        function drawRandomTile() {
+            const availableTiles = tileBag.flatMap(t => Array(t.count).fill(t));
+            const index = Math.floor(Math.random() * availableTiles.length);
+            return availableTiles[index];
         }
 
         function selectTile(tileElement) {
-            if (selectedTile) {
-                selectedTile.classList.remove('selected');
-            }
-            selectedTile = tileElement;
-            tileElement.classList.add('selected');
+            const selectedTile = tileElement.textContent;
+            const result = document.getElementById('result');
+            result.textContent = `You selected tile: ${selectedTile}`;
         }
 
-        function submitWord() {
-            const word = document.getElementById('wordInput').value.toUpperCase();
-            if (!dictionary.includes(word)) {
-                alert('Invalid word!');
-                return;
-            }
-
-            // Place the word on the board
-            placeWordOnBoard(word);
-
-            // Update scores and words
-            updateScores();
-            updateWords();
-
-            // Clear the input and selection
-            document.getElementById('wordInput').value = '';
-            selectedTile = null;
+        function aiTurn() {
+            const aiWord = predefinedWords[Math.floor(Math.random() * predefinedWords.length)];
+            placeWordOnBoard(aiWord);
+            const result = document.getElementById('result');
+            result.textContent = `AI placed the word: ${aiWord}`;
         }
 
         function placeWordOnBoard(word) {
-            // This function assumes the user has provided valid coordinates to place the word
-            // You need to add logic to place the word on the board correctly
-            // For simplicity, let's assume we place the word horizontally starting at the first cell
-            let startIdx = 0; // Starting index for placing the word (for example purposes)
-            for (let i = 0; i < word.length; i++) {
-                board[startIdx + i] = word[i];
-                document.querySelector(`.board-cell[data-index="${startIdx + i}"]`).textContent = word[i];
-               
-                playerRack.splice(playerRack.indexOf(word[i]), 1);
-            }
-            updateRack();
-            // Add the word to player's words list
-            playerWords.push(word);
-            // Wonder's turn (this is a placeholder)
-            wonderTurn();
-        }
-
-        function handleCellClick(index) {
-            if (selectedTile && !board[index]) {
-                const tile = selectedTile.dataset.tile;
-                document.querySelector(`.board-cell[data-index="${index}"]`).textContent = tile;
-                board[index] = tile;
-                playerRack.splice(playerRack.indexOf(tile), 1);
-                selectedTile.remove();
-                updateRack();
-                selectedTile = null;
-                // Call function to check if the placement forms valid words
-                checkWords();
-            } else if (!selectedTile) {
-                alert('Select a tile from your rack first!');
-            } else {
-                alert('Cell already occupied!');
+            // Simple example: place word horizontally at the top row, starting at column 0
+            const row = 0;
+            for (let col = 0; col < word.length; col++) {
+                const tile = board[row][col];
+                tile.textContent = word[col];
+                tile.className = 'tile'; // Reset to default tile class
             }
         }
 
-        function wonderTurn() {
-            // Example logic for Wonder's turn
-            // This is a placeholder and should be replaced with actual AI logic
-            alert("Wonder's turn! (This feature is not yet implemented)");
-        }
-
-        function updateScores() {
-            playerScore = calculateScore(playerRack);
-            wonderScore = calculateScore(wonderRack);
-            document.getElementById('score').innerText = `Player Score: ${playerScore} | Wonder Score: ${wonderScore}`;
-        }
-
-        function calculateScore(tiles) {
-            return tiles.reduce((total, tile) => total + (letterValues[tile] || 0), 0);
-        }
-
-        function updateWords() {
-            document.getElementById('player-words').innerText = `Your Words: ${playerWords.join(', ')}`;
-            document.getElementById('wonder-words').innerText = `Wonder's Words: ${wonderWords.join(', ')}`;
-        }
-
-        function refillRack() {
-            // Refill the player's rack with random letters from the pool
-            while (playerRack.length < 7 && tiles.length > 0) {
-                const newTile = tiles.splice(Math.floor(Math.random() * tiles.length), 1)[0];
-                playerRack.push(newTile);
-            }
-            updateRack();
-        }
-
-        function checkWords() {
-            // Check words formed on the board and update scores
-            const wordsOnBoard = getWordsFromBoard();
-            wordsOnBoard.forEach(word => {
-                if (dictionary.includes(word)) {
-                    if (!playerWords.includes(word)) playerWords.push(word);
-                } else {
-                    alert(`Invalid word on board: ${word}`);
-                    removeWordFromBoard(word);
-                }
-            });
-            updateWords();
-        }
-
-        function getWordsFromBoard() {
-            const words = [];
-            for (let i = 0; i < boardSize; i++) {
-                let word = '';
-                for (let j = 0; j < boardSize; j++) {
-                    const index = i * boardSize + j;
-                    const tile = board[index];
-                    if (tile) {
-                        word += tile;
-                    } else if (word.length > 1) {
-                        words.push(word);
-                        word = '';
-                    } else {
-                        word = '';
-                    }
-                }
-                if (word.length > 1) words.push(word);
-
-                word = '';
-                for (let j = 0; j < boardSize; j++) {
-                    const index = j * boardSize + i;
-                    const tile = board[index];
-                    if (tile) {
-                        word += tile;
-                    } else if (word.length > 1) {
-                        words.push(word);
-                        word = '';
-                    } else {
-                        word = '';
-                    }
-                }
-                if (word.length > 1) words.push(word);
-            }
-            return words;
-        }
-
-        function removeWordFromBoard(word) {
-            // Example implementation to clear the word from the board
-            const wordCells = board.map((cell, index) => cell === word ? index : null).filter(index => index !== null);
-            wordCells.forEach(index => {
-                board[index] = '';
-                document.querySelector(`.board-cell[data-index="${index}"]`).textContent = '';
-            });
-        }
-
-        function startGame() {
-            const playerName = document.getElementById('playerName').value;
-            if (playerName) {
-                document.getElementById('intro').classList.add('hidden');
-                document.getElementById('welcome-message').classList.remove('hidden');
-                document.getElementById('message').innerText = `Hello, ${playerName}! Do you want to play against Wonder?`;
-                document.getElementById('play-btn').classList.remove('hidden');
-                document.getElementById('no-btn').classList.remove('hidden');
-            } else {
-                alert('Please enter your name!');
-            }
-        }
-
-        function startPlay() {
-            document.getElementById('welcome-message').classList.add('hidden');
-            document.getElementById('rack-container').classList.remove('hidden');
-            initializeBoard();
-            initializeRack();
-        }
-
-        function showScared() {
-            alert("You're scared! 😂");
-        }
+        createBoard();
     </script>
 </body>
 </html>
+
 
 
 
