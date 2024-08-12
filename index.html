@@ -127,6 +127,7 @@
                 boardElement.appendChild(cell);
                 board.push('');
             }
+            document.getElementById('game-board').classList.remove('hidden');
         }
 
         function initializeRack() {
@@ -166,14 +167,10 @@
                 return;
             }
 
-            // Place the word on the board
             placeWordOnBoard(word);
-
-            // Update scores and words
             updateScores();
             updateWords();
 
-            // Clear the input and selection
             document.getElementById('wordInput').value = '';
             selectedTile = null;
         }
@@ -183,7 +180,6 @@
             // You need to add logic to place the word on the board correctly
             // This is just an example to demonstrate how you might update the board with the word
 
-            // For simplicity, let's assume we place the word horizontally starting at the first cell
             let startIdx = 0; // Starting index for placing the word (for example purposes)
             for (let i = 0; i < word.length; i++) {
                 board[startIdx + i] = word[i];
@@ -210,160 +206,136 @@
                 alert('Cell already occupied!');
             }
         }
-           
+
         function wonderTurn() {
             // Simple AI for Wonder's turn - places a random tile in an empty cell
             let emptyCells = board.map((cell, index) => cell === '' ? index : null).filter(index => index !== null);
             if (emptyCells.length === 0) return; // No empty cells to place a tile
 
-            let randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-            const wonderTile = getRandomTile();
-            board[randomIndex] = wonderTile;
-            document.querySelector(`.board-cell[data-index="${randomIndex}"]`).textContent = wonderTile;
-            wonderRack.push(wonderTile);
-
-            // Update Wonder's rack to show tiles
-            const wonderRackElement = document.getElementById('rack-top');
-            wonderRackElement.innerHTML = '';
-            wonderRack.forEach(() => {
-                const tileElement = document.createElement('div');
-                tileElement.classList.add('rack-tile');
-                tileElement.innerText = '?';
-                wonderRackElement.appendChild(tileElement);
-            });
-
-            updateScores();
-            updateWords();
+            let randomIndex = emptyCells[Math.floor
+<script>
+    function placeWordOnBoard(word) {
+        // Example: For simplicity, assume word is placed starting from index 0 and horizontally
+        let startIdx = 0; // Assuming placement starts from index 0
+        const wordLength = word.length;
+        const endIdx = startIdx + wordLength - 1;
+        if (endIdx >= boardSize * boardSize) {
+            alert('Word placement is out of bounds!');
+            return;
         }
-
-        function getRandomTile() {
-            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            return letters[Math.floor(Math.random() * letters.length)];
+        for (let i = 0; i < word.length; i++) {
+            board[startIdx + i] = word[i];
+            document.querySelector(`.board-cell[data-index="${startIdx + i}"]`).textContent = word[i];
         }
+        // Assuming rack is updated after placing the word
+        updateRack();
+    }
 
-        function updateRack() {
-            const playerRackElement = document.getElementById('rack-bottom');
-            playerRackElement.innerHTML = '';
-            playerRack.forEach(tile => {
-                const tileElement = document.createElement('div');
-                tileElement.classList.add('rack-tile');
-                tileElement.innerText = tile;
-                tileElement.dataset.tile = tile;
-                tileElement.addEventListener('click', () => selectTile(tileElement));
-                playerRackElement.appendChild(tileElement);
-            });
-
-            if (playerRack.length < 7) {
-                refillRack();
-            }
+    function refillRack() {
+        // Example: Refill the player's rack with random letters from the pool
+        while (playerRack.length < 7 && tiles.length > 0) {
+            const newTile = tiles.splice(Math.floor(Math.random() * tiles.length), 1)[0];
+            playerRack.push(newTile);
         }
+        updateRack();
+    }
 
-        function refillRack() {
-            // Example: Add random tiles to refill the rack
-            while (playerRack.length < 7 && tiles.length > 0) {
-                playerRack.push(tiles.splice(Math.floor(Math.random() * tiles.length), 1)[0]);
-            }
-            updateRack();
-        }
+    function updateScores() {
+        playerScore = calculateScore(playerRack);
+        wonderScore = calculateScore(wonderRack);
+        document.getElementById('score').innerText = `Player Score: ${playerScore} | Wonder Score: ${wonderScore}`;
+    }
 
-        function updateScores() {
-            playerScore = calculateScore(playerRack);
-            wonderScore = calculateScore(wonderRack);
-            document.getElementById('score').innerText = `Player Score: ${playerScore} | Wonder Score: ${wonderScore}`;
-        }
+    function calculateScore(tiles) {
+        return tiles.reduce((total, tile) => total + (letterValues[tile] || 0), 0);
+    }
 
-        function calculateScore(tiles) {
-            return tiles.reduce((total, tile) => total + (letterValues[tile] || 0), 0);
-        }
-
-        function updateWords() {
-            document.getElementById('player-words').innerText = `Your Words: ${playerWords.join(', ')}`;
-            document.getElementById('wonder-words').innerText = `Wonder's Words: ${wonderWords.join(', ')}`;
-        }
-
-        function checkWords() {
-            // Validate and update words based on board configuration
-            const wordsOnBoard = getWordsFromBoard();
-            wordsOnBoard.forEach(word => {
-                if (dictionary.includes(word)) {
-                    if (!playerWords.includes(word)) playerWords.push(word);
-                    if (!wonderWords.includes(word)) wonderWords.push(word);
-                } else {
-                    alert(`Invalid word on board: ${word}`);
-                    removeWordFromBoard(word);
-                }
-            });
-            updateWords();
-        }
-
-        function getWordsFromBoard() {
-            const words = [];
-            for (let i = 0; i < boardSize; i++) {
-                let word = '';
-                for (let j = 0; j < boardSize; j++) {
-                    const index = i * boardSize + j;
-                    const tile = board[index];
-                    if (tile) {
-                        word += tile;
-                    } else if (word.length > 1) {
-                        words.push(word);
-                        word = '';
-                    } else {
-                        word = '';
-                    }
-                }
-                if (word.length > 1) words.push(word);
-
-                word = '';
-                for (let j = 0; j < boardSize; j++) {
-                    const index = j * boardSize + i;
-                    const tile = board[index];
-                    if (tile) {
-                        word += tile;
-                    } else if (word.length > 1) {
-                        words.push(word);
-                        word = '';
-                    } else {
-                        word = '';
-                    }
-                }
-                if (word.length > 1) words.push(word);
-            }
-            return words;
-        }
-
-        function removeWordFromBoard(word) {
-            // Example implementation to remove a word - actual logic can vary
-            // Requires knowledge of the specific tiles and positions used
-        }
-
-        function startGame() {
-            const playerName = document.getElementById('playerName').value;
-            if (playerName) {
-                document.getElementById('intro').classList.add('hidden');
-                document.getElementById('welcome-message').classList.remove('hidden');
-                document.getElementById('message').innerText = `Hello, ${playerName}! Do you want to play against Wonder?`;
-                document.getElementById('play-btn').classList.remove('hidden');
-                document.getElementById('no-btn').classList.remove('hidden');
+    function checkWords() {
+        // Check words formed on the board and update scores
+        const wordsOnBoard = getWordsFromBoard();
+        wordsOnBoard.forEach(word => {
+            if (dictionary.includes(word)) {
+                if (!playerWords.includes(word)) playerWords.push(word);
+                if (!wonderWords.includes(word)) wonderWords.push(word);
             } else {
-                alert('Please enter your name!');
+                alert(`Invalid word on board: ${word}`);
+                removeWordFromBoard(word);
             }
-        }
+        });
+        updateWords();
+    }
 
-        function startPlay() {
-            document.getElementById('welcome-message').classList.add('hidden');
-            document.getElementById('rack-container').classList.remove('hidden');
-            initializeBoard();
-            initializeRack();
-        }
+    function getWordsFromBoard() {
+        const words = [];
+        for (let i = 0; i < boardSize; i++) {
+            let word = '';
+            for (let j = 0; j < boardSize; j++) {
+                const index = i * boardSize + j;
+                const tile = board[index];
+                if (tile) {
+                    word += tile;
+                } else if (word.length > 1) {
+                    words.push(word);
+                    word = '';
+                } else {
+                    word = '';
+                }
+            }
+            if (word.length > 1) words.push(word);
 
-        function showScared() {
-            alert("You're scared! 😂");
-            // Additional logic for this case, if needed
+            word = '';
+            for (let j = 0; j < boardSize; j++) {
+                const index = j * boardSize + i;
+                const tile = board[index];
+                if (tile) {
+                    word += tile;
+                } else if (word.length > 1) {
+                    words.push(word);
+                    word = '';
+                } else {
+                    word = '';
+                }
+            }
+            if (word.length > 1) words.push(word);
         }
-    </script>
-</body>
-</html>
+        return words;
+    }
+
+    function removeWordFromBoard(word) {
+        // Example implementation to clear the word from the board
+        // This is a placeholder function and needs to be updated based on actual implementation
+        const wordCells = board.map((cell, index) => cell === word ? index : null).filter(index => index !== null);
+        wordCells.forEach(index => {
+            board[index] = '';
+            document.querySelector(`.board-cell[data-index="${index}"]`).textContent = '';
+        });
+    }
+
+    function startGame() {
+        const playerName = document.getElementById('playerName').value;
+        if (playerName) {
+            document.getElementById('intro').classList.add('hidden');
+            document.getElementById('welcome-message').classList.remove('hidden');
+            document.getElementById('message').innerText = `Hello, ${playerName}! Do you want to play against Wonder?`;
+            document.getElementById('play-btn').classList.remove('hidden');
+            document.getElementById('no-btn').classList.remove('hidden');
+        } else {
+            alert('Please enter your name!');
+        }
+    }
+
+    function startPlay() {
+        document.getElementById('welcome-message').classList.add('hidden');
+        document.getElementById('rack-container').classList.remove('hidden');
+        initializeBoard();
+        initializeRack();
+    }
+
+    function showScared() {
+        alert("You're scared! 😂");
+    }
+</script>
+
 
 
 
