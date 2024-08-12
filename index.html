@@ -16,14 +16,14 @@
             padding: 20px;
         }
 
-        #game-board {
+        #rack, #wonder-rack {
             margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(15, 40px);
-            grid-gap: 1px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
         }
 
-        .board-cell {
+        .rack-tile {
             width: 40px;
             height: 40px;
             background: #fff;
@@ -31,7 +31,38 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid #ddd;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            user-select: none;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+
+        #game-board {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(15, 50px);
+            grid-gap: 2px;
+            justify-content: center;
+        }
+
+        .board-cell {
+            width: 50px;
+            height: 50px;
+            background: #fff;
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            user-select: none;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .selected {
+            border-color: #4a90e2;
         }
     </style>
 </head>
@@ -41,6 +72,12 @@
         <div id="intro">
             <input type="text" id="playerName" placeholder="Enter your name">
             <button onclick="startGame()">Start Game</button>
+        </div>
+        <div id="rack">
+            <!-- User rack will be generated here -->
+        </div>
+        <div id="wonder-rack">
+            <!-- Wonder's rack will be generated here -->
         </div>
         <div id="game-board" style="display:none;">
             <!-- Game board will be generated here -->
@@ -52,12 +89,13 @@
     </div>
     <script>
         const boardSize = 15;
-        const playerTiles = [];
-        const wonderTiles = [];
-        const board = [];
+        const playerRack = ['H', 'E', 'L', 'L', 'O'];
+        const wonderRack = ['W', 'O', 'R', 'L', 'D']; // Hidden from player
+        const board = Array(boardSize * boardSize).fill('');
         const dictionary = ["HELLO", "WORLD", "SCRABBLE", "GAME", "FUN"]; // Example dictionary
         let playerScore = 0;
         let wonderScore = 0;
+        let selectedTile = null;
 
         function initializeBoard() {
             const boardElement = document.getElementById('game-board');
@@ -68,23 +106,53 @@
                 cell.dataset.index = i;
                 cell.addEventListener('click', () => handleCellClick(i));
                 boardElement.appendChild(cell);
-                board.push('');
             }
         }
 
-        function handleCellClick(index) {
-            if (!playerTiles.length) {
-                alert('No tiles to place!');
-                return;
-            }
+        function initializeRack() {
+            const rackElement = document.getElementById('rack');
+            rackElement.innerHTML = '';
+            playerRack.forEach(tile => {
+                const tileElement = document.createElement('div');
+                tileElement.classList.add('rack-tile');
+                tileElement.innerText = tile;
+                tileElement.dataset.tile = tile;
+                tileElement.addEventListener('click', () => selectTile(tileElement));
+                rackElement.appendChild(tileElement);
+            });
 
-            const cell = document.querySelector(`.board-cell[data-index="${index}"]`);
-            if (cell.textContent === '') {
-                const tile = playerTiles.pop();
-                cell.textContent = tile;
+            const wonderRackElement = document.getElementById('wonder-rack');
+            wonderRackElement.innerHTML = '';
+            wonderRack.forEach(() => {
+                const tileElement = document.createElement('div');
+                tileElement.classList.add('rack-tile');
+                tileElement.innerText = '?';
+                wonderRackElement.appendChild(tileElement);
+            });
+        }
+
+        function selectTile(tileElement) {
+            if (selectedTile) {
+                selectedTile.classList.remove('selected');
+            }
+            selectedTile = tileElement;
+            tileElement.classList.add('selected');
+        }
+
+        function handleCellClick(index) {
+            if (selectedTile && !board[index]) {
+                const tile = selectedTile.dataset.tile;
+                document.querySelector(`.board-cell[data-index="${index}"]`).textContent = tile;
                 board[index] = tile;
+                playerRack.splice(playerRack.indexOf(tile), 1);
+                selectedTile.remove();
+                updateRack();
                 updateScores();
+                selectedTile = null;
                 wonderTurn();
+                checkWord();
+            } else if (!selectedTile) {
+                alert('Select a tile from your rack first!');
             } else {
                 alert('Cell already occupied!');
             }
@@ -96,13 +164,43 @@
             const wonderTile = getRandomTile();
             board[randomIndex] = wonderTile;
             document.querySelector(`.board-cell[data-index="${randomIndex}"]`).textContent = wonderTile;
-            wonderTiles.push(wonderTile);
             updateScores();
         }
 
+        function checkWord() {
+            let placedTiles = board.filter(cell => cell !== '');
+            let word = placedTiles.join('');
+            if (dictionary.includes(word)) {
+                alert('Valid word!');
+                updateScores();
+            } else {
+                alert('Invalid word!');
+                // Clear the board if invalid
+                board.forEach((cell, index) => {
+                    if (cell !== '') {
+                        document.querySelector(`.board-cell[data-index="${index}"]`).textContent = '';
+                        board[index] = '';
+                    }
+                });
+            }
+        }
+
+        function updateRack() {
+            const rackElement = document.getElementById('rack');
+            rackElement.innerHTML = '';
+            playerRack.forEach(tile => {
+                const tileElement = document.createElement('div');
+                tileElement.classList.add('rack-tile');
+                tileElement.innerText = tile;
+                tileElement.dataset.tile = tile;
+                tileElement.addEventListener('click', () => selectTile(tileElement));
+                rackElement.appendChild(tileElement);
+            });
+        }
+
         function updateScores() {
-            playerScore = calculateScore(playerTiles);
-            wonderScore = calculateScore(wonderTiles);
+            playerScore = calculateScore(board.filter(tile => playerRack.includes(tile)));
+            wonderScore = calculateScore(board.filter(tile => !playerRack.includes(tile)));
             document.getElementById('score').innerText = `Player Score: ${playerScore} | Wonder Score: ${wonderScore}`;
         }
 
@@ -122,8 +220,7 @@
                 document.getElementById('game-board').style.display = 'grid';
                 document.getElementById('message').innerText = `Hello, ${playerName}! Do you want to play against Wonder?`;
                 initializeBoard();
-                playerTiles.push('H', 'E', 'L', 'L', 'O'); // Example tiles
-                wonderTiles.push('W', 'O', 'R', 'L', 'D'); // Example tiles
+                initializeRack();
             } else {
                 alert('Please enter your name!');
             }
@@ -131,6 +228,7 @@
     </script>
 </body>
 </html>
+
 
 
 
