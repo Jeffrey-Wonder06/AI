@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scrabble Game with AI</title>
+    <title>Scrabble Game</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,295 +14,199 @@
             margin: 0;
             background-color: #f0f0f0;
         }
-        .container {
-            text-align: center;
-        }
-        .board {
+        #scrabble-board {
             display: grid;
             grid-template-columns: repeat(15, 40px);
             grid-template-rows: repeat(15, 40px);
-            gap: 1px;
-            margin-bottom: 20px;
+            gap: 2px;
         }
         .tile {
             width: 40px;
             height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: white;
-            border: 1px solid #ccc;
-            font-size: 18px;
-            cursor: pointer;
-        }
-        .rack {
-            margin-bottom: 20px;
-        }
-        .rack .tile {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            margin: 2px;
             background-color: #fff;
             border: 1px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
             cursor: pointer;
         }
-        #result {
+        #rack {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .rack-tile {
+            width: 40px;
+            height: 40px;
+            background-color: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
             font-weight: bold;
+            cursor: pointer;
+        }
+        #controls {
             margin-top: 20px;
         }
-        .dws { background-color: #ffddcc; }
+        #controls button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Scrabble Game with AI</h1>
-        <div class="board" id="board"></div>
-        <div class="rack" id="rack"></div>
-        <button onclick="drawTiles()">Draw Tiles</button>
-        <button onclick="aiTurn()">AI Turn</button>
-        <button onclick="placeWord()">Place Word</button>
-        <div id="result"></div>
+
+    <div>
+        <div id="scrabble-board"></div>
+        <div id="rack"></div>
+        <div id="controls">
+            <button id="submit-move">Submit Move</button>
+            <button id="ai-move">AI Move</button>
+        </div>
     </div>
+
     <script>
+        // Initialize the board
         const boardSize = 15;
-        const tileBag = [
-            { letter: 'A', count: 9, value: 1 }, { letter: 'B', count: 2, value: 3 },
-            { letter: 'C', count: 2, value: 3 }, { letter: 'D', count: 4, value: 2 },
-            { letter: 'E', count: 12, value: 1 }, { letter: 'F', count: 2, value: 4 },
-            { letter: 'G', count: 3, value: 2 }, { letter: 'H', count: 2, value: 4 },
-            { letter: 'I', count: 9, value: 1 }, { letter: 'J', count: 1, value: 8 },
-            { letter: 'K', count: 1, value: 5 }, { letter: 'L', count: 4, value: 1 },
-            { letter: 'M', count: 2, value: 3 }, { letter: 'N', count: 6, value: 1 },
-            { letter: 'O', count: 8, value: 1 }, { letter: 'P', count: 2, value: 3 },
-            { letter: 'Q', count: 1, value: 10 }, { letter: 'R', count: 6, value: 1 },
-            { letter: 'S', count: 4, value: 1 }, { letter: 'T', count: 6, value: 1 },
-            { letter: 'U', count: 4, value: 1 }, { letter: 'V', count: 2, value: 4 },
-            { letter: 'W', count: 2, value: 4 }, { letter: 'X', count: 1, value: 8 },
-            { letter: 'Y', count: 2, value: 4 }, { letter: 'Z', count: 1, value: 10 },
-            { letter: '_', count: 2, value: 0 } // Blank tiles
-        ];
-        const dictionary = new Set(["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE"]); // Simplified dictionary
+        const board = Array.from({ length: boardSize }, () => Array(boardSize).fill(' '));
+        const tileBag = ("ABCDEFGHIJKLMNOPQRSTUVWXYZ".repeat(2) + " ").split('');
+        let playerRack = refillRack([], tileBag);
+        let scrabbleDictionary = {}; // Load your dictionary here
 
-        let currentRack = [];
-        let board = [];
-        let firstMove = true; // Flag to check if the first move is made
-
-        function createBoard() {
-            const boardElement = document.getElementById('board');
+        function init() {
+            const boardElement = document.getElementById('scrabble-board');
             boardElement.innerHTML = '';
             for (let row = 0; row < boardSize; row++) {
-                board[row] = [];
                 for (let col = 0; col < boardSize; col++) {
                     const tile = document.createElement('div');
                     tile.className = 'tile';
                     tile.dataset.row = row;
                     tile.dataset.col = col;
-                    tile.ondrop = drop;
-                    tile.ondragover = allowDrop;
-                    if (row === 7 && col === 7) {
-                        tile.classList.add('dws'); // Double Word Score at the center
-                    }
-                    board[row][col] = tile;
+                    tile.addEventListener('click', () => placeTile(row, col));
                     boardElement.appendChild(tile);
                 }
             }
+
+            updateRack();
         }
 
-        function drawTiles() {
-            const rack = document.getElementById('rack');
-            rack.innerHTML = '';
-            currentRack = [];
-            for (let i = 0; i < 7; i++) {
-                const tile = drawRandomTile();
-                currentRack.push(tile);
-                const tileElement = document.createElement('div');
-                tileElement.className = 'tile';
-                tileElement.textContent = tile.letter;
-                tileElement.draggable = true;
-                tileElement.ondragstart = (event) => {
-                    event.dataTransfer.setData('text/plain', tile.letter);
-                };
-                rack.appendChild(tileElement);
-            }
-        }
-
-        function drawRandomTile() {
-            const availableTiles = tileBag.flatMap(t => Array(t.count).fill(t));
-            const index = Math.floor(Math.random() * availableTiles.length);
-            return availableTiles[index];
-        }
-
-        function allowDrop(event) {
-            event.preventDefault();
-        }
-
-        function drop(event) {
-            event.preventDefault();
-            const letter = event.dataTransfer.getData('text/plain');
-            const row = event.target.dataset.row;
-            const col = event.target.dataset.col;
-            const tile = event.target;
-            if (tile.textContent === '') {
+        function updateRack() {
+            const rackElement = document.getElementById('rack');
+            rackElement.innerHTML = '';
+            playerRack.forEach((letter, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'rack-tile';
                 tile.textContent = letter;
-                tile.className = 'tile'; // Reset to default tile class
+                tile.dataset.index = index;
+                tile.addEventListener('click', () => selectTile(index));
+                rackElement.appendChild(tile);
+            });
+        }
+
+        let selectedTileIndex = null;
+
+        function selectTile(index) {
+            selectedTileIndex = index;
+        }
+
+        function placeTile(row, col) {
+            if (selectedTileIndex !== null && board[row][col] === ' ') {
+                board[row][col] = playerRack[selectedTileIndex];
+                playerRack[selectedTileIndex] = ' ';
+                selectedTileIndex = null;
+                renderBoard();
+                updateRack();
             }
         }
 
-        function placeWord() {
-            const result = document.getElementById('result');
-            if (firstMove) {
-                if (!isFirstWordValid()) {
-                    result.textContent = 'The first word must cover the center square.';
-                    return;
-                }
-                firstMove = false;
-            }
-            if (!isPlacementValid()) {
-                result.textContent = 'Invalid word placement.';
-                return;
-            }
-            result.textContent = 'Word placed successfully!';
-            // Here, you'd implement scoring and updating the board
-            drawTiles(); // Allow player to draw tiles after placing a word
+        function renderBoard() {
+            const tiles = document.querySelectorAll('.tile');
+            tiles.forEach(tile => {
+                const row = tile.dataset.row;
+                const col = tile.dataset.col;
+                tile.textContent = board[row][col];
+            });
         }
 
-        function isFirstWordValid() {
-            const centerTile = board[7][7];
-            return centerTile.textContent !== '';
-        }
+        document.getElementById('submit-move').addEventListener('click', () => {
+            playerRack = refillRack(playerRack, tileBag);
+            updateRack();
+        });
 
-        function isPlacementValid() {
-            const placedTiles = getPlacedTiles();
-            const word = placedTiles.map(tile => tile.textContent).join('');
-            return dictionary.has(word);
-        }
+        document.getElementById('ai-move').addEventListener('click', () => {
+            aiMove();
+        });
 
-        function getPlacedTiles() {
-            const tiles = [];
-            for (let row = 0; row < boardSize; row++) {
-                for (let col = 0; col < boardSize; col++) {
-                    const tile = board[row][col];
-                    if (tile.textContent) {
-                        tiles.push(tile);
-                    }
-                }
+        function refillRack(rack, bag) {
+            while (rack.length < 7 && bag.length > 0) {
+                const index = Math.floor(Math.random() * bag.length);
+                rack.push(bag.splice(index, 1)[0]);
             }
-            return tiles;
+            return rack;
         }
 
-        function aiTurn() {
-            const aiRack = currentRack; // Example rack, replace with AI's actual rack
-            const possibleWords = findPossibleWords(aiRack, dictionary);
-            if (possibleWords.size === 0) {
-                updateAIResult('No possible words for AI');
-                return;
-            }
+        function aiMove() {
+            const possibleWords = findPossibleWords(playerRack, scrabbleDictionary);
             const validMoves = findValidPlacements(board, possibleWords);
-            if (validMoves.length === 0) {
-                updateAIResult('No valid placements for AI');
-                return;
-            }
             const bestMove = evaluateMoves(validMoves, board);
             if (bestMove) {
                 const [word, position] = bestMove;
-                placeWordOnBoard(word, position);
-                refillRack(currentRack, tileBag); // Refill AI rack (if implemented)
-                updateAIResult(`AI played: ${word}`);
-                drawTiles(); // Allow AI to draw tiles after placing a word
+                placeWord(board, word, position);
+                playerRack = refillRack(playerRack, tileBag);
+                renderBoard();
+                updateRack();
             } else {
-                updateAIResult('No valid moves for AI');
+                alert('AI cannot find a valid move!');
             }
         }
 
         function findPossibleWords(rack, dictionary) {
-            const possibleWords = new Set();
-            for (let length = 1; length <= rack.length; length++) {
-                for (const word of permutations(rack, length)) {
-                    if (dictionary.has(word)) {
-                        possibleWords.add(word);
-                    }
-                }
+            const words = new Set();
+            for (let i = 2; i <= rack.length; i++) {
+                const permutations = permute(rack, i);
+                permutations.forEach(combo => {
+                    const word = combo.join('');
+                    if (dictionary[word]) words.add(word);
+                });
             }
-            return possibleWords;
+            return words;
         }
 
-        function permutations(arr, length) {
-            if (length === 1) {
-                return arr.map(e => [e]);
-            }
-            const result = [];
-            for (let i = 0; i < arr.length; i++) {
-                const element = arr[i];
-                const remaining = arr.slice(0, i).concat(arr.slice(i + 1));
-                for (const perm of permutations(remaining, length - 1)) {
-                    result.push([element].concat(perm));
-                }
-            }
-            return result.map(e => e.join(''));
+        function permute(arr, len) {
+            if (len === 1) return arr.map(el => [el]);
+            const permutations = [];
+            arr.forEach((el, i) => {
+                const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+                const restPermuted = permute(rest, len - 1);
+                restPermuted.forEach(subArr => {
+                    permutations.push([el, ...subArr]);
+                });
+            });
+            return permutations;
         }
 
         function findValidPlacements(board, words) {
             const validMoves = [];
-            for (const word of words) {
-                for (const position of findOpenPositions(board, word)) {
-                    if (isValidPlacement(board, word, position)) {
-                        validMoves.push([word, position]);
+            words.forEach(word => {
+                for (let row = 0; row < boardSize; row++) {
+                    for (let col = 0; col < boardSize - word.length + 1; col++) {
+                        if (canPlaceHorizontally(board, word, row, col)) {
+                            validMoves.push([word, [row, col]]);
+                        }
                     }
                 }
-            }
+            });
             return validMoves;
         }
 
-        function findOpenPositions(board, word) {
-            const positions = [];
-            for (let row = 0; row < boardSize; row++) {
-                for (let col = 0; col < boardSize; col++) {
-                    if (canPlaceWord(board, word, [row, col], 'horizontal')) {
-                        positions.push([[row, col], 'horizontal']);
-                    }
-                    if (canPlaceWord(board, word, [row, col], 'vertical')) {
-                        positions.push([[row, col], 'vertical']);
-                    }
-                }
-            }
-            return positions;
-        }
-
-        function canPlaceWord(board, word, [row, col], direction) {
-            if (direction === 'horizontal') {
-                if (col + word.length > boardSize) return false;
-                for (let i = 0; i < word.length; i++) {
-                    if (board[row][col + i].textContent !== '' && board[row][col + i].textContent !== word[i]) {
-                        return false;
-                    }
-                }
-            } else {
-                if (row + word.length > boardSize) return false;
-                for (let i = 0; i < word.length; i++) {
-                    if (board[row + i][col].textContent !== '' && board[row + i][col].textContent !== word[i]) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-        function isValidPlacement(board, word, [startPos, direction]) {
-            const [row, col] = startPos;
-            if (direction === 'horizontal') {
-                if (col + word.length > boardSize) return false;
-                for (let i = 0; i < word.length; i++) {
-                    if (board[row][col + i].textContent !== '' && board[row][col + i].textContent !== word[i]) {
-                        return false;
-                    }
-                }
-            } else {
-                if (row + word.length > boardSize) return false;
-                for (let i = 0; i < word.length; i++) {
-                    if (board[row + i][col].textContent !== '' && board[row + i][col].textContent !== word[i]) {
-                        return false;
-                    }
+        function canPlaceHorizontally(board, word, row, col) {
+            for (let i = 0; i < word.length; i++) {
+                if (board[row][col + i] !== ' ' && board[row][col + i] !== word[i]) {
+                    return false;
                 }
             }
             return true;
@@ -311,68 +215,47 @@
         function evaluateMoves(moves, board) {
             let bestMove = null;
             let bestScore = 0;
-            for (const [word, position] of moves) {
+            moves.forEach(([word, position]) => {
                 const score = calculateScore(board, word, position);
                 if (score > bestScore) {
                     bestScore = score;
                     bestMove = [word, position];
                 }
-            }
+            });
             return bestMove;
         }
 
         function calculateScore(board, word, position) {
-            // Simplified scoring function
-            return word.length; // Replace with actual scoring logic
-        }
-
-        function placeWordOnBoard(word, position) {
-            const [startPos, direction] = position;
-            const [row, col] = startPos;
+            const [row, col] = position;
+            let score = 0;
             for (let i = 0; i < word.length; i++) {
-                if (direction === 'horizontal') {
-                    board[row][col + i].textContent = word[i];
-                } else {
-                    board[row + i][col].textContent = word[i];
-                }
+                score += calculateLetterValue(word[i]);
+            }
+            return score;
+        }
+
+        function calculateLetterValue(letter) {
+            const letterValues = {
+                'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1,
+                'F': 4, 'G': 2, 'H': 4, 'I': 1, 'J': 8,
+                'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1,
+                'P': 3, 'Q': 10, 'R': 1, 'S': 1, 'T': 1,
+                'U': 1, 'V': 4, 'W': 4, 'X': 8, 'Y': 4, 'Z': 10,
+                ' ': 0  // Blank tiles
+            };
+            return letterValues[letter] || 0;
+        }
+
+        function placeWord(board, word, position) {
+            const [row, col] = position;
+            for (let i = 0; i < word.length; i++) {
+                board[row][col + i] = word[i];
             }
         }
 
-        function refillRack(rack, bag) {
-            while (rack.length < 7 && bag.length > 0) {
-                const tile = drawRandomTile();
-                rack.push(tile);
-            }
-            updateRackDisplay();
-        }
-
-        function updateRackDisplay() {
-            const rackElement = document.getElementById('rack');
-            rackElement.innerHTML = '';
-            for (const tile of currentRack) {
-                const tileElement = document.createElement('div');
-                tileElement.className = 'tile';
-                tileElement.textContent = tile.letter;
-                tileElement.draggable = true;
-                tileElement.ondragstart = (event) => {
-                    event.dataTransfer.setData('text/plain', tile.letter);
-                };
-                rackElement.appendChild(tileElement);
-            }
-        }
-
-        function updateAIResult(message) {
-            document.getElementById('result').textContent = message;
-        }
-
-        function handleChallenge(word) {
-            return dictionary.has(word);
-        }
-
-        // Initialize the game board
-        createBoard();
-        drawTiles(); // Initialize player's rack on load
+        init();
     </script>
+
 </body>
 </html>
 
