@@ -4,7 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scrabble Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f06, #4a90e2);
+            color: white;
+            text-align: center;
+        }
+
+        #game-container {
+            padding: 20px;
+        }
+
+        #game-board {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(15, 40px);
+            grid-gap: 1px;
+        }
+
+        .board-cell {
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
     <div id="game-container">
@@ -21,124 +50,87 @@
             <p id="score">Player Score: 0 | Wonder Score: 0</p>
         </div>
     </div>
-    <script src="script.js"></script>
+    <script>
+        const boardSize = 15;
+        const playerTiles = [];
+        const wonderTiles = [];
+        const board = [];
+        const dictionary = ["HELLO", "WORLD", "SCRABBLE", "GAME", "FUN"]; // Example dictionary
+        let playerScore = 0;
+        let wonderScore = 0;
+
+        function initializeBoard() {
+            const boardElement = document.getElementById('game-board');
+            boardElement.innerHTML = '';
+            for (let i = 0; i < boardSize * boardSize; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('board-cell');
+                cell.dataset.index = i;
+                cell.addEventListener('click', () => handleCellClick(i));
+                boardElement.appendChild(cell);
+                board.push('');
+            }
+        }
+
+        function handleCellClick(index) {
+            if (!playerTiles.length) {
+                alert('No tiles to place!');
+                return;
+            }
+
+            const cell = document.querySelector(`.board-cell[data-index="${index}"]`);
+            if (cell.textContent === '') {
+                const tile = playerTiles.pop();
+                cell.textContent = tile;
+                board[index] = tile;
+                updateScores();
+                wonderTurn();
+            } else {
+                alert('Cell already occupied!');
+            }
+        }
+
+        function wonderTurn() {
+            let emptyCells = board.map((cell, index) => cell === '' ? index : null).filter(index => index !== null);
+            let randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            const wonderTile = getRandomTile();
+            board[randomIndex] = wonderTile;
+            document.querySelector(`.board-cell[data-index="${randomIndex}"]`).textContent = wonderTile;
+            wonderTiles.push(wonderTile);
+            updateScores();
+        }
+
+        function updateScores() {
+            playerScore = calculateScore(playerTiles);
+            wonderScore = calculateScore(wonderTiles);
+            document.getElementById('score').innerText = `Player Score: ${playerScore} | Wonder Score: ${wonderScore}`;
+        }
+
+        function calculateScore(tiles) {
+            return tiles.length;
+        }
+
+        function getRandomTile() {
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            return letters[Math.floor(Math.random() * letters.length)];
+        }
+
+        function startGame() {
+            const playerName = document.getElementById('playerName').value;
+            if (playerName) {
+                document.getElementById('intro').style.display = 'none';
+                document.getElementById('game-board').style.display = 'grid';
+                document.getElementById('message').innerText = `Hello, ${playerName}! Do you want to play against Wonder?`;
+                initializeBoard();
+                playerTiles.push('H', 'E', 'L', 'L', 'O'); // Example tiles
+                wonderTiles.push('W', 'O', 'R', 'L', 'D'); // Example tiles
+            } else {
+                alert('Please enter your name!');
+            }
+        }
+    </script>
 </body>
 </html>
-body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #f06, #4a90e2);
-    color: white;
-    text-align: center;
-}
 
-#game-container {
-    padding: 20px;
-}
-
-#game-board {
-    margin-top: 20px;
-    display: grid;
-    grid-template-columns: repeat(15, 40px);
-    grid-gap: 1px;
-}
-
-.board-cell {
-    width: 40px;
-    height: 40px;
-    background: #fff;
-    color: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #ddd;
-}
-// Basic Scrabble setup
-const boardSize = 15;
-const playerTiles = [];
-const wonderTiles = [];
-const board = [];
-const dictionary = ["HELLO", "WORLD", "SCRABBLE", "GAME", "FUN"]; // Example dictionary
-let playerScore = 0;
-let wonderScore = 0;
-
-// Initialize the board with empty cells
-function initializeBoard() {
-    const boardElement = document.getElementById('game-board');
-    boardElement.innerHTML = '';
-    for (let i = 0; i < boardSize * boardSize; i++) {
-        const cell = document.createElement('div');
-        cell.classList.add('board-cell');
-        cell.dataset.index = i;
-        cell.addEventListener('click', () => handleCellClick(i));
-        boardElement.appendChild(cell);
-        board.push('');
-    }
-}
-
-// Handle cell clicks to place tiles
-function handleCellClick(index) {
-    if (!playerTiles.length) {
-        alert('No tiles to place!');
-        return;
-    }
-
-    const cell = document.querySelector(`.board-cell[data-index="${index}"]`);
-    if (cell.textContent === '') {
-        const tile = playerTiles.pop();
-        cell.textContent = tile;
-        board[index] = tile;
-        updateScores();
-        wonderTurn();
-    } else {
-        alert('Cell already occupied!');
-    }
-}
-
-// AI (Wonder) Turn - Simple example
-function wonderTurn() {
-    // For simplicity, Wonder places a random tile in an empty cell
-    let emptyCells = board.map((cell, index) => cell === '' ? index : null).filter(index => index !== null);
-    let randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-    const wonderTile = getRandomTile(); // Placeholder function
-    board[randomIndex] = wonderTile;
-    document.querySelector(`.board-cell[data-index="${randomIndex}"]`).textContent = wonderTile;
-    wonderTiles.push(wonderTile);
-    updateScores();
-}
-
-// Update the scores based on the current board
-function updateScores() {
-    playerScore = calculateScore(playerTiles);
-    wonderScore = calculateScore(wonderTiles);
-    document.getElementById('score').innerText = `Player Score: ${playerScore} | Wonder Score: ${wonderScore}`;
-}
-
-// Calculate the score for a set of tiles
-function calculateScore(tiles) {
-    // Basic scoring: 1 point per tile
-    return tiles.length;
-}
-
-// Generate a random tile (A-Z)
-function getRandomTile() {
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    return letters[Math.floor(Math.random() * letters.length)];
-}
-
-// Start the game
-function startGame() {
-    const playerName = document.getElementById('playerName').value;
-    if (playerName) {
-        document.getElementById('intro').style.display = 'none';
-        document.getElementById('game-board').style.display = 'grid';
-        document.getElementById('message').innerText = `Hello, ${playerName}! Do you want to play against Wonder?`;
-        initializeBoard();
-        // Initialize player and Wonder tiles
-        playerTiles.push('H', 'E', 'L', 'L', 'O'); // Example tiles
-        wonderTiles.push('W', 'O', 'R', 'L', 'D'); // Example tiles
-    } else {
-        alert('Please enter your name!');
-    }
-}
 
 
