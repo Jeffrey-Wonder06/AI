@@ -37,6 +37,8 @@
         }
         .rack {
             margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
         }
         .rack .tile {
             display: inline-block;
@@ -46,6 +48,9 @@
             background-color: #fff;
             border: 1px solid #ccc;
             cursor: pointer;
+            text-align: center;
+            line-height: 40px;
+            font-size: 18px;
         }
         #result {
             font-weight: bold;
@@ -82,8 +87,10 @@
             { letter: 'Y', count: 2, value: 4 }, { letter: 'Z', count: 1, value: 10 },
             { letter: '_', count: 2, value: 0 } // Blank tiles
         ];
-        const dictionary = new Set(["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE"]); // Simulated dictionary
-        const predefinedWords = ["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE"]; // Simplified word list for AI
+
+        // Example dictionary; replace with a comprehensive dictionary for real use
+        const dictionary = new Set(["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE", "GRAPEFRUIT", "LEMON", "ORANGE"]);
+        const predefinedWords = ["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE"];
 
         let currentRack = [];
         let board = [];
@@ -167,7 +174,6 @@
                 return;
             }
             result.textContent = 'Word placed successfully!';
-            // Here, you'd implement scoring and updating the board
             drawTiles(); // Allow drawing tiles only after a valid move
         }
 
@@ -198,22 +204,22 @@
         }
 
         function aiTurn() {
-            const aiRack = ['A', 'P', 'P', 'L', 'E']; // Example rack
+            const aiRack = currentRack; // Example rack, replace with AI's actual rack
             const possibleWords = findPossibleWords(aiRack, dictionary);
             const validMoves = findValidPlacements(board, possibleWords);
             const bestMove = evaluateMoves(validMoves, board);
+
             if (bestMove) {
                 const [word, position] = bestMove;
                 placeWordOnBoard(word, position);
-                refillRack(aiRack, tileBag);
-                updateAIResult('AI placed word: ' + word);
+                refillRack(currentRack, tileBag); // Refill AI rack (if implemented)
+                updateAIResult(`AI played: ${word}`);
             } else {
-                updateAIResult('AI could not find a valid move.');
+                updateAIResult('No valid moves for AI');
             }
         }
 
-        function placeWordOnBoard(word, position) {
-            const [startPos, direction] = position;
+        function placeWordOnBoard(word, [startPos, direction]) {
             const [row, col] = startPos;
             for (let i = 0; i < word.length; i++) {
                 if (direction === 'horizontal') {
@@ -226,7 +232,20 @@
 
         function refillRack(rack, bag) {
             while (rack.length < 7 && bag.length > 0) {
-                rack.push(drawRandomTile().letter);
+                const tile = drawRandomTile();
+                rack.push(tile.letter);
+            }
+            const rackElement = document.getElementById('rack');
+            rackElement.innerHTML = '';
+            for (const letter of rack) {
+                const tileElement = document.createElement('div');
+                tileElement.className = 'tile';
+                tileElement.textContent = letter;
+                tileElement.draggable = true;
+                tileElement.ondragstart = (event) => {
+                    event.dataTransfer.setData('text/plain', letter);
+                };
+                rackElement.appendChild(tileElement);
             }
         }
 
@@ -304,7 +323,8 @@
         }
 
         function isValidPlacement(board, word, position) {
-            return true; // Placeholder for more complex placement logic
+            // Placeholder for more complex placement logic
+            return true;
         }
 
         function evaluateMoves(moves, board) {
@@ -321,7 +341,8 @@
         }
 
         function calculateScore(board, word, position) {
-            return word.length; // Simplified score calculation
+            // Simplified scoring based on length; implement real scoring if needed
+            return word.length;
         }
 
         function updateAIResult(message) {
@@ -331,11 +352,12 @@
 
         window.onload = () => {
             createBoard();
-            drawTiles();
+            drawTiles(); // Initial draw for the player
         };
     </script>
 </body>
 </html>
+
 
 
 
