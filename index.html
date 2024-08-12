@@ -74,7 +74,7 @@
         const boardSize = 15;
         const board = Array.from({ length: boardSize }, () => Array(boardSize).fill(' '));
         const tileBag = ("ABCDEFGHIJKLMNOPQRSTUVWXYZ".repeat(2) + " ").split('');
-        let playerRack = refillRack([], tileBag);
+        let playerRack = refillRack([], tileBag, 7);
         let scrabbleDictionary = {}; // Load your dictionary here
 
         function init() {
@@ -133,7 +133,9 @@
         }
 
         document.getElementById('submit-move').addEventListener('click', () => {
-            playerRack = refillRack(playerRack, tileBag);
+            // Player has finished their move; refill the rack
+            playerRack = refillRack(playerRack, tileBag, 7);
+            renderBoard();
             updateRack();
         });
 
@@ -141,8 +143,8 @@
             aiMove();
         });
 
-        function refillRack(rack, bag) {
-            while (rack.length < 7 && bag.length > 0) {
+        function refillRack(rack, bag, desiredLength) {
+            while (rack.length < desiredLength && bag.length > 0) {
                 const index = Math.floor(Math.random() * bag.length);
                 rack.push(bag.splice(index, 1)[0]);
             }
@@ -156,7 +158,7 @@
             if (bestMove) {
                 const [word, position] = bestMove;
                 placeWord(board, word, position);
-                playerRack = refillRack(playerRack, tileBag);
+                playerRack = refillRack(playerRack, tileBag, 7);
                 renderBoard();
                 updateRack();
             } else {
