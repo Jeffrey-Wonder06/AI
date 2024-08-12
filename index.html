@@ -89,6 +89,8 @@
                 <div id="game-board" class="board hidden"></div>
             </div>
             <div id="rack-bottom"></div>
+            <input type="text" id="wordInput" placeholder="Enter your word">
+            <button onclick="submitWord()">Submit Word</button>
             <button onclick="refillRack()">Refill Rack</button>
         </div>
         <div id="status">
@@ -157,6 +159,40 @@
             tileElement.classList.add('selected');
         }
 
+        function submitWord() {
+            const word = document.getElementById('wordInput').value.toUpperCase();
+            if (!dictionary.includes(word)) {
+                alert('Invalid word!');
+                return;
+            }
+
+            // Place the word on the board
+            placeWordOnBoard(word);
+
+            // Update scores and words
+            updateScores();
+            updateWords();
+
+            // Clear the input and selection
+            document.getElementById('wordInput').value = '';
+            selectedTile = null;
+        }
+
+        function placeWordOnBoard(word) {
+            // This function assumes the user has provided valid coordinates to place the word
+            // You need to add logic to place the word on the board correctly
+            // This is just an example to demonstrate how you might update the board with the word
+
+            // For simplicity, let's assume we place the word horizontally starting at the first cell
+            let startIdx = 0; // Starting index for placing the word (for example purposes)
+            for (let i = 0; i < word.length; i++) {
+                board[startIdx + i] = word[i];
+                document.querySelector(`.board-cell[data-index="${startIdx + i}"]`).textContent = word[i];
+                playerRack.splice(playerRack.indexOf(word[i]), 1);
+            }
+            updateRack();
+        }
+
         function handleCellClick(index) {
             if (selectedTile && !board[index]) {
                 const tile = selectedTile.dataset.tile;
@@ -174,66 +210,131 @@
                 alert('Cell already occupied!');
             }
         }
-
+           
         function wonderTurn() {
+            // Simple AI for Wonder's turn - places a random tile in an empty cell
             let emptyCells = board.map((cell, index) => cell === '' ? index : null).filter(index => index !== null);
-            if (emptyCells.length === 0) return;
+            if (emptyCells.length === 0) return; // No empty cells to place a tile
+
             let randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
             const wonderTile = getRandomTile();
             board[randomIndex] = wonderTile;
             document.querySelector(`.board-cell[data-index="${randomIndex}"]`).textContent = wonderTile;
-            wonderWords.push(wonderTile);
+            wonderRack.push(wonderTile);
+
+            // Update Wonder's rack to show tiles
+            const wonderRackElement = document.getElementById('rack-top');
+            wonderRackElement.innerHTML = '';
+            wonderRack.forEach(() => {
+                const tileElement = document.createElement('div');
+                tileElement.classList.add('rack-tile');
+                tileElement.innerText = '?';
+                wonderRackElement.appendChild(tileElement);
+            });
+
             updateScores();
             updateWords();
-        }
-
-        function checkWords() {
-            let placedTiles = board.filter(cell => cell !== '');
-            let word = placedTiles.join('');
-            if (dictionary.includes(word)) {
-                playerWords.push(word);
-                document.getElementById('player-words').innerText = `Your Words: ${playerWords.join(', ')}`;
-                alert('Valid word!');
-            } else {
-                alert('Invalid word!');
-                board.forEach((cell, index) => {
-                    if (cell !== '') {
-                        document.querySelector(`.board-cell[data-index="${index}"]`).textContent = '';
-                        board[index] = '';
-                    }
-                });
-            }
-        }
-
-        function updateScores() {
-            playerScore = calculateScore(board, playerRack);
-            wonderScore = calculateScore(board, wonderRack);
-            document.getElementById('score').innerText = `Player Score: ${playerScore} | Wonder Score: ${wonderScore}`;
-        }
-
-        function calculateScore(board, tiles) {
-            let score = 0;
-            board.forEach((tile, index) => {
-                if (tile !== '') {
-                    const cellValue = letterValues[tile] || 0;
-                    score += cellValue;
-                    if (premiumSquares[index] === 'dl') {
-                        score += cellValue;
-                    } else if (premiumSquares[index] === 'tl') {
-                        score += cellValue * 2;
-                    } else if (premiumSquares[index] === 'dw') {
-                        score *= 2;
-                    } else if (premiumSquares[index] === 'tw') {
-                        score *= 3;
-                    }
-                }
-            });
-            return score;
         }
 
         function getRandomTile() {
             const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             return letters[Math.floor(Math.random() * letters.length)];
+        }
+
+        function updateRack() {
+            const playerRackElement = document.getElementById('rack-bottom');
+            playerRackElement.innerHTML = '';
+            playerRack.forEach(tile => {
+                const tileElement = document.createElement('div');
+                tileElement.classList.add('rack-tile');
+                tileElement.innerText = tile;
+                tileElement.dataset.tile = tile;
+                tileElement.addEventListener('click', () => selectTile(tileElement));
+                playerRackElement.appendChild(tileElement);
+            });
+
+            if (playerRack.length < 7) {
+                refillRack();
+            }
+        }
+
+        function refillRack() {
+            // Example: Add random tiles to refill the rack
+            while (playerRack.length < 7 && tiles.length > 0) {
+                playerRack.push(tiles.splice(Math.floor(Math.random() * tiles.length), 1)[0]);
+            }
+            updateRack();
+        }
+
+        function updateScores() {
+            playerScore = calculateScore(playerRack);
+            wonderScore = calculateScore(wonderRack);
+            document.getElementById('score').innerText = `Player Score: ${playerScore} | Wonder Score: ${wonderScore}`;
+        }
+
+        function calculateScore(tiles) {
+            return tiles.reduce((total, tile) => total + (letterValues[tile] || 0), 0);
+        }
+
+        function updateWords() {
+            document.getElementById('player-words').innerText = `Your Words: ${playerWords.join(', ')}`;
+            document.getElementById('wonder-words').innerText = `Wonder's Words: ${wonderWords.join(', ')}`;
+        }
+
+        function checkWords() {
+            // Validate and update words based on board configuration
+            const wordsOnBoard = getWordsFromBoard();
+            wordsOnBoard.forEach(word => {
+                if (dictionary.includes(word)) {
+                    if (!playerWords.includes(word)) playerWords.push(word);
+                    if (!wonderWords.includes(word)) wonderWords.push(word);
+                } else {
+                    alert(`Invalid word on board: ${word}`);
+                    removeWordFromBoard(word);
+                }
+            });
+            updateWords();
+        }
+
+        function getWordsFromBoard() {
+            const words = [];
+            for (let i = 0; i < boardSize; i++) {
+                let word = '';
+                for (let j = 0; j < boardSize; j++) {
+                    const index = i * boardSize + j;
+                    const tile = board[index];
+                    if (tile) {
+                        word += tile;
+                    } else if (word.length > 1) {
+                        words.push(word);
+                        word = '';
+                    } else {
+                        word = '';
+                    }
+                }
+                if (word.length > 1) words.push(word);
+
+                word = '';
+                for (let j = 0; j < boardSize; j++) {
+                    const index = j * boardSize + i;
+                    const tile = board[index];
+                    if (tile) {
+                        word += tile;
+                    } else if (word.length > 1) {
+                        words.push(word);
+                        word = '';
+                    } else {
+                        word = '';
+                    }
+                }
+                if (word.length > 1) words.push(word);
+            }
+            return words;
+        }
+
+        function removeWordFromBoard(word) {
+            // Example implementation to remove a word - actual logic can vary
+            // Requires knowledge of the specific tiles and positions used
         }
 
         function startGame() {
@@ -252,39 +353,18 @@
         function startPlay() {
             document.getElementById('welcome-message').classList.add('hidden');
             document.getElementById('rack-container').classList.remove('hidden');
-            document.getElementById('game-board').classList.remove('hidden');
             initializeBoard();
             initializeRack();
-            refillRack(); // Fill player rack initially
-            wonderRack = Array(7).fill(null).map(() => getRandomTile());
-            initializeRack(); // Initialize Wonder's rack with random tiles
         }
 
         function showScared() {
-            document.getElementById('welcome-message').classList.add('hidden');
-            document.getElementById('message').innerText = `You're scared! 😂`;
-        }
-
-        function refillRack() {
-            while (playerRack.length < 7) {
-                playerRack.push(getRandomTile());
-            }
-            initializeRack();
-        }
-
-        function updateRack() {
-            if (playerRack.length < 7) {
-                refillRack();
-            }
-            initializeRack();
-        }
-
-        function updateWords() {
-            document.getElementById('wonder-words').innerText = `Wonder's Words: ${wonderWords.join(', ')}`;
+            alert("You're scared! 😂");
+            // Additional logic for this case, if needed
         }
     </script>
 </body>
 </html>
+
 
 
 
