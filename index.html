@@ -75,6 +75,11 @@
         .hidden {
             visibility: hidden;
         }
+
+        .dl { background-color: #ffeb3b; } /* Double Letter */
+        .tl { background-color: #ff9800; } /* Triple Letter */
+        .dw { background-color: #f44336; } /* Double Word */
+        .tw { background-color: #9c27b0; } /* Triple Word */
     </style>
 </head>
 <body>
@@ -111,13 +116,20 @@
         const boardSize = 15;
         const dictionary = ["HELLO", "WORLD", "SCRABBLE", "GAME", "FUN"]; // Example dictionary
         const board = Array(boardSize * boardSize).fill('');
-        let playerRack = ['H', 'E', 'L', 'L', 'O'];
-        let wonderRack = ['W', 'O', 'R', 'L', 'D']; // Hidden from player
+        const premiumSquares = {
+            1: 'dw', 5: 'tl', 7: 'dw', 9: 'tl', 12: 'dw', 14: 'tl', // Example positions
+            16: 'dw', 24: 'tw', 26: 'tl', 30: 'dw', 34: 'tw', 42: 'tl', // Define these based on your board layout
+        };
+        let playerRack = [];
+        let wonderRack = []; // Hidden from player
         let playerScore = 0;
         let wonderScore = 0;
         let selectedTile = null;
         let playerWords = [];
         let wonderWords = [];
+        const letterValues = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
+        const tiles = Object.keys(letterValues).reduce((acc, letter) => acc.concat(Array(9).fill(letter)), []);
+        tiles.push(...Array(2).fill('')); // Adding 2 blank tiles
 
         function initializeBoard() {
             const boardElement = document.getElementById('game-board');
@@ -126,6 +138,12 @@
                 const cell = document.createElement('div');
                 cell.classList.add('board-cell');
                 cell.dataset.index = i;
+                
+                // Add premium squares
+                if (premiumSquares[i]) {
+                    cell.classList.add(premiumSquares[i]);
+                }
+
                 cell.addEventListener('click', () => handleCellClick(i));
                 boardElement.appendChild(cell);
             }
@@ -210,51 +228,9 @@
             }
         }
 
-        function updateRack() {
-            const playerRackElement = document.getElementById('player-rack');
-            playerRackElement.innerHTML = '';
-            playerRack.forEach(tile => {
-                const tileElement = document.createElement('div');
-                tileElement.classList.add('rack-tile');
-                tileElement.innerText = tile;
-                tileElement.dataset.tile = tile;
-                tileElement.addEventListener('click', () => selectTile(tileElement));
-                playerRackElement.appendChild(tileElement);
-            });
-        }
-
-        function updateWords() {
-            document.getElementById('wonder-words').innerText = `Wonder's Words: ${wonderWords.join(', ')}`;
-        }
-
         function updateScores() {
-            playerScore = calculateScore(playerRack);
-            wonderScore = calculateScore(wonderRack);
-            document.getElementById('score').innerText = `Player Score: ${playerScore} | Wonder Score: ${wonderScore}`;
-        }
+            playerScore = calculateScore(board, playerRack);
 
-        function calculateScore(tiles) {
-            return tiles.length;
-        }
-
-        function getRandomTile() {
-            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            return letters[Math.floor(Math.random() * letters.length)];
-        }
-
-        function refillRack() {
-            if (playerRack.length < 5) {
-                while (playerRack.length < 5) {
-                    playerRack.push(getRandomTile());
-                }
-                updateRack();
-            }
-        }
-
-        function startGame() {
-            const playerName = document.getElementById('playerName').value;
-            if (playerName) {
-                document.getElementById('intro').class
 
 
 
