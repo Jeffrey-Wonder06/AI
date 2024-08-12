@@ -28,9 +28,23 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
+        }
+        .double-letter {
+            background-color: #d3f3ff;
+        }
+        .triple-letter {
+            background-color: #b3e5fc;
+        }
+        .double-word {
+            background-color: #f8d7da;
+            color: #b71c1c;
+        }
+        .triple-word {
+            background-color: #f4c2c2;
+            color: #d32f2f;
         }
         #rack {
             margin-top: 20px;
@@ -56,6 +70,11 @@
             font-size: 16px;
             cursor: pointer;
         }
+        .label {
+            font-size: 10px;
+            text-align: center;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -73,19 +92,38 @@
         // Initialize the board
         const boardSize = 15;
         const board = Array.from({ length: boardSize }, () => Array(boardSize).fill(' '));
-        const tileBag = ("ABCDEFGHIJKLMNOPQRSTUVWXYZ".repeat(2) + " ").split('');
-        let playerRack = refillRack([], tileBag, 7);
-        let scrabbleDictionary = {}; // Load your dictionary here
+
+        // Define tile types
+        const specialTiles = [
+            { type: 'double-word', positions: [[7, 7]] },
+            { type: 'triple-word', positions: [[0, 0], [0, 7], [0, 14], [7, 0], [7, 14], [14, 0], [14, 7], [14, 14]] },
+            { type: 'double-letter', positions: [[1, 1], [1, 5], [1, 9], [2, 2], [2, 6], [2, 10], [3, 3], [3, 7], [3, 11], [5, 1], [5, 5], [5, 9], [6, 2], [6, 6], [6, 10], [7, 3], [7, 11], [9, 1], [9, 5], [9, 9], [10, 2], [10, 6], [10, 10], [11, 3], [11, 7], [11, 11]] },
+            { type: 'triple-letter', positions: [[1, 1], [1, 13], [13, 1], [13, 13], [7, 3], [7, 11], [3, 7], [11, 7]] }
+        ];
 
         function init() {
             const boardElement = document.getElementById('scrabble-board');
             boardElement.innerHTML = '';
+            
+            // Create board with special tiles
             for (let row = 0; row < boardSize; row++) {
                 for (let col = 0; col < boardSize; col++) {
                     const tile = document.createElement('div');
                     tile.className = 'tile';
                     tile.dataset.row = row;
                     tile.dataset.col = col;
+
+                    // Apply special tile styles
+                    specialTiles.forEach(({ type, positions }) => {
+                        if (positions.some(pos => pos[0] === row && pos[1] === col)) {
+                            tile.classList.add(type);
+                            const label = document.createElement('div');
+                            label.className = 'label';
+                            label.textContent = type.replace('-', ' ').toUpperCase();
+                            tile.appendChild(label);
+                        }
+                    });
+
                     tile.addEventListener('click', () => placeTile(row, col));
                     boardElement.appendChild(tile);
                 }
@@ -94,6 +132,7 @@
             updateRack();
         }
 
+        // Function to update rack and other parts of the code
         function updateRack() {
             const rackElement = document.getElementById('rack');
             rackElement.innerHTML = '';
@@ -206,46 +245,13 @@
         }
 
         function canPlaceHorizontally(board, word, row, col) {
+            for (let i =function canPlaceHorizontally(board, word, row, col) {
+            if (col + word.length > boardSize) return false; // Out of bounds
             for (let i = 0; i < word.length; i++) {
-                if (board[row][col + i] !== ' ' && board[row][col + i] !== word[i]) {
-                    return false;
-                }
+                const cell = board[row][col + i];
+                if (cell !== ' ' && cell !== word[i]) return false; // Conflict with existing tiles
             }
             return true;
-        }
-
-        function evaluateMoves(moves, board) {
-            let bestMove = null;
-            let bestScore = 0;
-            moves.forEach(([word, position]) => {
-                const score = calculateScore(board, word, position);
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestMove = [word, position];
-                }
-            });
-            return bestMove;
-        }
-
-        function calculateScore(board, word, position) {
-            const [row, col] = position;
-            let score = 0;
-            for (let i = 0; i < word.length; i++) {
-                score += calculateLetterValue(word[i]);
-            }
-            return score;
-        }
-
-        function calculateLetterValue(letter) {
-            const letterValues = {
-                'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1,
-                'F': 4, 'G': 2, 'H': 4, 'I': 1, 'J': 8,
-                'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1,
-                'P': 3, 'Q': 10, 'R': 1, 'S': 1, 'T': 1,
-                'U': 1, 'V': 4, 'W': 4, 'X': 8, 'Y': 4, 'Z': 10,
-                ' ': 0  // Blank tiles
-            };
-            return letterValues[letter] || 0;
         }
 
         function placeWord(board, word, position) {
@@ -255,12 +261,21 @@
             }
         }
 
-        init();
-    </script>
+        function evaluateMoves(validMoves, board) {
+            // A simplistic evaluation for now; you might want to use a more complex scoring system.
+            if (validMoves.length === 0) return null;
+            return validMoves[0]; // Just return the first valid move for simplicity
+        }
 
+        // Initialize rack and tile bag
+        let playerRack = ['A', 'B', 'C', 'D', 'E', 'F', 'G']; // Example initial rack
+        const tileBag = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E', 'F', 'F', 'G', 'G']; // Example bag
+        const scrabbleDictionary = {}; // Load or define the dictionary for valid words
+
+        init(); // Call the function to initialize the board
+    </script>
 </body>
 </html>
-
 
 
 
