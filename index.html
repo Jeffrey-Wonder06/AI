@@ -33,6 +33,7 @@
             background-color: white;
             border: 1px solid #ccc;
             font-size: 18px;
+            cursor: pointer;
         }
         .rack {
             margin-bottom: 20px;
@@ -82,6 +83,7 @@
         const predefinedWords = ["CAT", "DOG", "BAT", "RAT", "APPLE", "GRAPE"]; // Simplified word list for AI
 
         let currentRack = [];
+        let selectedTile = null;
         let board = [];
 
         function createBoard() {
@@ -92,6 +94,10 @@
                 for (let col = 0; col < boardSize; col++) {
                     const tile = document.createElement('div');
                     tile.className = 'tile';
+                    tile.dataset.row = row;
+                    tile.dataset.col = col;
+                    tile.ondrop = drop;
+                    tile.ondragover = allowDrop;
                     board[row][col] = tile;
                     boardElement.appendChild(tile);
                 }
@@ -108,7 +114,11 @@
                 const tileElement = document.createElement('div');
                 tileElement.className = 'tile';
                 tileElement.textContent = tile.letter;
-                tileElement.onclick = () => selectTile(tileElement);
+                tileElement.draggable = true;
+                tileElement.ondragstart = (event) => {
+                    selectedTile = tileElement;
+                    event.dataTransfer.setData('text/plain', tile.letter);
+                };
                 rack.appendChild(tileElement);
             }
         }
@@ -119,10 +129,20 @@
             return availableTiles[index];
         }
 
-        function selectTile(tileElement) {
-            const selectedTile = tileElement.textContent;
-            const result = document.getElementById('result');
-            result.textContent = `You selected tile: ${selectedTile}`;
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            if (!selectedTile) return;
+            const letter = event.dataTransfer.getData('text/plain');
+            const row = event.target.dataset.row;
+            const col = event.target.dataset.col;
+            const tile = event.target;
+            tile.textContent = letter;
+            tile.className = 'tile'; // Reset to default tile class
+            selectedTile = null;
         }
 
         function aiTurn() {
