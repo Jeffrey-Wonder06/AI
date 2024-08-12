@@ -16,8 +16,15 @@
             padding: 20px;
         }
 
-        #rack, #wonder-rack {
+        #rack-container {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
             margin-top: 20px;
+        }
+
+        #player-rack, #wonder-rack {
             display: flex;
             justify-content: center;
             gap: 10px;
@@ -64,6 +71,10 @@
         .selected {
             border-color: #4a90e2;
         }
+
+        .hidden {
+            visibility: hidden;
+        }
     </style>
 </head>
 <body>
@@ -73,29 +84,40 @@
             <input type="text" id="playerName" placeholder="Enter your name">
             <button onclick="startGame()">Start Game</button>
         </div>
-        <div id="rack">
-            <!-- User rack will be generated here -->
+        <div id="welcome-message" class="hidden">
+            <p id="message"></p>
+            <button id="play-btn" class="hidden" onclick="startPlay()">Yes, let's play!</button>
+            <button id="no-btn" class="hidden" onclick="showScared()">No, I'm scared!</button>
         </div>
-        <div id="wonder-rack">
-            <!-- Wonder's rack will be generated here -->
+        <div id="rack-container" class="hidden">
+            <div id="wonder-rack">
+                <!-- Wonder's rack will be generated here -->
+            </div>
+            <div id="player-rack">
+                <!-- User rack will be generated here -->
+            </div>
+            <button onclick="refillRack()">Refill Rack</button>
         </div>
-        <div id="game-board" style="display:none;">
+        <div id="game-board" class="hidden">
             <!-- Game board will be generated here -->
         </div>
         <div id="status">
-            <p id="message"></p>
             <p id="score">Player Score: 0 | Wonder Score: 0</p>
+            <p id="player-words">Your Words: </p>
+            <p id="wonder-words">Wonder's Words: </p>
         </div>
     </div>
     <script>
         const boardSize = 15;
-        const playerRack = ['H', 'E', 'L', 'L', 'O'];
-        const wonderRack = ['W', 'O', 'R', 'L', 'D']; // Hidden from player
-        const board = Array(boardSize * boardSize).fill('');
         const dictionary = ["HELLO", "WORLD", "SCRABBLE", "GAME", "FUN"]; // Example dictionary
+        const board = Array(boardSize * boardSize).fill('');
+        let playerRack = ['H', 'E', 'L', 'L', 'O'];
+        let wonderRack = ['W', 'O', 'R', 'L', 'D']; // Hidden from player
         let playerScore = 0;
         let wonderScore = 0;
         let selectedTile = null;
+        let playerWords = [];
+        let wonderWords = [];
 
         function initializeBoard() {
             const boardElement = document.getElementById('game-board');
@@ -110,15 +132,15 @@
         }
 
         function initializeRack() {
-            const rackElement = document.getElementById('rack');
-            rackElement.innerHTML = '';
+            const playerRackElement = document.getElementById('player-rack');
+            playerRackElement.innerHTML = '';
             playerRack.forEach(tile => {
                 const tileElement = document.createElement('div');
                 tileElement.classList.add('rack-tile');
                 tileElement.innerText = tile;
                 tileElement.dataset.tile = tile;
                 tileElement.addEventListener('click', () => selectTile(tileElement));
-                rackElement.appendChild(tileElement);
+                playerRackElement.appendChild(tileElement);
             });
 
             const wonderRackElement = document.getElementById('wonder-rack');
@@ -150,7 +172,7 @@
                 updateScores();
                 selectedTile = null;
                 wonderTurn();
-                checkWord();
+                checkWords();
             } else if (!selectedTile) {
                 alert('Select a tile from your rack first!');
             } else {
@@ -164,15 +186,18 @@
             const wonderTile = getRandomTile();
             board[randomIndex] = wonderTile;
             document.querySelector(`.board-cell[data-index="${randomIndex}"]`).textContent = wonderTile;
+            wonderWords.push(wonderTile); // Simplified for demo
             updateScores();
+            updateWords();
         }
 
-        function checkWord() {
+        function checkWords() {
             let placedTiles = board.filter(cell => cell !== '');
             let word = placedTiles.join('');
             if (dictionary.includes(word)) {
+                playerWords.push(word);
+                document.getElementById('player-words').innerText = `Your Words: ${playerWords.join(', ')}`;
                 alert('Valid word!');
-                updateScores();
             } else {
                 alert('Invalid word!');
                 // Clear the board if invalid
@@ -186,21 +211,25 @@
         }
 
         function updateRack() {
-            const rackElement = document.getElementById('rack');
-            rackElement.innerHTML = '';
+            const playerRackElement = document.getElementById('player-rack');
+            playerRackElement.innerHTML = '';
             playerRack.forEach(tile => {
                 const tileElement = document.createElement('div');
                 tileElement.classList.add('rack-tile');
                 tileElement.innerText = tile;
                 tileElement.dataset.tile = tile;
                 tileElement.addEventListener('click', () => selectTile(tileElement));
-                rackElement.appendChild(tileElement);
+                playerRackElement.appendChild(tileElement);
             });
         }
 
+        function updateWords() {
+            document.getElementById('wonder-words').innerText = `Wonder's Words: ${wonderWords.join(', ')}`;
+        }
+
         function updateScores() {
-            playerScore = calculateScore(board.filter(tile => playerRack.includes(tile)));
-            wonderScore = calculateScore(board.filter(tile => !playerRack.includes(tile)));
+            playerScore = calculateScore(playerRack);
+            wonderScore = calculateScore(wonderRack);
             document.getElementById('score').innerText = `Player Score: ${playerScore} | Wonder Score: ${wonderScore}`;
         }
 
@@ -213,21 +242,20 @@
             return letters[Math.floor(Math.random() * letters.length)];
         }
 
+        function refillRack() {
+            if (playerRack.length < 5) {
+                while (playerRack.length < 5) {
+                    playerRack.push(getRandomTile());
+                }
+                updateRack();
+            }
+        }
+
         function startGame() {
             const playerName = document.getElementById('playerName').value;
             if (playerName) {
-                document.getElementById('intro').style.display = 'none';
-                document.getElementById('game-board').style.display = 'grid';
-                document.getElementById('message').innerText = `Hello, ${playerName}! Do you want to play against Wonder?`;
-                initializeBoard();
-                initializeRack();
-            } else {
-                alert('Please enter your name!');
-            }
-        }
-    </script>
-</body>
-</html>
+                document.getElementById('intro').class
+
 
 
 
