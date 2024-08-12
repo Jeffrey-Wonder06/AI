@@ -113,23 +113,23 @@
         </div>
     </div>
     <script>
-        const boardSize = 15;
-        const dictionary = ["HELLO", "WORLD", "SCRABBLE", "GAME", "FUN"]; // Example dictionary
-        const board = Array(boardSize * boardSize).fill('');
-        const premiumSquares = {
-            1: 'dw', 5: 'tl', 7: 'dw', 9: 'tl', 12: 'dw', 14: 'tl', // Example positions
-            16: 'dw', 24: 'tw', 26: 'tl', 30: 'dw', 34: 'tw', 42: 'tl', // Define these based on your board layout
-        };
         let playerRack = [];
-        let wonderRack = []; // Hidden from player
+        let wonderRack = [];
+        let board = [];
         let playerScore = 0;
         let wonderScore = 0;
         let selectedTile = null;
         let playerWords = [];
         let wonderWords = [];
+        const boardSize = 15;
         const letterValues = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
         const tiles = Object.keys(letterValues).reduce((acc, letter) => acc.concat(Array(9).fill(letter)), []);
         tiles.push(...Array(2).fill('')); // Adding 2 blank tiles
+        const premiumSquares = {
+            1: 'dw', 5: 'tl', 7: 'dw', 9: 'tl', 12: 'dw', 14: 'tl', // Example positions
+            16: 'dw', 24: 'tw', 26: 'tl', 30: 'dw', 34: 'tw', 42: 'tl', // Define these based on your board layout
+        };
+        const dictionary = ["HELLO", "WORLD", "SCRABBLE", "GAME", "FUN"]; // Add a complete Scrabble dictionary
 
         function initializeBoard() {
             const boardElement = document.getElementById('game-board');
@@ -139,13 +139,13 @@
                 cell.classList.add('board-cell');
                 cell.dataset.index = i;
                 
-                // Add premium squares
                 if (premiumSquares[i]) {
                     cell.classList.add(premiumSquares[i]);
                 }
 
                 cell.addEventListener('click', () => handleCellClick(i));
                 boardElement.appendChild(cell);
+                board.push('');
             }
         }
 
@@ -200,6 +200,8 @@
 
         function wonderTurn() {
             let emptyCells = board.map((cell, index) => cell === '' ? index : null).filter(index => index !== null);
+            if (emptyCells.length === 0) return; // No empty cells to place Wonder's tile
+            
             let randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
             const wonderTile = getRandomTile();
             board[randomIndex] = wonderTile;
@@ -218,7 +220,6 @@
                 alert('Valid word!');
             } else {
                 alert('Invalid word!');
-                // Clear the board if invalid
                 board.forEach((cell, index) => {
                     if (cell !== '') {
                         document.querySelector(`.board-cell[data-index="${index}"]`).textContent = '';
@@ -230,6 +231,87 @@
 
         function updateScores() {
             playerScore = calculateScore(board, playerRack);
+            wonderScore = calculateScore(board, wonderRack); // Simplified for demo
+            document.getElementById('score').innerText = `Player Score: ${playerScore} | Wonder Score: ${wonderScore}`;
+        }
+
+        function calculateScore(board, tiles) {
+            let score = 0;
+            board.forEach((tile, index) => {
+                if (tile !== '') {
+                    const cellValue = letterValues[tile] || 0;
+                    score += cellValue;
+                    if (premiumSquares[index]) {
+                        if (premiumSquares[index] === 'dl') {
+                            score += cellValue;
+                        } else if (premiumSquares[index] === 'tl') {
+                            score += cellValue * 2;
+                        } else if (premiumSquares[index] === 'dw') {
+                            score *= 2;
+                        } else if (premiumSquares[index] === 'tw') {
+                            score *= 3;
+                        }
+                    }
+                }
+            });
+            return score;
+        }
+
+        function getRandomTile() {
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            return letters[Math.floor(Math.random() * letters.length)];
+        }
+
+        function startGame() {
+            const playerName = document.getElementById('playerName').value;
+            if (playerName) {
+                document.getElementById('intro').classList.add('hidden');
+                document.getElementById('welcome-message').classList.remove('hidden');
+                document.getElementById('message').innerText = `Hello, ${playerName}! Do you want to play against Wonder?`;
+                document.getElementById('play-btn').classList.remove('hidden');
+                document.getElementById('no-btn').classList.remove('hidden');
+            } else {
+                alert('Please enter your name!');
+            }
+        }
+
+        function startPlay() {
+            document.getElementById('welcome-message').classList.add('hidden');
+            document.getElementById('rack-container').classList.remove('hidden');
+            document.getElementById('game-board').classList.remove('hidden');
+            initializeBoard();
+            initializeRack();
+            refillRack(); // Fill player rack initially
+            wonderRack = Array(7).fill(null).map(() => getRandomTile());
+            initializeRack(); // Initialize Wonder's rack with random tiles
+        }
+
+        function showScared() {
+            document.getElementById('welcome-message').classList.add('hidden');
+            document.getElementById('message').innerText = `You're scared! 😂`;
+        }
+
+        function refillRack() {
+            while (playerRack.length < 7) {
+                playerRack.push(getRandomTile());
+            }
+            initializeRack();
+        }
+
+        function updateRack() {
+            if (playerRack.length < 7) {
+                refillRack();
+            }
+            initializeRack();
+        }
+
+        function updateWords() {
+            document.getElementById('wonder-words').innerText = `Wonder's Words: ${wonderWords.join(', ')}`;
+        }
+    </script>
+</body>
+</html>
+
 
 
 
