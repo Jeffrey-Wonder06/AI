@@ -118,7 +118,7 @@
         function init() {
             const boardElement = document.getElementById('scrabble-board');
             boardElement.innerHTML = '';
-
+            
             for (let row = 0; row < boardSize; row++) {
                 for (let col = 0; col < boardSize; col++) {
                     const tile = document.createElement('div');
@@ -218,35 +218,35 @@
             playerScore += moveScore;
             document.getElementById('player-score').textContent = playerScore;
 
-            // Check if any word was placed
-            if (moveScore > 0) {
-                // Refill the rack and update the board
-                refillRack(playerRack, tileBag, 7);
-                renderBoard();
-                updateRack();
+            // Refill the rack and update the board
+            playerRack = refillRack(playerRack, tileBag, 7);
+            renderBoard();
+            updateRack();
 
-                // Check if the game has ended
-                if (tileBag.length === 0) {
-                    alert("The game has ended! Final scores:\nPlayer: " + playerScore + "\nAI: " + aiScore);
-                    return;
-                }
-
-                // Let the AI make a move
-                aiMove();
+            // Check if the game has ended
+            if (tileBag.length === 0) {
+                                alert("The game has ended! Final scores:\nPlayer: " + playerScore + "\nAI: " + aiScore);
+                return;
             }
+
+            // Let the AI make a move
+            aiMove();
         });
 
         document.getElementById('refill-rack').addEventListener('click', () => {
-            refillRack(playerRack, tileBag, 7);
+            playerRack = refillRack(playerRack, tileBag, 7);
             renderBoard();
             updateRack();
         });
 
         function refillRack(rack, bag, desiredLength) {
+            // Add new letters to the rack until it reaches the desired length
             while (rack.length < desiredLength && bag.length > 0) {
                 const index = Math.floor(Math.random() * bag.length);
                 rack.push(bag.splice(index, 1)[0]);
             }
+
+            // If the rack length exceeds desiredLength, trim it
             if (rack.length > desiredLength) {
                 rack.length = desiredLength;
             }
@@ -254,10 +254,15 @@
         }
 
         function aiMove() {
-            // Placeholder AI move implementation
             const possibleWords = findPossibleWords(playerRack, scrabbleDictionary);
             const validMoves = findValidPlacements(board, possibleWords);
-            const bestMove = validMoves.length > 0 ? validMoves[0] : null;
+
+            // Ensure AI does not play on top of player's words
+            const aiValidMoves = validMoves.filter(([word, position]) => {
+                return !word.split('').some((_, i) => board[position[0]][position[1] + i] !== ' ');
+            });
+
+            const bestMove = aiValidMoves.length > 0 ? aiValidMoves[0] : null;
 
             if (bestMove) {
                 const [word, position] = bestMove;
@@ -273,15 +278,21 @@
 
         function findPossibleWords(rack, dictionary) {
             // Example implementation: You need to implement actual word finding logic
-            return [['WORD', [7, 7]]]; // Example word placement
+            // For now, return a mock array of words
+            return [
+                ['WORD', [7, 7]], // Example word placement
+                // Add more words and positions as needed
+            ];
         }
 
         function findValidPlacements(board, possibleWords) {
             // Example implementation: You need to implement actual placement validation logic
-            return possibleWords; // This is a placeholder
+            // For now, return the mock valid moves
+            return possibleWords; // This is a placeholder; replace with actual validation
         }
 
         function placeWord(board, word, position) {
+            // Example implementation: Place the word on the board at the given position
             const [startRow, startCol] = position;
             for (let i = 0; i < word.length; i++) {
                 board[startRow][startCol + i] = word[i]; // Horizontal placement (for simplicity)
@@ -289,11 +300,12 @@
             renderBoard();
         }
 
-        // Initialize the game
+        // Initialize the board when the page loads
         init();
     </script>
 </body>
 </html>
+
 
 
 
