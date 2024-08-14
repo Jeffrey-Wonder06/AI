@@ -93,7 +93,6 @@
     <div id="controls">
         <button id="submit-move">Submit Move</button>
         <button id="refill-rack">Refill Rack</button>
-        <button id="ai-move">AI Move</button>
     </div>
     <div id="scores">
         Player Score: <span id="player-score">0</span><br>
@@ -229,48 +228,45 @@
             return scores[letter] || 0;
         }
 
-        function refillRack(rack, bag, desiredLength) {
-            while (rack.length < desiredLength && bag.length > 0) {
-                const index =  Math.floor(Math.random() * bag.length);
-                rack.push(bag.splice(index, 1)[0]);
-            }
-            return rack;
-        }
-
         document.getElementById('submit-move').addEventListener('click', () => {
-            // Calculate and update player score only if a valid word is placed
+            // Calculate and update player score
             const moveScore = calculateScore(board);
-            if (moveScore > 0) {
-                playerScore += moveScore;
-                document.getElementById('player-score').textContent = playerScore;
+            playerScore += moveScore;
+            document.getElementById('player-score').textContent = playerScore;
 
-                // Check if the bag is empty
-                if (tileBag.length === 0) {
-                    alert("Game Over! Your score: " + playerScore + ", AI score: " + aiScore);
-                    return;
-                }
+            // Refill the rack and update the board
+            refillRack(playerRack, tileBag, 7);
+            renderBoard();
+            updateRack();
 
-                // Player has finished their move; refill the rack
-                playerRack = refillRack(playerRack, tileBag, 7);
-                renderBoard();
-                updateRack();
-            } else {
-                alert("No valid word placed.");
+            // Check if the game has ended
+            if (tileBag.length === 0) {
+                alert("The game has ended! Final scores:\nPlayer: " + playerScore + "\nAI: " + aiScore);
+                return;
             }
+
+            // Let the AI make a move
+            aiMove();
         });
 
         document.getElementById('refill-rack').addEventListener('click', () => {
-            if (tileBag.length > 0) {
-                playerRack = refillRack(playerRack, tileBag, 7);
-                updateRack();
-            } else {
-                alert("No tiles left in the bag to refill.");
-            }
+            refillRack(playerRack, tileBag, 7);
+            renderBoard();
+            updateRack();
         });
 
-        document.getElementById('ai-move').addEventListener('click', () => {
-            aiMove();
-        });
+        function refillRack(rack, bag, desiredLength) {
+            // Add new letters to the rack until it reaches the desired length
+            while (rack.length < desiredLength && bag.length > 0) {
+                const index = Math.floor(Math.random() * bag.length);
+                rack.push(bag.splice(index, 1)[0]);
+            }
+            // If the rack length exceeds desiredLength, trim it
+            if (rack.length > desiredLength) {
+                rack.length = desiredLength;
+            }
+            return rack;
+        }
 
         function aiMove() {
             const possibleWords = findPossibleWords(playerRack, scrabbleDictionary);
@@ -291,6 +287,7 @@
 
         function findPossibleWords(rack, dictionary) {
             // Example implementation: You need to implement actual word finding logic
+            // For now, return a mock array of words
             return [
                 ['WORD', [7, 7]], // Example word placement
                 // Add more words and positions as needed
@@ -299,6 +296,7 @@
 
         function findValidPlacements(board, possibleWords) {
             // Example implementation: You need to implement actual placement validation logic
+            // For now, return the mock valid moves
             return possibleWords; // This is a placeholder; replace with actual validation
         }
 
@@ -310,9 +308,13 @@
             }
             renderBoard();
         }
+
+        // Initialize the board when the page loads
+        init();
     </script>
 </body>
 </html>
+
 
 
                     
