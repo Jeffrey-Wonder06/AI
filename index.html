@@ -92,6 +92,7 @@
     <div id="rack"></div>
     <div id="controls">
         <button id="submit-move">Submit Move</button>
+        <button id="refill-rack">Refill Rack</button>
         <button id="ai-move">AI Move</button>
     </div>
     <div id="scores">
@@ -118,7 +119,7 @@
         ];
 
         let playerRack = ['A', 'B', 'C', 'D', 'E', 'F', 'G']; // Example initial rack
-        const tileBag = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E', 'F', 'F', 'G', 'G']; // Example bag
+        let tileBag = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E', 'F', 'F', 'G', 'G']; // Example bag
         const scrabbleDictionary = {}; // Define or load your dictionary
         let playerScore = 0;
         let aiScore = 0;
@@ -183,12 +184,20 @@
 
         function placeTile(row, col) {
             if (selectedTileIndex !== null && board[row][col] === ' ') {
-                board[row][col] = playerRack[selectedTileIndex];
-                playerRack[selectedTileIndex] = ' ';
-                selectedTileIndex = null;
-                renderBoard();
-                updateRack();
+                if (isValidPlacement(row, col)) {
+                    board[row][col] = playerRack[selectedTileIndex];
+                    playerRack[selectedTileIndex] = ' ';
+                    selectedTileIndex = null;
+                    renderBoard();
+                    updateRack();
+                } else {
+                    alert("Cannot place a letter on top of another letter.");
+                }
             }
+        }
+
+        function isValidPlacement(row, col) {
+            return board[row][col] === ' '; // Ensure no tile already exists at this position
         }
 
         function renderBoard() {
@@ -220,22 +229,6 @@
             return scores[letter] || 0;
         }
 
-        document.getElementById('submit-move').addEventListener('click', () => {
-            // Calculate and update player score
-            const moveScore = calculateScore(board);
-            playerScore += moveScore;
-            document.getElementById('player-score').textContent = playerScore;
-
-            // Player has finished their move; refill the rack
-            playerRack = refillRack(playerRack, tileBag, 7);
-            renderBoard();
-            updateRack();
-        });
-
-        document.getElementById('ai-move').addEventListener('click', () => {
-            aiMove();
-        });
-
         function refillRack(rack, bag, desiredLength) {
             while (rack.length < desiredLength && bag.length > 0) {
                 const index =  Math.floor(Math.random() * bag.length);
@@ -243,6 +236,41 @@
             }
             return rack;
         }
+
+        document.getElementById('submit-move').addEventListener('click', () => {
+            // Calculate and update player score only if a valid word is placed
+            const moveScore = calculateScore(board);
+            if (moveScore > 0) {
+                playerScore += moveScore;
+                document.getElementById('player-score').textContent = playerScore;
+
+                // Check if the bag is empty
+                if (tileBag.length === 0) {
+                    alert("Game Over! Your score: " + playerScore + ", AI score: " + aiScore);
+                    return;
+                }
+
+                // Player has finished their move; refill the rack
+                playerRack = refillRack(playerRack, tileBag, 7);
+                renderBoard();
+                updateRack();
+            } else {
+                alert("No valid word placed.");
+            }
+        });
+
+        document.getElementById('refill-rack').addEventListener('click', () => {
+            if (tileBag.length > 0) {
+                playerRack = refillRack(playerRack, tileBag, 7);
+                updateRack();
+            } else {
+                alert("No tiles left in the bag to refill.");
+            }
+        });
+
+        document.getElementById('ai-move').addEventListener('click', () => {
+            aiMove();
+        });
 
         function aiMove() {
             const possibleWords = findPossibleWords(playerRack, scrabbleDictionary);
@@ -263,7 +291,6 @@
 
         function findPossibleWords(rack, dictionary) {
             // Example implementation: You need to implement actual word finding logic
-            // For now, return a mock array of words
             return [
                 ['WORD', [7, 7]], // Example word placement
                 // Add more words and positions as needed
@@ -272,7 +299,6 @@
 
         function findValidPlacements(board, possibleWords) {
             // Example implementation: You need to implement actual placement validation logic
-            // For now, return the mock valid moves
             return possibleWords; // This is a placeholder; replace with actual validation
         }
 
@@ -287,6 +313,7 @@
     </script>
 </body>
 </html>
+
 
                     
 
