@@ -7,6 +7,10 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
         }
 
         #board {
@@ -14,213 +18,105 @@
             grid-template-columns: repeat(15, 30px);
             grid-template-rows: repeat(15, 30px);
             gap: 1px;
+            margin: 20px auto;
+            width: max-content;
+            background-color: #ddd;
         }
 
         #board div {
             width: 30px;
             height: 30px;
+            background-color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid #000;
-            font-size: 14px;
-            cursor: pointer;
+            border: 1px solid #aaa;
         }
 
-        #player-info, #controls {
-            margin: 10px 0;
+        #rack, #enemyRack {
+            margin: 20px;
         }
 
         button {
-            margin: 5px;
+            margin: 10px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
-        .letter-button {
-            margin: 2px;
-            width: 30px;
-            height: 30px;
-        }
-
-        .selected {
-            background-color: #f0f0f0;
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <h1>Scrabble Game</h1>
     <div id="board"></div>
-    <div id="player-info">
-        <p>Player: <span id="player-name">Player 1</span></p>
-        <p>Score: <span id="player-score">0</span></p>
-        <p>Rack: <span id="player-rack"></span></p>
+    <div id="rack">
+        <button onclick="throwAwayPlayerRack()">Throw Away Rack</button>
+        <div id="playerRack"></div>
     </div>
-    <div id="controls">
-        <div id="word-buttons"></div>
-        <div>
-            <button onclick="setDirection('right')">Right</button>
-            <button onclick="setDirection('down')">Down</button>
-        </div>
-        <button onclick="submitWord()">Submit Word</button>
-        <button onclick="skipTurn()">Skip Turn</button>
-    </div>
+    <div id="enemyRack"></div>
+    <button onclick="endGame()">End Game</button>
+
     <script>
-        const LETTER_VALUES = {
-            "A": 1, "B": 3, "C": 3, "D": 2, "E": 1,
-            "F": 4, "G": 2, "H": 4, "I": 1, "J": 8,
-            "K": 5, "L": 1, "M": 3, "N": 1, "O": 1,
-            "P": 3, "Q": 10, "R": 1, "S": 1, "T": 1,
-            "U": 1, "V": 4, "W": 4, "X": 8, "Y": 4,
-            "Z": 10, "#": 0
-        };
+        document.addEventListener('DOMContentLoaded', () => {
+            setupBoard();
+            setupRack();
+            setupEnemyRack();
+        });
 
-        let board = Array.from({ length: 15 }, () => Array(15).fill(" "));
-        let player = { name: "Player 1", score: 0, rack: generateRack() };
-        let direction = 'right';  // Default direction
-        let selectedCells = [];
-
-        function generateRack() {
-            const tiles = "AAAAAAAAAABBBCCCDDDDEEEEEEEEEFFFFGGGHHHIIIJJJKKLLLMMMNNNNNOOOOOPPPQQRRRRSSSSSTTTTTUUUUVVWWXYYZZ##".split('');
-            shuffleArray(tiles);
-            return tiles.slice(0, 7);
-        }
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+        function setupBoard() {
+            const boardElement = document.getElementById('board');
+            for (let i = 0; i < 15 * 15; i++) {
+                const cell = document.createElement('div');
+                boardElement.appendChild(cell);
             }
         }
 
-        function renderBoard() {
-            const boardDiv = document.getElementById('board');
-            boardDiv.innerHTML = '';
-            for (let row = 0; row < 15; row++) {
-                for (let col = 0; col < 15; col++) {
-                    const cell = document.createElement('div');
-                    cell.textContent = board[row][col];
-                    cell.onclick = () => selectCell(row, col);
-                    boardDiv.appendChild(cell);
-                }
+        function setupRack() {
+            const rackElement = document.getElementById('playerRack');
+            rackElement.innerHTML = '';
+            for (let i = 0; i < 7; i++) {
+                const letter = document.createElement('div');
+                letter.textContent = getRandomLetter();
+                letter.className = 'rack-letter';
+                rackElement.appendChild(letter);
             }
         }
 
-        function renderPlayer() {
-            document.getElementById('player-name').textContent = player.name;
-            document.getElementById('player-score').textContent = player.score;
-            document.getElementById('player-rack').textContent = player.rack.join(' ');
-            renderWordButtons();
-        }
-
-        function renderWordButtons() {
-            const wordButtonsDiv = document.getElementById('word-buttons');
-            wordButtonsDiv.innerHTML = '';
-            player.rack.forEach(letter => {
-                const button = document.createElement('button');
-                button.textContent = letter;
-                button.className = 'letter-button';
-                button.onclick = () => useLetter(letter);
-                wordButtonsDiv.appendChild(button);
-            });
-        }
-
-        function useLetter(letter) {
-            if (player.rack.includes(letter)) {
-                document.getElementById('word-input').value += letter;
-                player.rack.splice(player.rack.indexOf(letter), 1);
-                renderPlayer();
+        function setupEnemyRack() {
+            const enemyRackElement = document.getElementById('enemyRack');
+            enemyRackElement.innerHTML = 'Enemy Rack: ';
+            for (let i = 0; i < 7; i++) {
+                const letter = document.createElement('span');
+                letter.textContent = getRandomLetter();
+                letter.className = 'enemy-letter';
+                enemyRackElement.appendChild(letter);
             }
         }
 
-        function setDirection(newDirection) {
-            direction = newDirection;
+        function getRandomLetter() {
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            return letters[Math.floor(Math.random() * letters.length)];
         }
 
-        function submitWord() {
-            const word = document.getElementById('word-input').value.toUpperCase();
-            if (selectedCells.length === 0) {
-                alert('Select cells on the board first');
-                return;
-            }
-
-            const startRow = selectedCells[0][0];
-            const startCol = selectedCells[0][1];
-
-            if (!validateWord(word, startRow, startCol, direction)) {
-                alert('Invalid word or placement');
-                return;
-            }
-
-            placeWord(word, startRow, startCol, direction);
-            calculateScore(word);
-            renderBoard();
-            renderPlayer();
-            document.getElementById('word-input').value = ''; // Clear input
-            selectedCells = [];
-            updateBoardUI();
+        function throwAwayPlayerRack() {
+            const rackElement = document.getElementById('playerRack');
+            rackElement.innerHTML = '';
+            setupRack();
         }
 
-        function validateWord(word, row, col, direction) {
-            return row >= 0 && row < 15 && col >= 0 && col < 15;
+        function endGame() {
+            alert('Game Over');
         }
-
-        function placeWord(word, row, col, direction) {
-            for (let i = 0; i < word.length; i++) {
-                if (direction === 'right') {
-                    board[row][col + i] = word[i];
-                } else if (direction === 'down') {
-                    board[row + i][col] = word[i];
-                }
-            }
-        }
-
-        function calculateScore(word) {
-            let score = 0;
-            for (const letter of word) {
-                score += LETTER_VALUES[letter] || 0;
-            }
-            player.score += score;
-        }
-
-        function skipTurn() {
-            alert('Turn skipped');
-            // Implement turn-skipping logic
-        }
-
-        function selectCell(row, col) {
-            if (selectedCells.length === 0) {
-                // Start new selection
-                selectedCells.push([row, col]);
-            } else {
-                // Add to selection or finalize placement
-                if (direction === 'right') {
-                    if (col >= selectedCells[0][1] && col <= selectedCells[0][1] + player.rack.length - 1) {
-                        selectedCells.push([row, col]);
-                    }
-                } else if (direction === 'down') {
-                    if (row >= selectedCells[0][0] && row <= selectedCells[0][0] + player.rack.length - 1) {
-                        selectedCells.push([row, col]);
-                    }
-                }
-            }
-            updateBoardUI();
-        }
-
-        function updateBoardUI() {
-            const cells = document.querySelectorAll('#board div');
-            cells.forEach(cell => {
-                cell.classList.remove('selected');
-            });
-            selectedCells.forEach(([row, col]) => {
-                const index = row * 15 + col;
-                cells[index].classList.add('selected');
-            });
-        }
-
-        renderBoard();
-        renderPlayer();
     </script>
 </body>
 </html>
+
 
 
 
