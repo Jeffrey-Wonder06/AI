@@ -100,6 +100,14 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userName = prompt("Enter your name:");
+            if (userName) {
+                document.getElementById('scores').insertAdjacentHTML('beforebegin', `<h1>Welcome to the Scrabble Game, ${userName}!</h1>`);
+            }
+            init(); // Initialize the board after getting the user's name
+        });
+
         const boardSize = 15;
         const board = Array.from({ length: boardSize }, () => Array(boardSize).fill(' '));
         const specialTiles = [
@@ -276,12 +284,10 @@
             }
             renderBoard();
         }
-
-        // Initialize the board when the page loads
-        init();
     </script>
 </body>
 </html>
+
                     
 
 
