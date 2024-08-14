@@ -23,6 +23,8 @@
             align-items: center;
             justify-content: center;
             border: 1px solid #000;
+            font-size: 14px;
+            cursor: pointer;
         }
 
         #player-info, #controls {
@@ -31,6 +33,16 @@
 
         button {
             margin: 5px;
+        }
+
+        .letter-button {
+            margin: 2px;
+            width: 30px;
+            height: 30px;
+        }
+
+        .selected {
+            background-color: #f0f0f0;
         }
     </style>
 </head>
@@ -43,13 +55,11 @@
         <p>Rack: <span id="player-rack"></span></p>
     </div>
     <div id="controls">
-        <input type="text" id="word-input" placeholder="Enter word">
-        <input type="number" id="row-input" placeholder="Row (0-14)">
-        <input type="number" id="col-input" placeholder="Column (0-14)">
-        <select id="direction-input">
-            <option value="right">Right</option>
-            <option value="down">Down</option>
-        </select>
+        <div id="word-buttons"></div>
+        <div>
+            <button onclick="setDirection('right')">Right</button>
+            <button onclick="setDirection('down')">Down</button>
+        </div>
         <button onclick="submitWord()">Submit Word</button>
         <button onclick="skipTurn()">Skip Turn</button>
     </div>
@@ -65,6 +75,8 @@
 
         let board = Array.from({ length: 15 }, () => Array(15).fill(" "));
         let player = { name: "Player 1", score: 0, rack: generateRack() };
+        let direction = 'right';  // Default direction
+        let selectedCells = [];
 
         function generateRack() {
             const tiles = "AAAAAAAAAABBBCCCDDDDEEEEEEEEEFFFFGGGHHHIIIJJJKKLLLMMMNNNNNOOOOOPPPQQRRRRSSSSSTTTTTUUUUVVWWXYYZZ##".split('');
@@ -86,6 +98,7 @@
                 for (let col = 0; col < 15; col++) {
                     const cell = document.createElement('div');
                     cell.textContent = board[row][col];
+                    cell.onclick = () => selectCell(row, col);
                     boardDiv.appendChild(cell);
                 }
             }
@@ -94,28 +107,59 @@
         function renderPlayer() {
             document.getElementById('player-name').textContent = player.name;
             document.getElementById('player-score').textContent = player.score;
-            document.getElementById('player-rack').textContent = player.rack.join(', ');
+            document.getElementById('player-rack').textContent = player.rack.join(' ');
+            renderWordButtons();
+        }
+
+        function renderWordButtons() {
+            const wordButtonsDiv = document.getElementById('word-buttons');
+            wordButtonsDiv.innerHTML = '';
+            player.rack.forEach(letter => {
+                const button = document.createElement('button');
+                button.textContent = letter;
+                button.className = 'letter-button';
+                button.onclick = () => useLetter(letter);
+                wordButtonsDiv.appendChild(button);
+            });
+        }
+
+        function useLetter(letter) {
+            if (player.rack.includes(letter)) {
+                document.getElementById('word-input').value += letter;
+                player.rack.splice(player.rack.indexOf(letter), 1);
+                renderPlayer();
+            }
+        }
+
+        function setDirection(newDirection) {
+            direction = newDirection;
         }
 
         function submitWord() {
             const word = document.getElementById('word-input').value.toUpperCase();
-            const row = parseInt(document.getElementById('row-input').value, 10);
-            const col = parseInt(document.getElementById('col-input').value, 10);
-            const direction = document.getElementById('direction-input').value;
+            if (selectedCells.length === 0) {
+                alert('Select cells on the board first');
+                return;
+            }
 
-            if (!validateWord(word, row, col, direction)) {
+            const startRow = selectedCells[0][0];
+            const startCol = selectedCells[0][1];
+
+            if (!validateWord(word, startRow, startCol, direction)) {
                 alert('Invalid word or placement');
                 return;
             }
 
-            placeWord(word, row, col, direction);
+            placeWord(word, startRow, startCol, direction);
             calculateScore(word);
             renderBoard();
             renderPlayer();
+            document.getElementById('word-input').value = ''; // Clear input
+            selectedCells = [];
+            updateBoardUI();
         }
 
         function validateWord(word, row, col, direction) {
-            // Simple validation (more complex checks needed in a real game)
             return row >= 0 && row < 15 && col >= 0 && col < 15;
         }
 
@@ -142,11 +186,42 @@
             // Implement turn-skipping logic
         }
 
+        function selectCell(row, col) {
+            if (selectedCells.length === 0) {
+                // Start new selection
+                selectedCells.push([row, col]);
+            } else {
+                // Add to selection or finalize placement
+                if (direction === 'right') {
+                    if (col >= selectedCells[0][1] && col <= selectedCells[0][1] + player.rack.length - 1) {
+                        selectedCells.push([row, col]);
+                    }
+                } else if (direction === 'down') {
+                    if (row >= selectedCells[0][0] && row <= selectedCells[0][0] + player.rack.length - 1) {
+                        selectedCells.push([row, col]);
+                    }
+                }
+            }
+            updateBoardUI();
+        }
+
+        function updateBoardUI() {
+            const cells = document.querySelectorAll('#board div');
+            cells.forEach(cell => {
+                cell.classList.remove('selected');
+            });
+            selectedCells.forEach(([row, col]) => {
+                const index = row * 15 + col;
+                cells[index].classList.add('selected');
+            });
+        }
+
         renderBoard();
         renderPlayer();
     </script>
 </body>
 </html>
+
 
 
 
