@@ -87,7 +87,6 @@
     </style>
 </head>
 <body>
-
     <div id="scrabble-board"></div>
     <div id="rack"></div>
     <div id="controls">
@@ -213,24 +212,31 @@
         }
 
         document.getElementById('submit-move').addEventListener('click', () => {
-            // Calculate and update player score
-            const moveScore = calculateScore(board);
-            playerScore += moveScore;
-            document.getElementById('player-score').textContent = playerScore;
+            // Check if any word has been placed
+            const hasWordBeenPlaced = board.some(row => row.some(cell => cell !== ' '));
+            
+            if (hasWordBeenPlaced) {
+                // Calculate and update player score
+                const moveScore = calculateScore(board);
+                playerScore += moveScore;
+                document.getElementById('player-score').textContent = playerScore;
 
-            // Refill the rack and update the board
-            playerRack = refillRack(playerRack, tileBag, 7);
-            renderBoard();
-            updateRack();
+                // Refill the rack and update the board
+                playerRack = refillRack(playerRack, tileBag, 7);
+                renderBoard();
+                updateRack();
+                
+                // Check if the game has ended
+                if (tileBag.length === 0) {
+                    alert("The game has ended! Final scores:\nPlayer: " + playerScore + "\nAI: " + aiScore);
+                    return;
+                }
 
-            // Check if the game has ended
-            if (tileBag.length === 0) {
-                                alert("The game has ended! Final scores:\nPlayer: " + playerScore + "\nAI: " + aiScore);
-                return;
+                // Let the AI make a move
+                aiMove();
+            } else {
+                alert("Please place a word on the board before submitting.");
             }
-
-            // Let the AI make a move
-            aiMove();
         });
 
         document.getElementById('refill-rack').addEventListener('click', () => {
@@ -305,6 +311,7 @@
     </script>
 </body>
 </html>
+
 
 
 
