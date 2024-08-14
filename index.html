@@ -8,9 +8,12 @@
         body { font-family: Arial, sans-serif; }
         #game { display: flex; flex-direction: column; align-items: center; }
         #player-hand, #ai-hand { display: flex; gap: 10px; margin-bottom: 20px; }
+        #player-hand { flex-direction: row; }
+        #ai-hand { flex-direction: row-reverse; }
         .card { width: 50px; height: 70px; display: flex; align-items: center; justify-content: center; border: 1px solid #000; cursor: pointer; }
-        #discard-pile { margin-bottom: 20px; }
-        #deck { margin-bottom: 20px; }
+        #discard-pile, #market { margin-bottom: 20px; }
+        #market { display: flex; justify-content: center; }
+        #draw-button, #market-button { margin: 5px; }
         #status { margin-top: 20px; }
     </style>
 </head>
@@ -21,9 +24,11 @@
             <div class="card" id="discard-top">?</div>
         </div>
         <div id="player-hand"></div>
-        <div id="deck">
+        <div id="market">
             <button id="draw-button">Draw Card</button>
+            <button id="market-button">Market Draw</button>
         </div>
+        <div id="ai-hand"></div>
         <div id="status"></div>
     </div>
 
@@ -34,6 +39,7 @@
         let playerHand = [];
         let aiHand = [];
         let discardPile = [];
+        let marketPile = [];
         let currentPlayer = 'player'; // 'player' or 'ai'
         
         function initializeDeck() {
@@ -44,6 +50,7 @@
                 }
             }
             deck = shuffle(deck);
+            marketPile = deck.splice(0, 5); // Initialize market pile
         }
 
         function shuffle(array) {
@@ -62,6 +69,21 @@
                 return;
             }
             const card = deck.pop();
+            if (currentPlayer === 'player') {
+                playerHand.push(card);
+                renderPlayerHand();
+                checkWinCondition();
+                currentPlayer = 'ai';
+                setTimeout(aiTurn, 1000);
+            }
+        }
+
+        function marketDraw() {
+            if (marketPile.length === 0) {
+                alert('No more cards in the market!');
+                return;
+            }
+            const card = marketPile.pop();
             if (currentPlayer === 'player') {
                 playerHand.push(card);
                 renderPlayerHand();
@@ -131,10 +153,9 @@
         function renderAiHand() {
             const handDiv = document.getElementById('ai-hand');
             handDiv.innerHTML = '';
-            aiHand.forEach(card => {
+            aiHand.forEach(() => {
                 const cardDiv = document.createElement('div');
                 cardDiv.className = 'card';
-                cardDiv.textContent = `${card.value}${card.suit}`;
                 cardDiv.style.visibility = 'hidden'; // Hide AI's cards from the player
                 handDiv.appendChild(cardDiv);
             });
@@ -165,7 +186,7 @@
             playerHand = [];
             aiHand = [];
             discardPile = [];
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 4; i++) {
                 drawCard();
                 aiHand.push(deck.pop());
             }
@@ -176,10 +197,11 @@
         }
 
         document.getElementById('draw-button').onclick = drawCard;
+        document.getElementById('market-button').onclick = marketDraw;
 
         // Initialize the game
         initializeDeck();
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 4; i++) {
             drawCard();
             aiHand.push(deck.pop());
         }
@@ -189,6 +211,7 @@
     </script>
 </body>
 </html>
+
 
 
 
