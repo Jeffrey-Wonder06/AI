@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scrabble Game</title>
+    <title>Whot Game</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,28 +13,33 @@
             padding: 0;
         }
 
-        #board {
-            display: grid;
-            grid-template-columns: repeat(15, 30px);
-            grid-template-rows: repeat(15, 30px);
-            gap: 1px;
-            margin: 20px auto;
-            width: max-content;
-            background-color: #ddd;
+        #game {
+            margin: 20px;
         }
 
-        #board div {
-            width: 30px;
-            height: 30px;
+        #deck, #player-hand, #discard-pile {
+            display: flex;
+            justify-content: center;
+            margin: 10px;
+        }
+
+        .card {
+            width: 60px;
+            height: 90px;
             background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid #aaa;
+            font-size: 24px;
+            cursor: pointer;
         }
 
-        #rack, #enemyRack {
-            margin: 20px;
+        .card.selected {
+            border-color: #007bff;
+            background-color: #e7f0ff;
         }
 
         button {
@@ -53,66 +58,92 @@
     </style>
 </head>
 <body>
-    <h1>Scrabble Game</h1>
-    <div id="board"></div>
-    <div id="rack">
-        <button onclick="throwAwayPlayerRack()">Throw Away Rack</button>
-        <div id="playerRack"></div>
+    <h1>Whot Game</h1>
+    <div id="game">
+        <div id="discard-pile">
+            <div class="card" id="discard-top">?</div>
+        </div>
+        <div id="player-hand"></div>
+        <div id="deck">
+            <button id="draw-button">Draw Card</button>
+        </div>
     </div>
-    <div id="enemyRack"></div>
-    <button onclick="endGame()">End Game</button>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            setupBoard();
-            setupRack();
-            setupEnemyRack();
-        });
+        const suits = ['H', 'S', 'D', 'C']; // Hearts, Spades, Diamonds, Clubs
+        const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'W'];
+        let deck = [];
+        let playerHand = [];
+        let discardPile = [];
 
-        function setupBoard() {
-            const boardElement = document.getElementById('board');
-            for (let i = 0; i < 15 * 15; i++) {
-                const cell = document.createElement('div');
-                boardElement.appendChild(cell);
+        function initializeDeck() {
+            deck = [];
+            for (const suit of suits) {
+                for (const value of values) {
+                    deck.push({ suit, value });
+                }
+            }
+            deck = shuffle(deck);
+        }
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function drawCard() {
+            if (deck.length === 0) {
+                alert('No more cards in the deck!');
+                return;
+            }
+            const card = deck.pop();
+            playerHand.push(card);
+            renderPlayerHand();
+        }
+
+        function playCard(cardIndex) {
+            const card = playerHand.splice(cardIndex, 1)[0];
+            discardPile.push(card);
+            renderDiscardPile();
+            renderPlayerHand();
+        }
+
+        function renderPlayerHand() {
+            const handDiv = document.getElementById('player-hand');
+            handDiv.innerHTML = '';
+            playerHand.forEach((card, index) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                cardDiv.textContent = `${card.value}${card.suit}`;
+                cardDiv.onclick = () => playCard(index);
+                handDiv.appendChild(cardDiv);
+            });
+        }
+
+        function renderDiscardPile() {
+            const discardDiv = document.getElementById('discard-top');
+            if (discardPile.length > 0) {
+                const topCard = discardPile[discardPile.length - 1];
+                discardDiv.textContent = `${topCard.value}${topCard.suit}`;
+            } else {
+                discardDiv.textContent = '?';
             }
         }
 
-        function setupRack() {
-            const rackElement = document.getElementById('playerRack');
-            rackElement.innerHTML = '';
-            for (let i = 0; i < 7; i++) {
-                const letter = document.createElement('div');
-                letter.textContent = getRandomLetter();
-                letter.className = 'rack-letter';
-                rackElement.appendChild(letter);
-            }
-        }
+        document.getElementById('draw-button').onclick = drawCard;
 
-        function setupEnemyRack() {
-            const enemyRackElement = document.getElementById('enemyRack');
-            enemyRackElement.innerHTML = 'Enemy Rack: ';
-            for (let i = 0; i < 7; i++) {
-                const letter = document.createElement('span');
-                letter.textContent = getRandomLetter();
-                letter.className = 'enemy-letter';
-                enemyRackElement.appendChild(letter);
-            }
+        // Initialize game
+        initializeDeck();
+        for (let i = 0; i < 5; i++) {
+            drawCard(); // Draw initial hand
         }
-
-        function getRandomLetter() {
-            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            return letters[Math.floor(Math.random() * letters.length)];
-        }
-
-        function throwAwayPlayerRack() {
-            const rackElement = document.getElementById('playerRack');
-            rackElement.innerHTML = '';
-            setupRack();
-        }
-
-        function endGame() {
-            alert('Game Over');
-        }
+        renderPlayerHand();
+        renderDiscardPile();
     </script>
 </body>
 </html>
