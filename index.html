@@ -22,10 +22,9 @@
         #crossword {
             display: grid;
             gap: 2px;
-            grid-template-columns: repeat(10, 40px);
-            grid-template-rows: repeat(10, 40px);
             margin: 20px 0;
             border: 2px solid #000; /* Black border for the grid */
+            background-color: #3e2723; /* Brown background for the grid */
         }
 
         #crossword input {
@@ -162,7 +161,7 @@
                 return cells[y * 10 + x];
             }
 
-            // Reset cell background colors
+            // Reset cell background colors and data attributes
             for (let cell of cells) {
                 cell.classList.remove('black');
                 cell.dataset.answer = '';
@@ -189,7 +188,7 @@
                 }
             });
 
-            // Mark blocked cells
+            // Mark blocked cells (cells not part of any word)
             for (let i = 0; i < 10; i++) {
                 for (let j = 0; j < 10; j++) {
                     const cell = getCell(i, j);
@@ -244,11 +243,11 @@
             for (let cell of cells) {
                 if (cell.dataset.answer) {
                     cell.value = cell.dataset.answer; // Reveal the answer
-                    cell.dataset.answer = ''; // Clear the answer data
+                    cell.dataset.answer = ''; // Clear the answer
                 }
             }
 
-            score -= 10; // Deduct more points for showing the answer
+            score -= 15; // Deduct points for showing the answer
             updateStatus();
             moveToNextLevel();
         }
@@ -299,6 +298,7 @@
     </script>
 </body>
 </html>
+
 
 
 
