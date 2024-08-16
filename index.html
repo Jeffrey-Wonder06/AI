@@ -22,22 +22,25 @@
         #crossword {
             display: grid;
             gap: 2px;
-            grid-template-columns: repeat(10, 30px);
-            grid-template-rows: repeat(10, 30px);
+            grid-template-columns: repeat(10, 40px);
+            grid-template-rows: repeat(10, 40px);
             margin: 20px 0;
+            border: 2px solid #000; /* Black border for the grid */
         }
 
         #crossword input {
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             text-align: center;
-            border: 1px solid #000000;
+            border: 2px solid #000;
             background-color: #ffffff; /* White background for cells */
             color: #000000; /* Black text color */
+            font-size: 16px;
+            box-shadow: inset 0px 0px 5px #000; /* 3D effect */
         }
 
-        #crossword input[data-answer] {
-            background-color: #f5f5f5; /* Light gray for cells with answers */
+        #crossword input.black {
+            background-color: #000000; /* Black background for blocked cells */
         }
 
         #clues {
@@ -54,7 +57,7 @@
 
         button {
             display: block;
-            margin: 20px auto;
+            margin: 10px auto;
             padding: 10px 20px;
             font-size: 16px;
             background-color: #ff5722; /* Orange button */
@@ -66,17 +69,23 @@
         button:hover {
             background-color: #e64a19; /* Darker orange on hover */
         }
+
+        #status {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #status p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
     <h1>Crossword Game</h1>
-    <div id="level">
-        <label for="level-select">Select Level:</label>
-        <select id="level-select">
-            <option value="1">Level 1</option>
-            <option value="2">Level 2</option>
-            <option value="3">Level 3</option>
-        </select>
+    <div id="status">
+        <p>Level: <span id="current-level">1</span></p>
+        <p>Score: <span id="score">0</span></p>
+        <p>Badges: <span id="badges">0</span></p>
     </div>
     <div id="crossword"></div>
     <div id="clues">
@@ -84,9 +93,12 @@
         <div id="across"></div>
         <div id="down"></div>
     </div>
+    <button onclick="giveHint()">Hint</button>
+    <button onclick="showAnswer()">Show Answer</button>
     <button onclick="checkAnswers()">Check Answers</button>
+
     <script>
-        // Crossword data for different levels
+        // Initial game data
         const crosswordData = {
             1: {
                 across: {
@@ -107,30 +119,23 @@
                     1: { clue: "1 Down: The capital of France", answer: "PARIS", position: [0, 0], direction: 'down' },
                     5: { clue: "5 Down: A celestial body that orbits the sun", answer: "PLANET", position: [0, 1], direction: 'down' }
                 }
-            },
-            3: {
-                across: {
-                    1: { clue: "1 Across: The process of growth or development", answer: "EVOLUTION", position: [0, 0], direction: 'across' },
-                    7: { clue: "7 Across: The study of living organisms", answer: "BIOLOGY", position: [2, 0], direction: 'across' }
-                },
-                down: {
-                    1: { clue: "1 Down: A large body of water", answer: "OCEAN", position: [0, 0], direction: 'down' },
-                    5: { clue: "5 Down: A basic unit of life", answer: "CELL", position: [0, 1], direction: 'down' }
-                }
             }
+            // Additional levels can be added here
         };
 
         let currentLevel = 1;
+        let score = 0;
+        let badges = 0;
 
         function createGrid() {
             const crossword = document.getElementById('crossword');
             crossword.innerHTML = ''; // Clear existing grid
             const data = crosswordData[currentLevel];
 
-            // Determine grid size based on level (for simplicity, assuming 10x10 grid for all levels)
+            // Determine grid size (10x10 assumed here)
             const gridSize = 10;
-            crossword.style.gridTemplateColumns = `repeat(${gridSize}, 30px)`;
-            crossword.style.gridTemplateRows = `repeat(${gridSize}, 30px)`;
+            crossword.style.gridTemplateColumns = `repeat(${gridSize}, 40px)`;
+            crossword.style.gridTemplateRows = `repeat(${gridSize}, 40px)`;
 
             for (let i = 0; i < gridSize; i++) {
                 for (let j = 0; j < gridSize; j++) {
@@ -153,6 +158,12 @@
                 return cells[y * 10 + x];
             }
 
+            // Reset cell background colors
+            for (let cell of cells) {
+                cell.classList.remove('black');
+                cell.dataset.answer = '';
+            }
+
             Object.values(data.across).forEach(word => {
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
@@ -166,6 +177,16 @@
                     getCell(startX, startY + i).dataset.answer = word.answer[i];
                 }
             });
+
+            // Mark blocked cells (for simplicity, assuming all non-answer cells are blocked)
+            for (let i = 0; i < 10; i++) {
+                for (let j = 0; j < 10; j++) {
+                    const cell = getCell(i, j);
+                    if (!cell.dataset.answer) {
+                        cell.classList.add('black');
+                    }
+                }
+            }
         }
 
         function displayClues(data) {
@@ -188,6 +209,37 @@
             });
         }
 
+        function giveHint() {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+
+            for (let cell of cells) {
+                if (cell.dataset.answer && cell.value === '') {
+                    cell.value = cell.dataset.answer.charAt(0); // Reveal the first letter
+                    cell.dataset.answer = cell.dataset.answer.slice(1); // Update the remaining answer
+                    score -= 5; // Deduct points for hint
+                    updateStatus();
+                    break;
+                }
+            }
+        }
+
+        function showAnswer() {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+
+            for (let cell of cells) {
+                if (cell.dataset.answer) {
+                    cell.value = cell.dataset.answer; // Reveal the answer
+                    cell.dataset.answer = ''; // Clear the answer data
+                }
+            }
+
+            score -= 10; // Deduct more points for showing the answer
+            updateStatus();
+            moveToNextLevel();
+        }
+
         function checkAnswers() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
@@ -195,7 +247,7 @@
 
             for (let cell of cells) {
                 if (cell.dataset.answer && cell.value.toUpperCase() !== cell.dataset.answer) {
-                    cell.style.backgroundColor = 'red';
+                    cell.style.backgroundColor = 'red'; // Highlight incorrect answers
                     correct = false;
                 } else {
                     cell.style.backgroundColor = '';
@@ -203,23 +255,45 @@
             }
 
             if (correct) {
-                alert('Congratulations! All answers are correct.');
+                score += 50; // Award points for completing the level
+                badges += 1; // Award a badge for the completed level
+                updateStatus();
+                moveToNextLevel();
             } else {
                 alert('Some answers are incorrect. Please try again.');
             }
         }
 
-        document.getElementById('level-select').addEventListener('change', (event) => {
-            currentLevel = parseInt(event.target.value);
-            createGrid();
-        });
+        function updateStatus() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('badges').textContent = badges;
+            document.getElementById('current-level').textContent = currentLevel;
+        }
+
+        function moveToNextLevel() {
+            if (currentLevel < 60) {
+                currentLevel += 1;
+                createGrid();
+            } else {
+                alert('Congratulations! You have completed all levels.');
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             createGrid();
+            updateStatus();
         });
+
+        // Add event listener for level selection if you want to add level changing manually
+        // document.getElementById('level-select').addEventListener('change', (event) => {
+        //     currentLevel = parseInt(event.target.value);
+        //     createGrid();
+        // });
     </script>
 </body>
 </html>
+
+
 
 
 
