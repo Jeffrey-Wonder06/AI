@@ -119,7 +119,7 @@
                     },
                     down: {
                         1: { clue: "1 Down: Popular genre", answer: "COMEDY", position: [0, 0] },
-                        2: { clue: "2 Down: Famous director", answer: "SPIELBERG", position: [0, 2] },
+                        2: { clue: "2 Down: Famous director", answer: "SPIELBERG", position: [0, 1] },
                         3: { clue: "3 Down: Action hero", answer: "STATHAM", position: [2, 1] }
                     }
                 }
@@ -151,7 +151,6 @@
             const crossword = document.getElementById('crossword');
             crossword.innerHTML = ''; // Clear existing grid
 
-            // Determine grid size based on the crossword data
             const size = getMaxGridSize();
             crossword.style.gridTemplateColumns = `repeat(${size}, 30px)`;
             crossword.style.gridTemplateRows = `repeat(${size}, 30px)`;
@@ -199,6 +198,7 @@
                     const cell = getCell(startX + i, startY);
                     cell.classList.add('white');
                     cell.dataset.answer = word.answer[i];
+                    cell.dataset.clue = word.clue;
                 }
             });
 
@@ -212,6 +212,7 @@
                     } else {
                         cell.classList.add('white');
                         cell.dataset.answer = word.answer[i];
+                        cell.dataset.clue = word.clue;
                     }
                 }
             });
