@@ -11,8 +11,8 @@
         }
         #crossword {
             display: grid;
-            grid-template-columns: repeat(5, 40px);
-            grid-template-rows: repeat(4, 40px);
+            grid-template-columns: repeat(10, 40px); /* Adjusted for a larger board */
+            grid-template-rows: repeat(10, 40px); /* Adjusted for a larger board */
             gap: 1px;
             background-color: brown;
             margin: 20px auto;
@@ -33,13 +33,17 @@
             color: black;
         }
         #across, #down {
-            margin: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            text-align: left;
         }
         .clue {
             margin: 5px 0;
         }
         #controls {
-            margin: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            text-align: center;
         }
     </style>
 </head>
@@ -134,9 +138,9 @@
             const crossword = document.getElementById('crossword');
             crossword.innerHTML = ''; // Clear existing grid
 
-            // Determine grid size (5x4)
-            const gridSizeX = 5;
-            const gridSizeY = 4;
+            // Determine grid size (10x10 for larger board)
+            const gridSizeX = 10;
+            const gridSizeY = 10;
 
             // Create grid cells
             for (let i = 0; i < gridSizeY; i++) {
@@ -157,7 +161,7 @@
             const cells = crossword.getElementsByTagName('input');
 
             function getCell(x, y) {
-                return cells[y * 5 + x];
+                return cells[y * 10 + x];
             }
 
             // Reset cell background colors and data attributes
@@ -192,8 +196,8 @@
             });
 
             // Mark blocked cells (cells not part of any word)
-            for (let i = 0; i < 4; i++) {
-                for (let j = 0; j < 5; j++) {
+            for (let i = 0; i < 10; i++) {
+                for (let j = 0; j < 10; j++) {
                     const cell = getCell(j, i);
                     if (!cell.dataset.answer) {
                         cell.classList.add('black');
@@ -304,6 +308,7 @@
     </script>
 </body>
 </html>
+
 
 
 
