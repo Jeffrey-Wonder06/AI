@@ -10,10 +10,13 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #3e2723; /* Brown background */
+            color: #ffffff; /* White text color */
         }
 
         h1 {
             text-align: center;
+            color: #ffeb3b; /* Yellow color for heading */
         }
 
         #crossword {
@@ -21,17 +24,28 @@
             gap: 2px;
             grid-template-columns: repeat(10, 30px);
             grid-template-rows: repeat(10, 30px);
+            margin: 20px 0;
         }
 
         #crossword input {
             width: 30px;
             height: 30px;
             text-align: center;
-            border: 1px solid #ccc;
+            border: 1px solid #000000;
+            background-color: #ffffff; /* White background for cells */
+            color: #000000; /* Black text color */
+        }
+
+        #crossword input[data-answer] {
+            background-color: #f5f5f5; /* Light gray for cells with answers */
         }
 
         #clues {
             margin-top: 20px;
+        }
+
+        #clues h2 {
+            color: #ffeb3b; /* Yellow color for clues heading */
         }
 
         #clues div {
@@ -43,11 +57,27 @@
             margin: 20px auto;
             padding: 10px 20px;
             font-size: 16px;
+            background-color: #ff5722; /* Orange button */
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #e64a19; /* Darker orange on hover */
         }
     </style>
 </head>
 <body>
     <h1>Crossword Game</h1>
+    <div id="level">
+        <label for="level-select">Select Level:</label>
+        <select id="level-select">
+            <option value="1">Level 1</option>
+            <option value="2">Level 2</option>
+            <option value="3">Level 3</option>
+        </select>
+    </div>
     <div id="crossword"></div>
     <div id="clues">
         <h2>Clues</h2>
@@ -56,22 +86,52 @@
     </div>
     <button onclick="checkAnswers()">Check Answers</button>
     <script>
-        // Define crossword grid and clues
-        const gridSize = 10;
+        // Crossword data for different levels
         const crosswordData = {
-            across: {
-                1: { clue: "1 Across: A common fruit", answer: "APPLE", position: [0, 0], direction: 'across' },
-                5: { clue: "5 Across: A color", answer: "BLUE", position: [1, 0], direction: 'across' }
+            1: {
+                across: {
+                    1: { clue: "1 Across: A common fruit", answer: "APPLE", position: [0, 0], direction: 'across' },
+                    5: { clue: "5 Across: A color", answer: "BLUE", position: [1, 0], direction: 'across' }
+                },
+                down: {
+                    1: { clue: "1 Down: Opposite of night", answer: "DAY", position: [0, 0], direction: 'down' },
+                    5: { clue: "5 Down: Something you wear on your head", answer: "HAT", position: [0, 1], direction: 'down' }
+                }
             },
-            down: {
-                1: { clue: "1 Down: Opposite of night", answer: "DAY", position: [0, 0], direction: 'down' },
-                5: { clue: "5 Down: Something you wear on your head", answer: "HAT", position: [0, 1], direction: 'down' }
+            2: {
+                across: {
+                    1: { clue: "1 Across: A large, domesticated carnivorous mammal", answer: "TIGER", position: [0, 0], direction: 'across' },
+                    6: { clue: "6 Across: A vehicle with two wheels", answer: "BIKE", position: [1, 0], direction: 'across' }
+                },
+                down: {
+                    1: { clue: "1 Down: The capital of France", answer: "PARIS", position: [0, 0], direction: 'down' },
+                    5: { clue: "5 Down: A celestial body that orbits the sun", answer: "PLANET", position: [0, 1], direction: 'down' }
+                }
+            },
+            3: {
+                across: {
+                    1: { clue: "1 Across: The process of growth or development", answer: "EVOLUTION", position: [0, 0], direction: 'across' },
+                    7: { clue: "7 Across: The study of living organisms", answer: "BIOLOGY", position: [2, 0], direction: 'across' }
+                },
+                down: {
+                    1: { clue: "1 Down: A large body of water", answer: "OCEAN", position: [0, 0], direction: 'down' },
+                    5: { clue: "5 Down: A basic unit of life", answer: "CELL", position: [0, 1], direction: 'down' }
+                }
             }
         };
 
-        // Initialize crossword grid
+        let currentLevel = 1;
+
         function createGrid() {
             const crossword = document.getElementById('crossword');
+            crossword.innerHTML = ''; // Clear existing grid
+            const data = crosswordData[currentLevel];
+
+            // Determine grid size based on level (for simplicity, assuming 10x10 grid for all levels)
+            const gridSize = 10;
+            crossword.style.gridTemplateColumns = `repeat(${gridSize}, 30px)`;
+            crossword.style.gridTemplateRows = `repeat(${gridSize}, 30px)`;
+
             for (let i = 0; i < gridSize; i++) {
                 for (let j = 0; j < gridSize; j++) {
                     const cell = document.createElement('input');
@@ -80,25 +140,27 @@
                     crossword.appendChild(cell);
                 }
             }
+
+            placeWords(data);
+            displayClues(data);
         }
 
-        // Place words in the grid
-        function placeWords() {
+        function placeWords(data) {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
 
             function getCell(x, y) {
-                return cells[y * gridSize + x];
+                return cells[y * 10 + x];
             }
 
-            Object.values(crosswordData.across).forEach(word => {
+            Object.values(data.across).forEach(word => {
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
                     getCell(startX + i, startY).dataset.answer = word.answer[i];
                 }
             });
 
-            Object.values(crosswordData.down).forEach(word => {
+            Object.values(data.down).forEach(word => {
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
                     getCell(startX, startY + i).dataset.answer = word.answer[i];
@@ -106,25 +168,26 @@
             });
         }
 
-        // Display clues
-        function displayClues() {
+        function displayClues(data) {
             const acrossClues = document.getElementById('across');
             const downClues = document.getElementById('down');
 
-            Object.values(crosswordData.across).forEach(word => {
+            acrossClues.innerHTML = '';
+            downClues.innerHTML = '';
+
+            Object.values(data.across).forEach(word => {
                 const clue = document.createElement('div');
                 clue.textContent = word.clue;
                 acrossClues.appendChild(clue);
             });
 
-            Object.values(crosswordData.down).forEach(word => {
+            Object.values(data.down).forEach(word => {
                 const clue = document.createElement('div');
                 clue.textContent = word.clue;
                 downClues.appendChild(clue);
             });
         }
 
-        // Check answers
         function checkAnswers() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
@@ -146,14 +209,18 @@
             }
         }
 
+        document.getElementById('level-select').addEventListener('change', (event) => {
+            currentLevel = parseInt(event.target.value);
+            createGrid();
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
             createGrid();
-            placeWords();
-            displayClues();
         });
     </script>
 </body>
 </html>
+
 
 
 
