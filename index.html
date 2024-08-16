@@ -41,6 +41,7 @@
 
         #crossword input.black {
             background-color: #000000; /* Black background for blocked cells */
+            color: #000000; /* Black text color for blocked cells */
         }
 
         #clues {
@@ -98,7 +99,7 @@
     <button onclick="checkAnswers()">Check Answers</button>
 
     <script>
-        // Initial game data
+        // Initial game data with grid configuration
         const crosswordData = {
             1: {
                 across: {
@@ -126,6 +127,8 @@
         let currentLevel = 1;
         let score = 0;
         let badges = 0;
+        let hintsUsed = 0;
+        let answersRevealed = 0;
 
         function createGrid() {
             const crossword = document.getElementById('crossword');
@@ -137,6 +140,7 @@
             crossword.style.gridTemplateColumns = `repeat(${gridSize}, 40px)`;
             crossword.style.gridTemplateRows = `repeat(${gridSize}, 40px)`;
 
+            // Create grid cells
             for (let i = 0; i < gridSize; i++) {
                 for (let j = 0; j < gridSize; j++) {
                     const cell = document.createElement('input');
@@ -162,23 +166,30 @@
             for (let cell of cells) {
                 cell.classList.remove('black');
                 cell.dataset.answer = '';
+                cell.dataset.clue = '';
             }
 
+            // Place across words
             Object.values(data.across).forEach(word => {
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
-                    getCell(startX + i, startY).dataset.answer = word.answer[i];
+                    const cell = getCell(startX + i, startY);
+                    cell.dataset.answer += word.answer[i];
+                    cell.dataset.clue = word.clue;
                 }
             });
 
+            // Place down words
             Object.values(data.down).forEach(word => {
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
-                    getCell(startX, startY + i).dataset.answer = word.answer[i];
+                    const cell = getCell(startX, startY + i);
+                    cell.dataset.answer += word.answer[i];
+                    cell.dataset.clue = word.clue;
                 }
             });
 
-            // Mark blocked cells (for simplicity, assuming all non-answer cells are blocked)
+            // Mark blocked cells
             for (let i = 0; i < 10; i++) {
                 for (let j = 0; j < 10; j++) {
                     const cell = getCell(i, j);
@@ -210,6 +221,7 @@
         }
 
         function giveHint() {
+            hintsUsed++;
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
 
@@ -225,6 +237,7 @@
         }
 
         function showAnswer() {
+            answersRevealed++;
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
 
@@ -246,7 +259,7 @@
             let correct = true;
 
             for (let cell of cells) {
-                if (cell.dataset.answer && cell.value.toUpperCase() !== cell.dataset.answer) {
+                if (cell.dataset.answer && cell.value !== cell.dataset.answer) {
                     cell.style.backgroundColor = 'red'; // Highlight incorrect answers
                     correct = false;
                 } else {
@@ -283,12 +296,6 @@
             createGrid();
             updateStatus();
         });
-
-        // Add event listener for level selection if you want to add level changing manually
-        // document.getElementById('level-select').addEventListener('change', (event) => {
-        //     currentLevel = parseInt(event.target.value);
-        //     createGrid();
-        // });
     </script>
 </body>
 </html>
