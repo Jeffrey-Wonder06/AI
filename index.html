@@ -11,8 +11,8 @@
         }
         #crossword {
             display: grid;
-            grid-template-columns: repeat(10, 40px); /* Adjusted for a larger board */
-            grid-template-rows: repeat(10, 40px); /* Adjusted for a larger board */
+            grid-template-columns: repeat(10, 40px); /* Larger board */
+            grid-template-rows: repeat(10, 40px); /* Larger board */
             gap: 1px;
             background-color: brown;
             margin: 20px auto;
@@ -73,10 +73,10 @@
             physics: {
                 1: {
                     across: {
-                        1: { clue: "1 Across: Force per unit area", answer: "PRESSURE", position: [0, 0], direction: 'across' }
+                        1: { clue: "1 Across: Force per unit area", answer: "PRESSURE", position: [0, 0] }
                     },
                     down: {
-                        1: { clue: "1 Down: Measure of energy", answer: "JOULE", position: [0, 0], direction: 'down' }
+                        1: { clue: "1 Down: Measure of energy", answer: "JOULE", position: [0, 0] }
                     }
                 },
                 // Add more levels as needed
@@ -84,10 +84,10 @@
             history: {
                 1: {
                     across: {
-                        1: { clue: "1 Across: Ancient Egyptian writing", answer: "HIEROGLYPH", position: [0, 0], direction: 'across' }
+                        1: { clue: "1 Across: Ancient Egyptian writing", answer: "HIEROGLYPH", position: [0, 0] }
                     },
                     down: {
-                        1: { clue: "1 Down: World War II leader", answer: "CHURCHILL", position: [0, 0], direction: 'down' }
+                        1: { clue: "1 Down: World War II leader", answer: "CHURCHILL", position: [0, 0] }
                     }
                 },
                 // Add more levels as needed
@@ -95,10 +95,10 @@
             football: {
                 1: {
                     across: {
-                        1: { clue: "1 Across: Team's score", answer: "GOAL", position: [0, 0], direction: 'across' }
+                        1: { clue: "1 Across: Team's score", answer: "GOAL", position: [0, 0] }
                     },
                     down: {
-                        1: { clue: "1 Down: Football player", answer: "FORWARD", position: [0, 0], direction: 'down' }
+                        1: { clue: "1 Down: Football player", answer: "FORWARD", position: [0, 0] }
                     }
                 },
                 // Add more levels as needed
@@ -106,10 +106,10 @@
             movies: {
                 1: {
                     across: {
-                        1: { clue: "1 Across: Popular film genre", answer: "COMEDY", position: [0, 0], direction: 'across' }
+                        1: { clue: "1 Across: Popular film genre", answer: "COMEDY", position: [0, 0] }
                     },
                     down: {
-                        1: { clue: "1 Down: Famous film director", answer: "SPIELBERG", position: [0, 0], direction: 'down' }
+                        1: { clue: "1 Down: Famous film director", answer: "SPIELBERG", position: [0, 0] }
                     }
                 },
                 // Add more levels as needed
@@ -117,10 +117,10 @@
             music: {
                 1: {
                     across: {
-                        1: { clue: "1 Across: Popular genre", answer: "ROCK", position: [0, 0], direction: 'across' }
+                        1: { clue: "1 Across: Popular genre", answer: "ROCK", position: [0, 0] }
                     },
                     down: {
-                        1: { clue: "1 Down: Musical instrument", answer: "GUITAR", position: [0, 0], direction: 'down' }
+                        1: { clue: "1 Down: Musical instrument", answer: "GUITAR", position: [0, 0] }
                     }
                 },
                 // Add more levels as needed
@@ -159,6 +159,7 @@
         function placeWords() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
+            const data = crosswordData[currentTopic][currentLevel];
 
             function getCell(x, y) {
                 return cells[y * 10 + x];
@@ -171,14 +172,15 @@
                 cell.dataset.clue = '';
             }
 
-            const data = crosswordData[currentTopic][currentLevel];
-
             // Place across words
             Object.values(data.across).forEach(word => {
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = getCell(startX + i, startY);
                     cell.classList.add('white');
+                    if (cell.dataset.answer && cell.dataset.answer !== word.answer[i]) {
+                        cell.dataset.answer = ''; // Clear conflicting answers
+                    }
                     cell.dataset.answer += word.answer[i];
                     cell.dataset.clue = word.clue;
                 }
@@ -190,6 +192,9 @@
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = getCell(startX, startY + i);
                     cell.classList.add('white');
+                    if (cell.dataset.answer && cell.dataset.answer !== word.answer[i]) {
+                        cell.dataset.answer = ''; // Clear conflicting answers
+                    }
                     cell.dataset.answer += word.answer[i];
                     cell.dataset.clue = word.clue;
                 }
@@ -236,14 +241,15 @@
             const cells = crossword.getElementsByTagName('input');
 
             for (let cell of cells) {
-                if (cell.dataset.answer && cell.value === '') {
-                    cell.value = cell.dataset.answer.charAt(0); // Reveal the first letter
-                    cell.dataset.answer = cell.dataset.answer.slice(1); // Update the remaining answer
-                    score -= 5; // Deduct points for hint
-                    updateStatus();
+                if (cell.dataset.answer && !cell.value) {
+                    cell.value = cell.dataset.answer; // Reveal the first letter of the word
+                    cell.dataset.answer = ''; // Clear the answer
                     break;
                 }
             }
+
+            score -= 5; // Deduct points for hint
+            updateStatus();
         }
 
         function showAnswer() {
@@ -308,6 +314,7 @@
     </script>
 </body>
 </html>
+
 
 
 
