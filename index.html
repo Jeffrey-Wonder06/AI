@@ -7,95 +7,52 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #3e2723; /* Brown background */
-            color: #ffffff; /* White text color */
+            background-color: #f0f0f0;
         }
-
-        h1 {
-            text-align: center;
-            color: #ffeb3b; /* Yellow color for heading */
-        }
-
         #crossword {
             display: grid;
-            gap: 2px;
-            margin: 20px 0;
-            border: 2px solid #000; /* Black border for the grid */
-            background-color: #3e2723; /* Brown background for the grid */
             grid-template-columns: repeat(5, 40px);
             grid-template-rows: repeat(4, 40px);
+            gap: 1px;
+            background-color: brown;
+            margin: 20px auto;
         }
-
         #crossword input {
             width: 40px;
             height: 40px;
             text-align: center;
-            border: 2px solid #000;
-            background-color: #ffffff; /* White background for cells */
-            color: #000000; /* Black text color */
-            font-size: 16px;
-            box-shadow: inset 0px 0px 5px #000; /* 3D effect */
+            font-size: 18px;
+            border: 1px solid #ccc;
+            background-color: darkgrey;
         }
-
+        #crossword input.white {
+            background-color: white;
+        }
         #crossword input.black {
-            background-color: #000000; /* Black background for blocked cells */
-            color: #000000; /* Black text color for blocked cells */
+            background-color: black;
+            color: black;
         }
-
-        #clues {
-            margin-top: 20px;
+        #across, #down {
+            margin: 20px;
         }
-
-        #clues h2 {
-            color: #ffeb3b; /* Yellow color for clues heading */
-        }
-
-        #clues div {
-            margin-bottom: 10px;
-        }
-
-        button {
-            display: block;
-            margin: 10px auto;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #ff5722; /* Orange button */
-            color: #ffffff;
-            border: none;
-            border-radius: 5px;
-        }
-
-        button:hover {
-            background-color: #e64a19; /* Darker orange on hover */
-        }
-
-        #status {
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        #status p {
+        .clue {
             margin: 5px 0;
         }
-
-        #topic-selection {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        #topic-selection select {
-            padding: 10px;
-            font-size: 16px;
+        #controls {
+            margin: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Crossword Game</h1>
-    <div id="topic-selection">
-        <label for="topic">Choose Topic:</label>
+    <div id="crossword"></div>
+    <div id="controls">
+        <button onclick="giveHint()">Hint</button>
+        <button onclick="showAnswer()">Show Answer</button>
+        <button onclick="checkAnswers()">Check Answers</button>
+        <button onclick="moveToNextLevel()">Next Level</button>
+        <div id="current-level">Level: 1</div>
+        <div id="score">Score: 0</div>
+        <div id="badges">Badges: 0</div>
         <select id="topic" onchange="changeTopic()">
             <option value="physics">Physics</option>
             <option value="history">History</option>
@@ -104,23 +61,15 @@
             <option value="music">Music</option>
         </select>
     </div>
-    <div id="status">
-        <p>Level: <span id="current-level">1</span></p>
-        <p>Score: <span id="score">0</span></p>
-        <p>Badges: <span id="badges">0</span></p>
-    </div>
-    <div id="crossword"></div>
-    <div id="clues">
-        <h2>Clues</h2>
-        <div id="across"></div>
-        <div id="down"></div>
-    </div>
-    <button onclick="giveHint()">Hint</button>
-    <button onclick="showAnswer()">Show Answer</button>
-    <button onclick="checkAnswers()">Check Answers</button>
+    <div id="across"></div>
+    <div id="down"></div>
 
     <script>
-        const crosswordData = {
+        // JavaScript code will go here
+    </script>
+</body>
+</html>
+const crosswordData = {
     physics: {
         1: {
             across: {
@@ -130,7 +79,7 @@
                 1: { clue: "1 Down: Measure of energy", answer: "JOULE", position: [0, 0], direction: 'down' }
             }
         },
-        // Additional levels for Physics
+        // Add more levels as needed
     },
     history: {
         1: {
@@ -141,7 +90,7 @@
                 1: { clue: "1 Down: World War II leader", answer: "CHURCHILL", position: [0, 0], direction: 'down' }
             }
         },
-        // Additional levels for History
+        // Add more levels as needed
     },
     football: {
         1: {
@@ -152,7 +101,7 @@
                 1: { clue: "1 Down: Football player", answer: "FORWARD", position: [0, 0], direction: 'down' }
             }
         },
-        // Additional levels for Football
+        // Add more levels as needed
     },
     movies: {
         1: {
@@ -163,7 +112,7 @@
                 1: { clue: "1 Down: Famous film director", answer: "SPIELBERG", position: [0, 0], direction: 'down' }
             }
         },
-        // Additional levels for Movies
+        // Add more levels as needed
     },
     music: {
         1: {
@@ -174,7 +123,7 @@
                 1: { clue: "1 Down: Musical instrument", answer: "GUITAR", position: [0, 0], direction: 'down' }
             }
         },
-        // Additional levels for Music
+        // Add more levels as needed
     }
 };
 
@@ -217,7 +166,7 @@ function placeWords() {
 
     // Reset cell background colors and data attributes
     for (let cell of cells) {
-        cell.classList.remove('black');
+        cell.classList.remove('white', 'black');
         cell.dataset.answer = '';
         cell.dataset.clue = '';
     }
@@ -229,6 +178,7 @@ function placeWords() {
         const [startX, startY] = word.position;
         for (let i = 0; i < word.answer.length; i++) {
             const cell = getCell(startX + i, startY);
+            cell.classList.add('white');
             cell.dataset.answer += word.answer[i];
             cell.dataset.clue = word.clue;
         }
@@ -239,6 +189,7 @@ function placeWords() {
         const [startX, startY] = word.position;
         for (let i = 0; i < word.answer.length; i++) {
             const cell = getCell(startX, startY + i);
+            cell.classList.add('white');
             cell.dataset.answer += word.answer[i];
             cell.dataset.clue = word.clue;
         }
@@ -266,12 +217,14 @@ function displayClues() {
 
     Object.values(data.across).forEach((word, index) => {
         const clue = document.createElement('div');
+        clue.className = 'clue';
         clue.textContent = `${index + 1} Across: ${word.clue}`;
         acrossClues.appendChild(clue);
     });
 
     Object.values(data.down).forEach((word, index) => {
         const clue = document.createElement('div');
+        clue.className = 'clue';
         clue.textContent = `${index + 1} Down: ${word.clue}`;
         downClues.appendChild(clue);
     });
@@ -338,9 +291,9 @@ function moveToNextLevel() {
 }
 
 function updateStatus() {
-    document.getElementById('current-level').textContent = currentLevel;
-    document.getElementById('score').textContent = score;
-    document.getElementById('badges').textContent = badges;
+    document.getElementById('current-level').textContent = `Level: ${currentLevel}`;
+    document.getElementById('score').textContent = `Score: ${score}`;
+    document.getElementById('badges').textContent = `Badges: ${badges}`;
 }
 
 function changeTopic() {
@@ -352,10 +305,7 @@ function changeTopic() {
 }
 
 createGrid();
-        
-    </script>
-</body>
-</html>
+
 
 
 
