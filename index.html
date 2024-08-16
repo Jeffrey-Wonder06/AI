@@ -3,214 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Whot Game Against AI</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        #game { display: flex; flex-direction: column; align-items: center; }
-        #player-hand, #ai-hand { display: flex; gap: 10px; margin-bottom: 20px; }
-        #player-hand { flex-direction: row; }
-        #ai-hand { flex-direction: row-reverse; }
-        .card { width: 50px; height: 70px; display: flex; align-items: center; justify-content: center; border: 1px solid #000; cursor: pointer; }
-        #discard-pile, #market { margin-bottom: 20px; }
-        #market { display: flex; justify-content: center; }
-        #draw-button, #market-button { margin: 5px; }
-        #status { margin-top: 20px; }
-    </style>
+    <title>Crossword Game</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Whot Game Against AI</h1>
-    <div id="game">
-        <div id="discard-pile">
-            <div class="card" id="discard-top">?</div>
-        </div>
-        <div id="player-hand"></div>
-        <div id="market">
-            <button id="draw-button">Draw Card</button>
-            <button id="market-button">Market Draw</button>
-        </div>
-        <div id="ai-hand"></div>
-        <div id="status"></div>
+    <h1>Crossword Game</h1>
+    <div id="crossword"></div>
+    <div id="clues">
+        <h2>Clues</h2>
+        <div id="across"></div>
+        <div id="down"></div>
     </div>
-
-    <script>
-        const suits = ['H', 'S', 'D', 'C'];
-        const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'W'];
-        let deck = [];
-        let playerHand = [];
-        let aiHand = [];
-        let discardPile = [];
-        let marketPile = [];
-        let currentPlayer = 'player'; // 'player' or 'ai'
-        
-        function initializeDeck() {
-            deck = [];
-            for (const suit of suits) {
-                for (const value of values) {
-                    deck.push({ suit, value });
-                }
-            }
-            deck = shuffle(deck);
-            marketPile = deck.splice(0, 5); // Initialize market pile
-        }
-
-        function shuffle(array) {
-            let currentIndex = array.length, randomIndex;
-            while (currentIndex !== 0) {
-                randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex--;
-                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-            }
-            return array;
-        }
-
-        function drawCard() {
-            if (deck.length === 0) {
-                alert('No more cards in the deck!');
-                return;
-            }
-            const card = deck.pop();
-            if (currentPlayer === 'player') {
-                playerHand.push(card);
-                renderPlayerHand();
-                checkWinCondition();
-                currentPlayer = 'ai';
-                setTimeout(aiTurn, 1000);
-            }
-        }
-
-        function marketDraw() {
-            if (marketPile.length === 0) {
-                alert('No more cards in the market!');
-                return;
-            }
-            const card = marketPile.pop();
-            if (currentPlayer === 'player') {
-                playerHand.push(card);
-                renderPlayerHand();
-                checkWinCondition();
-                currentPlayer = 'ai';
-                setTimeout(aiTurn, 1000);
-            }
-        }
-
-        function playCard(cardIndex) {
-            if (currentPlayer === 'player') {
-                const card = playerHand.splice(cardIndex, 1)[0];
-                discardPile.push(card);
-                renderDiscardPile();
-                renderPlayerHand();
-                checkWinCondition();
-                currentPlayer = 'ai';
-                setTimeout(aiTurn, 1000);
-            }
-        }
-
-        function aiTurn() {
-            if (currentPlayer === 'ai') {
-                // AI logic: play the first valid card or draw a card
-                let played = false;
-
-                for (let i = 0; i < aiHand.length; i++) {
-                    const card = aiHand[i];
-                    if (isValidPlay(card)) {
-                        discardPile.push(aiHand.splice(i, 1)[0]);
-                        played = true;
-                        break;
-                    }
-                }
-
-                if (!played) {
-                    // Draw a card if no valid card is found
-                    if (deck.length > 0) {
-                        aiHand.push(deck.pop());
-                    }
-                }
-
-                renderDiscardPile();
-                renderAiHand();
-                checkWinCondition();
-                currentPlayer = 'player';
-            }
-        }
-
-        function isValidPlay(card) {
-            const topCard = discardPile[discardPile.length - 1];
-            return !topCard || card.suit === topCard.suit || card.value === topCard.value;
-        }
-
-        function renderPlayerHand() {
-            const handDiv = document.getElementById('player-hand');
-            handDiv.innerHTML = '';
-            playerHand.forEach((card, index) => {
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'card';
-                cardDiv.textContent = `${card.value}${card.suit}`;
-                cardDiv.onclick = () => playCard(index);
-                handDiv.appendChild(cardDiv);
-            });
-        }
-
-        function renderAiHand() {
-            const handDiv = document.getElementById('ai-hand');
-            handDiv.innerHTML = '';
-            aiHand.forEach(() => {
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'card';
-                cardDiv.style.visibility = 'hidden'; // Hide AI's cards from the player
-                handDiv.appendChild(cardDiv);
-            });
-        }
-
-        function renderDiscardPile() {
-            const discardDiv = document.getElementById('discard-top');
-            if (discardPile.length > 0) {
-                const topCard = discardPile[discardPile.length - 1];
-                discardDiv.textContent = `${topCard.value}${topCard.suit}`;
-            } else {
-                discardDiv.textContent = '?';
-            }
-        }
-
-        function checkWinCondition() {
-            if (playerHand.length === 0) {
-                alert('Congratulations! You win!');
-                resetGame();
-            } else if (aiHand.length === 0) {
-                alert('AI wins! Better luck next time!');
-                resetGame();
-            }
-        }
-
-        function resetGame() {
-            initializeDeck();
-            playerHand = [];
-            aiHand = [];
-            discardPile = [];
-            for (let i = 0; i < 4; i++) {
-                drawCard();
-                aiHand.push(deck.pop());
-            }
-            renderPlayerHand();
-            renderAiHand();
-            renderDiscardPile();
-            currentPlayer = 'player';
-        }
-
-        document.getElementById('draw-button').onclick = drawCard;
-        document.getElementById('market-button').onclick = marketDraw;
-
-        // Initialize the game
-        initializeDeck();
-        for (let i = 0; i < 4; i++) {
-            drawCard();
-            aiHand.push(deck.pop());
-        }
-        renderPlayerHand();
-        renderAiHand();
-        renderDiscardPile();
-    </script>
+    <button onclick="checkAnswers()">Check Answers</button>
+    <script src="script.js"></script>
 </body>
 </html>
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+#crossword {
+    display: grid;
+    gap: 2px;
+    grid-template-columns: repeat(10, 30px);
+    grid-template-rows: repeat(10, 30px);
+}
+
+#crossword input {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    border: 1px solid #ccc;
+}
+
+#clues {
+    margin-top: 20px;
+}
+
+#clues div {
+    margin-bottom: 10px;
+}
+
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+}
+// Define crossword grid and clues
+const gridSize = 10;
+const crosswordData = {
+    across: {
+        1: { clue: "1 Across: A common fruit", answer: "APPLE", position: [0, 0], direction: 'across' },
+        5: { clue: "5 Across: A color", answer: "BLUE", position: [1, 0], direction: 'across' }
+    },
+    down: {
+        1: { clue: "1 Down: Opposite of night", answer: "DAY", position: [0, 0], direction: 'down' },
+        5: { clue: "5 Down: Something you wear on your head", answer: "HAT", position: [0, 1], direction: 'down' }
+    }
+};
+
+// Initialize crossword grid
+function createGrid() {
+    const crossword = document.getElementById('crossword');
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            const cell = document.createElement('input');
+            cell.type = 'text';
+            cell.maxLength = 1;
+            crossword.appendChild(cell);
+        }
+    }
+}
+
+// Place words in the grid
+function placeWords() {
+    const crossword = document.getElementById('crossword');
+    const cells = crossword.getElementsByTagName('input');
+
+    function getCell(x, y) {
+        return cells[y * gridSize + x];
+    }
+
+    Object.values(crosswordData.across).forEach(word => {
+        const [startX, startY] = word.position;
+        for (let i = 0; i < word.answer.length; i++) {
+            getCell(startX + i, startY).dataset.answer = word.answer[i];
+        }
+    });
+
+    Object.values(crosswordData.down).forEach(word => {
+        const [startX, startY] = word.position;
+        for (let i = 0; i < word.answer.length; i++) {
+            getCell(startX, startY + i).dataset.answer = word.answer[i];
+        }
+    });
+}
+
+// Display clues
+function displayClues() {
+    const acrossClues = document.getElementById('across');
+    const downClues = document.getElementById('down');
+
+    Object.values(crosswordData.across).forEach(word => {
+        const clue = document.createElement('div');
+        clue.textContent = word.clue;
+        acrossClues.appendChild(clue);
+    });
+
+    Object.values(crosswordData.down).forEach(word => {
+        const clue = document.createElement('div');
+        clue.textContent = word.clue;
+        downClues.appendChild(clue);
+    });
+}
+
+// Check answers
+function checkAnswers() {
+    const crossword = document.getElementById('crossword');
+    const cells = crossword.getElementsByTagName('input');
+    let correct = true;
+
+    for (let cell of cells) {
+        if (cell.dataset.answer && cell.value.toUpperCase() !== cell.dataset.answer) {
+            cell.style.backgroundColor = 'red';
+            correct = false;
+        } else {
+            cell.style.backgroundColor = '';
+        }
+    }
+
+    if (correct) {
+        alert('Congratulations! All answers are correct.');
+    } else {
+        alert('Some answers are incorrect. Please try again.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    createGrid();
+    placeWords();
+    displayClues();
+});
+
 
 
 
