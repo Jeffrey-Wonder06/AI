@@ -11,17 +11,15 @@
         }
         #crossword {
             display: grid;
-            grid-template-columns: repeat(10, 40px); /* Larger board */
-            grid-template-rows: repeat(10, 40px); /* Larger board */
             gap: 1px;
             background-color: brown;
             margin: 20px auto;
         }
         #crossword input {
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
             text-align: center;
-            font-size: 18px;
+            font-size: 16px;
             border: 1px solid #ccc;
             background-color: darkgrey;
         }
@@ -153,21 +151,29 @@
             const crossword = document.getElementById('crossword');
             crossword.innerHTML = ''; // Clear existing grid
 
-            // Determine grid size (10x10 for larger board)
-            const gridSize = 10;
+            // Determine grid size based on the crossword data
+            const size = getMaxGridSize();
+            crossword.style.gridTemplateColumns = `repeat(${size}, 30px)`;
+            crossword.style.gridTemplateRows = `repeat(${size}, 30px)`;
 
             // Create grid cells
-            for (let i = 0; i < gridSize; i++) {
-                for (let j = 0; j < gridSize; j++) {
-                    const cell = document.createElement('input');
-                    cell.type = 'text';
-                    cell.maxLength = 1;
-                    crossword.appendChild(cell);
-                }
+            for (let i = 0; i < size * size; i++) {
+                const cell = document.createElement('input');
+                cell.type = 'text';
+                cell.maxLength = 1;
+                crossword.appendChild(cell);
             }
 
             placeWords();
             displayClues();
+        }
+
+        function getMaxGridSize() {
+            const words = Object.values(crosswordData[currentTopic].clues.across)
+                .concat(Object.values(crosswordData[currentTopic].clues.down));
+            const maxX = Math.max(...words.map(word => word.position[0] + word.answer.length));
+            const maxY = Math.max(...words.map(word => word.position[1] + word.answer.length));
+            return Math.max(maxX, maxY);
         }
 
         function placeWords() {
@@ -352,6 +358,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
