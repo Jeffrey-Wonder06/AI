@@ -71,59 +71,74 @@
     <script>
         const crosswordData = {
             physics: {
-                1: {
+                clues: {
                     across: {
-                        1: { clue: "1 Across: Force per unit area", answer: "PRESSURE", position: [0, 0] }
+                        1: { clue: "1 Across: Force per unit area", answer: "PRESSURE", position: [0, 0] },
+                        2: { clue: "2 Across: SI unit of force", answer: "NEWTON", position: [0, 1] },
+                        3: { clue: "3 Across: Matter's resistance to change", answer: "INERTIA", position: [2, 0] }
                     },
                     down: {
-                        1: { clue: "1 Down: Measure of energy", answer: "JOULE", position: [0, 0] }
+                        1: { clue: "1 Down: Measurement of energy", answer: "JOULE", position: [0, 0] },
+                        2: { clue: "2 Down: Fundamental quantity", answer: "MASS", position: [2, 1] },
+                        3: { clue: "3 Down: Unit of work", answer: "WATT", position: [0, 3] }
                     }
-                },
-                // Add more levels as needed
+                }
             },
             history: {
-                1: {
+                clues: {
                     across: {
-                        1: { clue: "1 Across: Ancient Egyptian writing", answer: "HIEROGLYPH", position: [0, 0] }
+                        1: { clue: "1 Across: Ancient Egyptian writing", answer: "HIEROGLYPH", position: [0, 0] },
+                        2: { clue: "2 Across: WW2 leader", answer: "CHURCHILL", position: [0, 1] },
+                        3: { clue: "3 Across: Famous Roman general", answer: "CAESAR", position: [2, 0] }
                     },
                     down: {
-                        1: { clue: "1 Down: World War II leader", answer: "CHURCHILL", position: [0, 0] }
+                        1: { clue: "1 Down: British Prime Minister", answer: "CHURCHILL", position: [0, 0] },
+                        2: { clue: "2 Down: Roman emperor", answer: "CAESAR", position: [0, 2] },
+                        3: { clue: "3 Down: Historical document", answer: "MAGNA", position: [3, 0] }
                     }
-                },
-                // Add more levels as needed
+                }
             },
             football: {
-                1: {
+                clues: {
                     across: {
-                        1: { clue: "1 Across: Team's score", answer: "GOAL", position: [0, 0] }
+                        1: { clue: "1 Across: Goalkeeper's area", answer: "PENALTY", position: [0, 0] },
+                        2: { clue: "2 Across: Popular football competition", answer: "WORLD", position: [0, 1] },
+                        3: { clue: "3 Across: Football position", answer: "STRIKER", position: [2, 0] }
                     },
                     down: {
-                        1: { clue: "1 Down: Football player", answer: "FORWARD", position: [0, 0] }
+                        1: { clue: "1 Down: The goal", answer: "GOAL", position: [0, 0] },
+                        2: { clue: "2 Down: The team", answer: "TEAM", position: [2, 0] },
+                        3: { clue: "3 Down: Football competition", answer: "WORLD", position: [1, 3] }
                     }
-                },
-                // Add more levels as needed
+                }
             },
             movies: {
-                1: {
+                clues: {
                     across: {
-                        1: { clue: "1 Across: Popular film genre", answer: "COMEDY", position: [0, 0] }
+                        1: { clue: "1 Across: Popular film genre", answer: "COMEDY", position: [0, 0] },
+                        2: { clue: "2 Across: Famous film director", answer: "SPIELBERG", position: [0, 1] },
+                        3: { clue: "3 Across: Action film hero", answer: "STATHAM", position: [2, 0] }
                     },
                     down: {
-                        1: { clue: "1 Down: Famous film director", answer: "SPIELBERG", position: [0, 0] }
+                        1: { clue: "1 Down: Popular genre", answer: "COMEDY", position: [0, 0] },
+                        2: { clue: "2 Down: Famous director", answer: "SPIELBERG", position: [0, 2] },
+                        3: { clue: "3 Down: Action hero", answer: "STATHAM", position: [2, 1] }
                     }
-                },
-                // Add more levels as needed
+                }
             },
             music: {
-                1: {
+                clues: {
                     across: {
-                        1: { clue: "1 Across: Popular genre", answer: "ROCK", position: [0, 0] }
+                        1: { clue: "1 Across: Popular genre", answer: "ROCK", position: [0, 0] },
+                        2: { clue: "2 Across: Instrument", answer: "GUITAR", position: [0, 1] },
+                        3: { clue: "3 Across: Vocalist's role", answer: "SINGER", position: [2, 0] }
                     },
                     down: {
-                        1: { clue: "1 Down: Musical instrument", answer: "GUITAR", position: [0, 0] }
+                        1: { clue: "1 Down: Genre", answer: "ROCK", position: [0, 0] },
+                        2: { clue: "2 Down: Instrument", answer: "GUITAR", position: [0, 1] },
+                        3: { clue: "3 Down: Role of a performer", answer: "SINGER", position: [2, 1] }
                     }
-                },
-                // Add more levels as needed
+                }
             }
         };
 
@@ -139,12 +154,11 @@
             crossword.innerHTML = ''; // Clear existing grid
 
             // Determine grid size (10x10 for larger board)
-            const gridSizeX = 10;
-            const gridSizeY = 10;
+            const gridSize = 10;
 
             // Create grid cells
-            for (let i = 0; i < gridSizeY; i++) {
-                for (let j = 0; j < gridSizeX; j++) {
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
                     const cell = document.createElement('input');
                     cell.type = 'text';
                     cell.maxLength = 1;
@@ -159,7 +173,7 @@
         function placeWords() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
-            const data = crosswordData[currentTopic][currentLevel];
+            const data = crosswordData[currentTopic].clues;
 
             function getCell(x, y) {
                 return cells[y * 10 + x];
@@ -178,11 +192,7 @@
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = getCell(startX + i, startY);
                     cell.classList.add('white');
-                    if (cell.dataset.answer && cell.dataset.answer !== word.answer[i]) {
-                        cell.dataset.answer = ''; // Clear conflicting answers
-                    }
-                    cell.dataset.answer += word.answer[i];
-                    cell.dataset.clue = word.clue;
+                    cell.dataset.answer = word.answer[i];
                 }
             });
 
@@ -191,92 +201,120 @@
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = getCell(startX, startY + i);
-                    cell.classList.add('white');
-                    if (cell.dataset.answer && cell.dataset.answer !== word.answer[i]) {
-                        cell.dataset.answer = ''; // Clear conflicting answers
+                    if (cell.classList.contains('white') && cell.dataset.answer === word.answer[i]) {
+                        cell.dataset.answer = word.answer[i]; // Confirming the shared letter
+                    } else {
+                        cell.classList.add('white');
+                        cell.dataset.answer = word.answer[i];
                     }
-                    cell.dataset.answer += word.answer[i];
-                    cell.dataset.clue = word.clue;
                 }
             });
-
-            // Mark blocked cells (cells not part of any word)
-            for (let i = 0; i < 10; i++) {
-                for (let j = 0; j < 10; j++) {
-                    const cell = getCell(j, i);
-                    if (!cell.dataset.answer) {
-                        cell.classList.add('black');
-                    }
-                }
-            }
         }
 
         function displayClues() {
             const acrossClues = document.getElementById('across');
             const downClues = document.getElementById('down');
-
             acrossClues.innerHTML = '<h3>Across</h3>';
             downClues.innerHTML = '<h3>Down</h3>';
 
-            const data = crosswordData[currentTopic][currentLevel];
+            const clues = crosswordData[currentTopic].clues;
 
-            Object.values(data.across).forEach((word, index) => {
-                const clue = document.createElement('div');
-                clue.className = 'clue';
-                clue.textContent = `${index + 1} Across: ${word.clue}`;
-                acrossClues.appendChild(clue);
+            Object.values(clues.across).forEach(clue => {
+                const clueElement = document.createElement('div');
+                clueElement.classList.add('clue');
+                clueElement.textContent = clue.clue;
+                acrossClues.appendChild(clueElement);
             });
 
-            Object.values(data.down).forEach((word, index) => {
-                const clue = document.createElement('div');
-                clue.className = 'clue';
-                clue.textContent = `${index + 1} Down: ${word.clue}`;
-                downClues.appendChild(clue);
+            Object.values(clues.down).forEach(clue => {
+                const clueElement = document.createElement('div');
+                clueElement.classList.add('clue');
+                clueElement.textContent = clue.clue;
+                downClues.appendChild(clueElement);
             });
         }
 
         function giveHint() {
-            hintsUsed++;
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
+            const data = crosswordData[currentTopic].clues;
+            const words = [...Object.values(data.across), ...Object.values(data.down)];
 
-            for (let cell of cells) {
-                if (cell.dataset.answer && !cell.value) {
-                    cell.value = cell.dataset.answer; // Reveal the first letter of the word
-                    cell.dataset.answer = ''; // Clear the answer
+            // Give a hint by revealing the first letter of a random word
+            for (const word of words) {
+                if (word.position) {
+                    const [startX, startY] = word.position;
+                    const direction = data.across[word.clue] ? 'across' : 'down';
+                    for (let i = 0; i < word.answer.length; i++) {
+                        const cell = direction === 'across'
+                            ? cells[startY * 10 + startX + i]
+                            : cells[(startY + i) * 10 + startX];
+
+                        if (!cell.value) {
+                            cell.value = cell.dataset.answer; // Reveal the first letter of the word
+                            cell.dataset.answer = ''; // Clear the answer
+                            break;
+                        }
+                    }
+                    hintsUsed++;
+                    score -= 5; // Deduct points for hint
+                    updateStatus();
                     break;
                 }
             }
-
-            score -= 5; // Deduct points for hint
-            updateStatus();
         }
 
         function showAnswer() {
-            answersRevealed++;
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
+            const data = crosswordData[currentTopic].clues;
+            const words = [...Object.values(data.across), ...Object.values(data.down)];
 
-            for (let cell of cells) {
-                if (cell.dataset.answer) {
-                    cell.value = cell.dataset.answer; // Reveal the answer
-                    cell.dataset.answer = ''; // Clear the answer
+            // Reveal all answers
+            for (const word of words) {
+                if (word.position) {
+                    const [startX, startY] = word.position;
+                    const direction = data.across[word.clue] ? 'across' : 'down';
+                    for (let i = 0; i < word.answer.length; i++) {
+                        const cell = direction === 'across'
+                            ? cells[startY * 10 + startX + i]
+                            : cells[(startY + i) * 10 + startX];
+
+                        cell.value = cell.dataset.answer; // Reveal the answer
+                        cell.dataset.answer = ''; // Clear the answer
+                    }
+                    answersRevealed++;
+                    score -= 10; // Deduct points for revealing answer
+                    moveToNextLevel();
+                    updateStatus();
+                    break;
                 }
             }
-
-            score -= 10; // Deduct points for revealing answer
-            moveToNextLevel();
-            updateStatus();
         }
 
         function checkAnswers() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
+            const data = crosswordData[currentTopic].clues;
+            const words = [...Object.values(data.across), ...Object.values(data.down)];
             let correct = true;
 
-            for (let cell of cells) {
-                if (cell.dataset.answer && cell.value !== cell.dataset.answer) {
-                    correct = false;
+            // Check if all answers are correct
+            for (const word of words) {
+                if (word.position) {
+                    const [startX, startY] = word.position;
+                    const direction = data.across[word.clue] ? 'across' : 'down';
+                    for (let i = 0; i < word.answer.length; i++) {
+                        const cell = direction === 'across'
+                            ? cells[startY * 10 + startX + i]
+                            : cells[(startY + i) * 10 + startX];
+
+                        if (cell.dataset.answer && cell.value !== cell.dataset.answer) {
+                            correct = false;
+                            break;
+                        }
+                    }
+                    if (!correct) break;
                 }
             }
 
