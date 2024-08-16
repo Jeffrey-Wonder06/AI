@@ -25,6 +25,8 @@
             margin: 20px 0;
             border: 2px solid #000; /* Black border for the grid */
             background-color: #3e2723; /* Brown background for the grid */
+            grid-template-columns: repeat(5, 40px);
+            grid-template-rows: repeat(4, 40px);
         }
 
         #crossword input {
@@ -78,10 +80,30 @@
         #status p {
             margin: 5px 0;
         }
+
+        #topic-selection {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #topic-selection select {
+            padding: 10px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
     <h1>Crossword Game</h1>
+    <div id="topic-selection">
+        <label for="topic">Choose Topic:</label>
+        <select id="topic" onchange="changeTopic()">
+            <option value="physics">Physics</option>
+            <option value="history">History</option>
+            <option value="football">Football</option>
+            <option value="movies">Movies</option>
+            <option value="music">Music</option>
+        </select>
+    </div>
     <div id="status">
         <p>Level: <span id="current-level">1</span></p>
         <p>Score: <span id="score">0</span></p>
@@ -98,31 +120,65 @@
     <button onclick="checkAnswers()">Check Answers</button>
 
     <script>
-        // Initial game data with grid configuration
         const crosswordData = {
-            1: {
-                across: {
-                    1: { clue: "1 Across: A common fruit", answer: "APPLE", position: [0, 0], direction: 'across' },
-                    5: { clue: "5 Across: A color", answer: "BLUE", position: [1, 0], direction: 'across' }
+            physics: {
+                1: {
+                    across: {
+                        1: { clue: "1 Across: Force per unit area", answer: "PRESSURE", position: [0, 0], direction: 'across' }
+                    },
+                    down: {
+                        1: { clue: "1 Down: Measure of energy", answer: "JOULE", position: [0, 0], direction: 'down' }
+                    }
                 },
-                down: {
-                    1: { clue: "1 Down: Opposite of night", answer: "DAY", position: [0, 0], direction: 'down' },
-                    5: { clue: "5 Down: Something you wear on your head", answer: "HAT", position: [0, 1], direction: 'down' }
-                }
+                // Additional levels for Physics
             },
-            2: {
-                across: {
-                    1: { clue: "1 Across: A large, domesticated carnivorous mammal", answer: "TIGER", position: [0, 0], direction: 'across' },
-                    6: { clue: "6 Across: A vehicle with two wheels", answer: "BIKE", position: [1, 0], direction: 'across' }
+            history: {
+                1: {
+                    across: {
+                        1: { clue: "1 Across: Ancient Egyptian writing", answer: "HIEROGLYPH", position: [0, 0], direction: 'across' }
+                    },
+                    down: {
+                        1: { clue: "1 Down: World War II leader", answer: "CHURCHILL", position: [0, 0], direction: 'down' }
+                    }
                 },
-                down: {
-                    1: { clue: "1 Down: The capital of France", answer: "PARIS", position: [0, 0], direction: 'down' },
-                    5: { clue: "5 Down: A celestial body that orbits the sun", answer: "PLANET", position: [0, 1], direction: 'down' }
-                }
+                // Additional levels for History
+            },
+            football: {
+                1: {
+                    across: {
+                        1: { clue: "1 Across: Team's score", answer: "GOAL", position: [0, 0], direction: 'across' }
+                    },
+                    down: {
+                        1: { clue: "1 Down: Football player", answer: "FORWARD", position: [0, 0], direction: 'down' }
+                    }
+                },
+                // Additional levels for Football
+            },
+            movies: {
+                1: {
+                    across: {
+                        1: { clue: "1 Across: Popular film genre", answer: "COMEDY", position: [0, 0], direction: 'across' }
+                    },
+                    down: {
+                        1: { clue: "1 Down: Famous film director", answer: "SPIELBERG", position: [0, 0], direction: 'down' }
+                    }
+                },
+                // Additional levels for Movies
+            },
+            music: {
+                1: {
+                    across: {
+                        1: { clue: "1 Across: Popular genre", answer: "ROCK", position: [0, 0], direction: 'across' }
+                    },
+                    down: {
+                        1: { clue: "1 Down: Musical instrument", answer: "GUITAR", position: [0, 0], direction: 'down' }
+                    }
+                },
+                // Additional levels for Music
             }
-            // Additional levels can be added here
         };
 
+        let currentTopic = 'physics';
         let currentLevel = 1;
         let score = 0;
         let badges = 0;
@@ -132,16 +188,14 @@
         function createGrid() {
             const crossword = document.getElementById('crossword');
             crossword.innerHTML = ''; // Clear existing grid
-            const data = crosswordData[currentLevel];
 
-            // Determine grid size (10x10 assumed here)
-            const gridSize = 10;
-            crossword.style.gridTemplateColumns = `repeat(${gridSize}, 40px)`;
-            crossword.style.gridTemplateRows = `repeat(${gridSize}, 40px)`;
+            // Determine grid size (5x4)
+            const gridSizeX = 5;
+            const gridSizeY = 4;
 
             // Create grid cells
-            for (let i = 0; i < gridSize; i++) {
-                for (let j = 0; j < gridSize; j++) {
+            for (let i = 0; i < gridSizeY; i++) {
+                for (let j = 0; j < gridSizeX; j++) {
                     const cell = document.createElement('input');
                     cell.type = 'text';
                     cell.maxLength = 1;
@@ -149,16 +203,16 @@
                 }
             }
 
-            placeWords(data);
-            displayClues(data);
+            placeWords();
+            displayClues();
         }
 
-        function placeWords(data) {
+        function placeWords() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
 
             function getCell(x, y) {
-                return cells[y * 10 + x];
+                return cells[y * 5 + x];
             }
 
             // Reset cell background colors and data attributes
@@ -167,6 +221,8 @@
                 cell.dataset.answer = '';
                 cell.dataset.clue = '';
             }
+
+            const data = crosswordData[currentTopic][currentLevel];
 
             // Place across words
             Object.values(data.across).forEach(word => {
@@ -189,9 +245,9 @@
             });
 
             // Mark blocked cells (cells not part of any word)
-            for (let i = 0; i < 10; i++) {
-                for (let j = 0; j < 10; j++) {
-                    const cell = getCell(i, j);
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 5; j++) {
+                    const cell = getCell(j, i);
                     if (!cell.dataset.answer) {
                         cell.classList.add('black');
                     }
@@ -199,12 +255,14 @@
             }
         }
 
-        function displayClues(data) {
+        function displayClues() {
             const acrossClues = document.getElementById('across');
             const downClues = document.getElementById('down');
 
             acrossClues.innerHTML = '';
             downClues.innerHTML = '';
+
+            const data = crosswordData[currentTopic][currentLevel];
 
             Object.values(data.across).forEach(word => {
                 const clue = document.createElement('div');
@@ -259,45 +317,45 @@
 
             for (let cell of cells) {
                 if (cell.dataset.answer && cell.value !== cell.dataset.answer) {
-                    cell.style.backgroundColor = 'red'; // Highlight incorrect answers
                     correct = false;
-                } else {
-                    cell.style.backgroundColor = '';
                 }
             }
 
             if (correct) {
-                score += 50; // Award points for completing the level
-                badges += 1; // Award a badge for the completed level
-                updateStatus();
                 moveToNextLevel();
             } else {
                 alert('Some answers are incorrect. Please try again.');
             }
         }
 
+        function moveToNextLevel() {
+            if (currentLevel < 20) {
+                currentLevel++;
+            } else {
+                alert('Congratulations! You have completed all levels for this topic.');
+            }
+            createGrid();
+        }
+
         function updateStatus() {
+            document.getElementById('current-level').textContent = currentLevel;
             document.getElementById('score').textContent = score;
             document.getElementById('badges').textContent = badges;
-            document.getElementById('current-level').textContent = currentLevel;
         }
 
-        function moveToNextLevel() {
-            if (currentLevel < 60) {
-                currentLevel += 1;
-                createGrid();
-            } else {
-                alert('Congratulations! You have completed all levels.');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
+        function changeTopic() {
+            const select = document.getElementById('topic');
+            currentTopic = select.value;
+            currentLevel = 1;
             createGrid();
             updateStatus();
-        });
+        }
+
+        createGrid();
     </script>
 </body>
 </html>
+
 
 
 
