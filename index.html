@@ -206,8 +206,8 @@
             const acrossClues = document.getElementById('across');
             const downClues = document.getElementById('down');
 
-            acrossClues.innerHTML = '';
-            downClues.innerHTML = '';
+            acrossClues.innerHTML = '<h3>Across</h3>';
+            downClues.innerHTML = '<h3>Down</h3>';
 
             const data = crosswordData[currentTopic][currentLevel];
 
@@ -254,9 +254,9 @@
                 }
             }
 
-            score -= 15; // Deduct points for showing the answer
-            updateStatus();
+            score -= 10; // Deduct points for revealing answer
             moveToNextLevel();
+            updateStatus();
         }
 
         function checkAnswers() {
