@@ -4,7 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crossword Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #crossword {
+            display: grid;
+            gap: 2px;
+            grid-template-columns: repeat(10, 30px);
+            grid-template-rows: repeat(10, 30px);
+        }
+
+        #crossword input {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+
+        #clues {
+            margin-top: 20px;
+        }
+
+        #clues div {
+            margin-bottom: 10px;
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
     <h1>Crossword Game</h1>
@@ -15,143 +55,106 @@
         <div id="down"></div>
     </div>
     <button onclick="checkAnswers()">Check Answers</button>
-    <script src="script.js"></script>
+    <script>
+        // Define crossword grid and clues
+        const gridSize = 10;
+        const crosswordData = {
+            across: {
+                1: { clue: "1 Across: A common fruit", answer: "APPLE", position: [0, 0], direction: 'across' },
+                5: { clue: "5 Across: A color", answer: "BLUE", position: [1, 0], direction: 'across' }
+            },
+            down: {
+                1: { clue: "1 Down: Opposite of night", answer: "DAY", position: [0, 0], direction: 'down' },
+                5: { clue: "5 Down: Something you wear on your head", answer: "HAT", position: [0, 1], direction: 'down' }
+            }
+        };
+
+        // Initialize crossword grid
+        function createGrid() {
+            const crossword = document.getElementById('crossword');
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const cell = document.createElement('input');
+                    cell.type = 'text';
+                    cell.maxLength = 1;
+                    crossword.appendChild(cell);
+                }
+            }
+        }
+
+        // Place words in the grid
+        function placeWords() {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+
+            function getCell(x, y) {
+                return cells[y * gridSize + x];
+            }
+
+            Object.values(crosswordData.across).forEach(word => {
+                const [startX, startY] = word.position;
+                for (let i = 0; i < word.answer.length; i++) {
+                    getCell(startX + i, startY).dataset.answer = word.answer[i];
+                }
+            });
+
+            Object.values(crosswordData.down).forEach(word => {
+                const [startX, startY] = word.position;
+                for (let i = 0; i < word.answer.length; i++) {
+                    getCell(startX, startY + i).dataset.answer = word.answer[i];
+                }
+            });
+        }
+
+        // Display clues
+        function displayClues() {
+            const acrossClues = document.getElementById('across');
+            const downClues = document.getElementById('down');
+
+            Object.values(crosswordData.across).forEach(word => {
+                const clue = document.createElement('div');
+                clue.textContent = word.clue;
+                acrossClues.appendChild(clue);
+            });
+
+            Object.values(crosswordData.down).forEach(word => {
+                const clue = document.createElement('div');
+                clue.textContent = word.clue;
+                downClues.appendChild(clue);
+            });
+        }
+
+        // Check answers
+        function checkAnswers() {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            let correct = true;
+
+            for (let cell of cells) {
+                if (cell.dataset.answer && cell.value.toUpperCase() !== cell.dataset.answer) {
+                    cell.style.backgroundColor = 'red';
+                    correct = false;
+                } else {
+                    cell.style.backgroundColor = '';
+                }
+            }
+
+            if (correct) {
+                alert('Congratulations! All answers are correct.');
+            } else {
+                alert('Some answers are incorrect. Please try again.');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createGrid();
+            placeWords();
+            displayClues();
+        });
+    </script>
 </body>
 </html>
-body {
-    font-family: Arial, sans-serif;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-}
 
-h1 {
-    text-align: center;
-}
-
-#crossword {
-    display: grid;
-    gap: 2px;
-    grid-template-columns: repeat(10, 30px);
-    grid-template-rows: repeat(10, 30px);
-}
-
-#crossword input {
-    width: 30px;
-    height: 30px;
-    text-align: center;
-    border: 1px solid #ccc;
-}
-
-#clues {
-    margin-top: 20px;
-}
-
-#clues div {
-    margin-bottom: 10px;
-}
-
-button {
-    display: block;
-    margin: 20px auto;
-    padding: 10px 20px;
-    font-size: 16px;
-}
-// Define crossword grid and clues
-const gridSize = 10;
-const crosswordData = {
-    across: {
-        1: { clue: "1 Across: A common fruit", answer: "APPLE", position: [0, 0], direction: 'across' },
-        5: { clue: "5 Across: A color", answer: "BLUE", position: [1, 0], direction: 'across' }
-    },
-    down: {
-        1: { clue: "1 Down: Opposite of night", answer: "DAY", position: [0, 0], direction: 'down' },
-        5: { clue: "5 Down: Something you wear on your head", answer: "HAT", position: [0, 1], direction: 'down' }
-    }
-};
-
-// Initialize crossword grid
-function createGrid() {
-    const crossword = document.getElementById('crossword');
-    for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-            const cell = document.createElement('input');
-            cell.type = 'text';
-            cell.maxLength = 1;
-            crossword.appendChild(cell);
-        }
-    }
-}
-
-// Place words in the grid
-function placeWords() {
-    const crossword = document.getElementById('crossword');
-    const cells = crossword.getElementsByTagName('input');
-
-    function getCell(x, y) {
-        return cells[y * gridSize + x];
-    }
-
-    Object.values(crosswordData.across).forEach(word => {
-        const [startX, startY] = word.position;
-        for (let i = 0; i < word.answer.length; i++) {
-            getCell(startX + i, startY).dataset.answer = word.answer[i];
-        }
-    });
-
-    Object.values(crosswordData.down).forEach(word => {
-        const [startX, startY] = word.position;
-        for (let i = 0; i < word.answer.length; i++) {
-            getCell(startX, startY + i).dataset.answer = word.answer[i];
-        }
-    });
-}
-
-// Display clues
-function displayClues() {
-    const acrossClues = document.getElementById('across');
-    const downClues = document.getElementById('down');
-
-    Object.values(crosswordData.across).forEach(word => {
-        const clue = document.createElement('div');
-        clue.textContent = word.clue;
-        acrossClues.appendChild(clue);
-    });
-
-    Object.values(crosswordData.down).forEach(word => {
-        const clue = document.createElement('div');
-        clue.textContent = word.clue;
-        downClues.appendChild(clue);
-    });
-}
-
-// Check answers
-function checkAnswers() {
-    const crossword = document.getElementById('crossword');
-    const cells = crossword.getElementsByTagName('input');
-    let correct = true;
-
-    for (let cell of cells) {
-        if (cell.dataset.answer && cell.value.toUpperCase() !== cell.dataset.answer) {
-            cell.style.backgroundColor = 'red';
-            correct = false;
-        } else {
-            cell.style.backgroundColor = '';
-        }
-    }
-
-    if (correct) {
-        alert('Congratulations! All answers are correct.');
-    } else {
-        alert('Some answers are incorrect. Please try again.');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    createGrid();
-    placeWords();
-    displayClues();
-});
 
 
 
