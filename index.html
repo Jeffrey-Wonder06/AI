@@ -56,11 +56,7 @@
         <div id="score">Score: 0</div>
         <div id="badges">Badges: 0</div>
         <select id="topic" onchange="changeTopic()">
-            <option value="physics">Physics</option>
-            <option value="history">History</option>
-            <option value="football">Football</option>
-            <option value="movies">Movies</option>
-            <option value="music">Music</option>
+            <option value="simple">Simple Puzzle</option>
         </select>
     </div>
     <div id="across"></div>
@@ -68,79 +64,20 @@
 
     <script>
         const crosswordData = {
-            physics: {
+            simple: {
                 clues: {
                     across: {
-                        1: { clue: "1 Across: Force per unit area", answer: "PRESSURE", position: [0, 0] },
-                        2: { clue: "2 Across: SI unit of force", answer: "NEWTON", position: [1, 0] },
-                        3: { clue: "3 Across: Matter's resistance to change", answer: "INERTIA", position: [3, 0] }
+                        1: { clue: "1 Across: Earth's natural satellite", answer: "MOON", position: [0, 0] },
+                        2: { clue: "2 Across: Opposite of night", answer: "DAY", position: [1, 2] }
                     },
                     down: {
-                        1: { clue: "1 Down: Measurement of energy", answer: "JOULE", position: [0, 0] },
-                        2: { clue: "2 Down: Fundamental quantity", answer: "MASS", position: [1, 0] },
-                        3: { clue: "3 Down: Unit of work", answer: "WATT", position: [0, 3] }
-                    }
-                }
-            },
-            history: {
-                clues: {
-                    across: {
-                        1: { clue: "1 Across: Ancient Egyptian writing", answer: "HIEROGLYPH", position: [0, 0] },
-                        2: { clue: "2 Across: WW2 leader", answer: "CHURCHILL", position: [1, 0] },
-                        3: { clue: "3 Across: Famous Roman general", answer: "CAESAR", position: [3, 0] }
-                    },
-                    down: {
-                        1: { clue: "1 Down: British Prime Minister", answer: "CHURCHILL", position: [0, 0] },
-                        2: { clue: "2 Down: Roman emperor", answer: "CAESAR", position: [1, 0] },
-                        3: { clue: "3 Down: Historical document", answer: "MAGNA", position: [4, 0] }
-                    }
-                }
-            },
-            football: {
-                clues: {
-                    across: {
-                        1: { clue: "1 Across: Goalkeeper's area", answer: "PENALTY", position: [0, 0] },
-                        2: { clue: "2 Across: Popular football competition", answer: "WORLD", position: [1, 0] },
-                        3: { clue: "3 Across: Football position", answer: "STRIKER", position: [3, 0] }
-                    },
-                    down: {
-                        1: { clue: "1 Down: The goal", answer: "GOAL", position: [0, 0] },
-                        2: { clue: "2 Down: The team", answer: "TEAM", position: [1, 0] },
-                        3: { clue: "3 Down: Football competition", answer: "WORLD", position: [0, 4] }
-                    }
-                }
-            },
-            movies: {
-                clues: {
-                    across: {
-                        1: { clue: "1 Across: Popular film genre", answer: "COMEDY", position: [0, 0] },
-                        2: { clue: "2 Across: Famous film director", answer: "SPIELBERG", position: [1, 0] },
-                        3: { clue: "3 Across: Action film hero", answer: "STATHAM", position: [3, 0] }
-                    },
-                    down: {
-                        1: { clue: "1 Down: Popular genre", answer: "COMEDY", position: [0, 0] },
-                        2: { clue: "2 Down: Famous director", answer: "SPIELBERG", position: [1, 0] },
-                        3: { clue: "3 Down: Action hero", answer: "STATHAM", position: [3, 0] }
-                    }
-                }
-            },
-            music: {
-                clues: {
-                    across: {
-                        1: { clue: "1 Across: Popular genre", answer: "ROCK", position: [0, 0] },
-                        2: { clue: "2 Across: Instrument", answer: "GUITAR", position: [1, 0] },
-                        3: { clue: "3 Across: Vocalist's role", answer: "SINGER", position: [3, 0] }
-                    },
-                    down: {
-                        1: { clue: "1 Down: Genre", answer: "ROCK", position: [0, 0] },
-                        2: { clue: "2 Down: Instrument", answer: "GUITAR", position: [1, 0] },
-                        3: { clue: "3 Down: Role of a performer", answer: "SINGER", position: [3, 0] }
+                        1: { clue: "1 Down: A period of 24 hours", answer: "DAY", position: [0, 2] }
                     }
                 }
             }
         };
 
-        let currentTopic = 'physics';
+        let currentTopic = 'simple';
         let currentLevel = 1;
         let score = 0;
         let badges = 0;
@@ -314,6 +251,7 @@
     </script>
 </body>
 </html>
+
 
 
 
