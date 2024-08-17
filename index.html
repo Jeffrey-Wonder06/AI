@@ -67,11 +67,11 @@
             simple: {
                 clues: {
                     across: {
-                        1: { clue: "1 Across: Earth's natural satellite", answer: "MOON", position: [0, 0] },
-                        2: { clue: "2 Across: Opposite of night", answer: "DAY", position: [1, 2] }
+                        1: { clue: "1 Across: The opposite of night", answer: "DAY", position: [0, 0] },
+                        2: { clue: "2 Across: Earth's natural satellite", answer: "MOON", position: [1, 1] }
                     },
                     down: {
-                        1: { clue: "1 Down: A period of 24 hours", answer: "DAY", position: [0, 2] }
+                        1: { clue: "1 Down: A desert animal known for its humps", answer: "CAMEL", position: [0, 0] }
                     }
                 }
             }
@@ -243,14 +243,20 @@
             const select = document.getElementById('topic');
             currentTopic = select.value;
             currentLevel = 1;
+            hintsUsed = 0;
+            answersRevealed = 0;
+            score = 0;
+            badges = 0;
             createGrid();
             updateStatus();
         }
 
-        createGrid();
+        createGrid(); // Initialize grid
+        updateStatus();
     </script>
 </body>
 </html>
+
 
 
 
