@@ -7,43 +7,33 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #0000ff;
+            background-color: #f0f0f0;
             text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        #welcome-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
         }
         #welcome-message {
             font-size: 36px;
-            color: #ff5733;
-            font-weight: bold;
-            animation: colorChange 3s infinite;
+            color: #000;
+            margin-top: 50px;
+            animation: colorChange 2s infinite;
         }
-        #subtext {
+        #prompt-message {
             font-size: 24px;
-            margin-top: 10px;
-        }
-        @keyframes colorChange {
-            0% { color: #ff5733; }
-            50% { color: #33c1ff; }
-            100% { color: #ff5733; }
+            margin: 20px 0;
         }
         #subject-selection {
             display: none;
-            flex-direction: column;
-            align-items: center;
-            margin: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
         }
         #subject-selection button {
             margin: 10px;
             padding: 10px;
             font-size: 18px;
+        }
+        #crossword-container {
+            display: none;
+            margin-top: 20px;
         }
         #crossword {
             display: grid;
@@ -81,15 +71,20 @@
         .clue {
             margin: 5px 0;
         }
+        @keyframes colorChange {
+            0% { color: red; }
+            25% { color: blue; }
+            50% { color: green; }
+            75% { color: orange; }
+            100% { color: purple; }
+        }
     </style>
 </head>
 <body>
-    <div id="welcome-screen">
-        <div id="welcome-message">Welcome to Wonder World</div>
-        <div id="subtext">Will you like to play my game?</div>
-        <button onclick="startGame()">Yes</button>
-        <button onclick="window.close()">No</button>
-    </div>
+    <div id="welcome-message">Welcome to Wonder World</div>
+    <div id="prompt-message">Would you like to play my game?</div>
+    <button onclick="startGame()">Yes</button>
+    <button onclick="closeGame()">No</button>
 
     <div id="subject-selection">
         <button onclick="selectSubject('football')">Football</button>
@@ -103,60 +98,55 @@
         <button onclick="selectSubject('inventors')">Inventors</button>
     </div>
 
-    <div id="crossword"></div>
-    <div id="controls">
-        <button onclick="giveHint()">Hint</button>
-        <button onclick="showAnswer()">Show Answer</button>
-        <button onclick="checkAnswers()">Check Answers</button>
-        <button onclick="moveToNextLevel()">Next Level</button>
-        <div id="current-level">Level: 1</div>
-        <div id="score">Score: 0</div>
-        <div id="badges">Badges: 0</div>
+    <div id="crossword-container">
+        <div id="crossword"></div>
+        <div id="controls">
+            <button onclick="giveHint()">Hint</button>
+            <button onclick="showAnswer()">Show Answer</button>
+            <button onclick="checkAnswers()">Check Answers</button>
+            <div id="current-level">Level: 1</div>
+            <div id="score">Score: 0</div>
+        </div>
+        <div id="across"></div>
+        <div id="down"></div>
     </div>
-    <div id="across"></div>
-    <div id="down"></div>
 
     <script>
         let currentSubject = '';
         let currentLevel = 1;
         let score = 0;
-        let badges = 0;
-        let hintsUsed = 0;
-        let answersRevealed = 0;
 
         const subjects = {
             football: {
                 clues: {
                     across: {
-                        1: { clue: "1 Across: Most FIFA World Cups won", answer: "BRAZIL", position: [1, 4] },
-                        2: { clue: "2 Across: Won World Cup 2018", answer: "FRANCE", position: [0, 2] }
+                        1: { clue: "1 Across: The most FIFA world cups", answer: "BRAZIL", position: [1, 4] },
+                        2: { clue: "2 Across: won world cup 2018", answer: "FRANCE", position: [0, 2] }
                     },
                     down: {
-                        1: { clue: "1 Down: The GOAT of football", answer: "MESSI", position: [5, 1] }
+                        1: { clue: "1 Down: The GOAT", answer: "MESSI", position: [5, 1] },
                     }
                 }
             },
-            science: {
-                clues: {
-                    across: {
-                        1: { clue: "1 Across: Unit of power", answer: "WATT", position: [1, 2] },
-                        2: { clue: "2 Across: Measurement of matter", answer: "MASS", position: [0, 4] }
-                    },
-                    down: {
-                        1: { clue: "1 Down: Famous scientist known for laws of motion", answer: "NEWTON", position: [2, 0] }
-                    }
-                }
+            // Add similar structure for science, arts, music, movies, business, history, geography, inventors
         };
 
         function startGame() {
-            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('welcome-message').style.display = 'none';
+            document.getElementById('prompt-message').style.display = 'none';
+            document.querySelector('button').style.display = 'none';
             document.getElementById('subject-selection').style.display = 'flex';
+        }
+
+        function closeGame() {
+            window.close();
         }
 
         function selectSubject(subject) {
             currentSubject = subject;
             currentLevel = 1;
             document.getElementById('subject-selection').style.display = 'none';
+            document.getElementById('crossword-container').style.display = 'block';
             createGrid();
         }
 
@@ -197,13 +187,6 @@
                 return cells[y * getMaxGridSize() + x];
             }
 
-            // Reset cell background colors and data attributes
-            for (let cell of cells) {
-                cell.classList.remove('white', 'black');
-                cell.dataset.answer = '';
-                cell.dataset.clue = '';
-            }
-
             // Place across words
             Object.values(data.across).forEach(word => {
                 const [startX, startY] = word.position;
@@ -211,7 +194,6 @@
                     const cell = getCell(startX + i, startY);
                     cell.classList.add('white');
                     cell.dataset.answer = word.answer[i];
-                    cell.dataset.clue = word.clue;
                 }
             });
 
@@ -220,13 +202,8 @@
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = getCell(startX, startY + i);
-                    if (cell.classList.contains('white') && cell.dataset.answer === word.answer[i]) {
-                        cell.dataset.answer = word.answer[i]; // Confirming the shared letter
-                    } else {
-                        cell.classList.add('white');
-                        cell.dataset.answer = word.answer[i];
-                        cell.dataset.clue = word.clue;
-                    }
+                    cell.classList.add('white');
+                    cell.dataset.answer = word.answer[i];
                 }
             });
         }
@@ -257,88 +234,65 @@
         function giveHint() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-            const words = [...Object.values(data.across), ...Object.values(data.down)];
 
-            // Give a hint by revealing the first letter of a random word
-            for (const word of words) {
-                if (word.position) {
-                    const [startX, startY] = word.position;
-                    const direction = data.across[word.clue] ? 'across' : 'down';
-                    for (let i = 0; i < word.answer.length; i++) {
-                        const cell = direction === 'across'
-                            ? cells[startY * getMaxGridSize() + startX + i]
-                            : cells[(startY + i) * getMaxGridSize() + startX];
-
-                        if (!cell.value) {
-                            cell.value = cell.dataset.answer; // Reveal the first letter of the word
-                            cell.dataset.answer = ''; // Clear the answer
-                            break;
-                        }
-                    }
-                    hintsUsed++;
-                    score -= 5; // Deduct points for hint
+            for (let cell of cells) {
+                if (!cell.value && cell.dataset.answer) {
+                    cell.value = cell.dataset.answer;
+                    score -= 2;
                     updateStatus();
-                    break;
+                    return;
                 }
             }
-        }
-
         }
 
         function showAnswer() {
-             const crossword = document.getElementById('crossword');
+            const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-            const words = [...Object.values(data.across), ...Object.values(data.down)];
 
-            // Show full answers for all clues
-            for (const word of words) {
-                const [startX, startY] = word.position;
-                const direction = data.across[word.clue] ? 'across' : 'down';
-                for (let i = 0; i < word.answer.length; i++) {
-                    const cell = direction === 'across'
-                        ? cells[startY * getMaxGridSize() + startX + i]
-                        : cells[(startY + i) * getMaxGridSize() + startX];
+            for (let cell of cells) {
+                if (cell.dataset.answer) {
                     cell.value = cell.dataset.answer;
-                    cell.classList.remove('white');
-                    cell.classList.add('black');
                 }
-                answersRevealed++;
-                score -= 10; // Deduct points for showing answer
-                updateStatus();
             }
-        }
+            score -= 15;
+            updateStatus();
         }
 
         function checkAnswers() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
-            let correct = 0;
+            let correct = true;
 
             for (let cell of cells) {
-                if (cell.value.toUpperCase() === cell.dataset.answer) {
-                    cell.classList.add('black');
-                    correct++;
-                } else {
-                    cell.classList.remove('black');
-                }
+                if (cell.dataset.answer && cell.value !== cell.dataset.answer) {
+                    correct = false;
+                    break;
+               
             }
 
-            if (correct === cells.length) {
-                alert('Congratulations! You have completed the crossword.');
-                moveToNextLevel();
+            if (correct) {
+                score += 15;
+                alert('Congratulations! You completed the level.');
+                nextLevel();
+            } else {
+                alert('Some answers are incorrect. Please try again.');
             }
+            updateStatus();
         }
 
-        function moveToNextLevel() {
+        function nextLevel() {
             currentLevel++;
             document.getElementById('current-level').textContent = `Level: ${currentLevel}`;
-            createGrid(); // Reload the grid for the next level
+            createGrid();
+        }
+
+        function updateStatus() {
+            document.getElementById('score').textContent = `Score: ${score}`;
         }
     </script>
 </body>
 </html>
+
 
 
 
