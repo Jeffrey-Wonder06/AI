@@ -181,14 +181,7 @@
             const data = crosswordData[currentTopic].clues;
 
             function getCell(x, y) {
-                return cells[y * 10 + x];
-            }
-
-            // Reset cell background colors and data attributes
-            for (let cell of cells) {
-                cell.classList.remove('white', 'black');
-                cell.dataset.answer = '';
-                cell.dataset.clue = '';
+                return cells[y * getMaxGridSize() + x];
             }
 
             // Place across words
@@ -242,24 +235,65 @@
         }
 
         function giveHint() {
-            // Your existing hint function
+            if (hintsUsed < 3) {
+                const words = Object.values(crosswordData[currentTopic].clues.across)
+                    .concat(Object.values(crosswordData[currentTopic].clues.down));
+                const randomWord = words[Math.floor(Math.random() * words.length)];
+                const [startX, startY] = randomWord.position;
+
+                // Reveal the first letter of the word
+                const cell = document.querySelector(`#crossword input[data-clue="${randomWord.clue}"]`);
+                if (cell) {
+                    cell.value = randomWord.answer[0];
+                    hintsUsed++;
+                    score -= 10; // Deduct points for using a hint
+                    updateStatus();
+                }
+            } else {
+                alert("No more hints available!");
+            }
         }
 
         function showAnswer() {
-            // Your existing showAnswer function
+            const cells = document.querySelectorAll('#crossword input.white');
+            cells.forEach(cell => {
+                cell.value = cell.dataset.answer;
+            });
+            answersRevealed++;
+            score -= 50; // Deduct points for revealing the answer
+            updateStatus();
         }
 
         function checkAnswers() {
-            // Your existing checkAnswers function
+            const cells = document.querySelectorAll('#crossword input.white');
+            let correct = true;
+            cells.forEach(cell => {
+                if (cell.value.toUpperCase() !== cell.dataset.answer.toUpperCase()) {
+                    correct = false;
+                    cell.style.backgroundColor = 'red'; // Highlight incorrect answers
+                } else {
+                    cell.style.backgroundColor = 'lightgreen'; // Highlight correct answers
+                }
+            });
+            if (correct) {
+                alert("Congratulations! All answers are correct.");
+                badges++; // Award a badge for a correct completion
+                moveToNextLevel();
+            } else {
+                alert("Some answers are incorrect. Please try again.");
+            }
+            updateStatus();
         }
 
         function moveToNextLevel() {
             if (currentLevel < 20) {
                 currentLevel++;
+                hintsUsed = 0;
+                createGrid();
             } else {
                 alert('Congratulations! You have completed all levels for this topic.');
             }
-            createGrid();
+            updateStatus();
         }
 
         function updateStatus() {
@@ -280,6 +314,7 @@
     </script>
 </body>
 </html>
+
 
 
 
