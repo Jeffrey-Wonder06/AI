@@ -137,6 +137,10 @@
                 }
         };
 
+        function startGame() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('subject-selection').style.display = 'flex';
+        }
         function selectSubject(subject) {
             currentSubject = subject;
             currentLevel = 1;
