@@ -71,12 +71,11 @@
             physics: {
                 clues: {
                     across: {
-                        1: { clue: "1 Across: Unit of power", answer: "WATT", position: [3, 1] },
-                        2: { clue: "2 Across: Amount of matter", answer: "MASS", position: [2, 2] },
-                        3: { clue: "3 Across: SI unit of force", answer: "NEWTON", position: [0, 4] },
+                        1: { clue: "1 Across: Amount of matter", answer: "MASS", position: [1, 1] },
+                        2: { clue: "2 Across: SI unit of force", answer: "NEWTON", position: [0, 3] },
                     },
                     down: {
-                        1: { clue: "1 Down: Unit of power", answer: "WATT", position: [0, 1] },
+                        1: { clue: "1 Down: Unit of power", answer: "WATT", position: [1, 0] },
                     }
                 }
             }
@@ -229,6 +228,11 @@
                     cell.value = word.answer[i];
                 }
             });
+
+            answersRevealed++;
+            if (answersRevealed >= 1) {
+                alert("You've already revealed the answer for this level!");
+            }
         }
 
         function checkAnswers() {
@@ -294,6 +298,7 @@
     </script>
 </body>
 </html>
+
 
 
 
