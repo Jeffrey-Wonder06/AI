@@ -7,13 +7,48 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #0000ff;
+            background-color: #f0f0f0;
             text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        #welcome-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #welcome-message {
+            font-size: 36px;
+            color: #ff5733;
+            font-weight: bold;
+            animation: colorChange 3s infinite;
+        }
+        #subtext {
+            font-size: 24px;
+            margin-top: 10px;
+        }
+        @keyframes colorChange {
+            0% { color: #ff5733; }
+            50% { color: #33c1ff; }
+            100% { color: #ff5733; }
+        }
+        #subject-selection {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+        #subject-selection button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 18px;
         }
         #crossword {
             display: grid;
             gap: 1px;
-            background-color: yellow;
+            background-color: brown;
             margin: 20px auto;
         }
         #crossword input {
@@ -46,18 +81,16 @@
         .clue {
             margin: 5px 0;
         }
-        #subject-selection {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        #subject-selection button {
-            margin: 10px;
-            padding: 10px;
-        }
     </style>
 </head>
 <body>
+    <div id="welcome-screen">
+        <div id="welcome-message">Welcome to Wonder World</div>
+        <div id="subtext">Will you like to play my game?</div>
+        <button onclick="startGame()">Yes</button>
+        <button onclick="window.close()">No</button>
+    </div>
+
     <div id="subject-selection">
         <button onclick="selectSubject('football')">Football</button>
         <button onclick="selectSubject('science')">Science</button>
