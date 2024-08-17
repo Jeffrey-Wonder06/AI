@@ -257,11 +257,60 @@
         }
 
         function giveHint() {
-            // Placeholder function for hint
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const data = subjects[currentSubject].clues;
+            const words = [...Object.values(data.across), ...Object.values(data.down)];
+
+            // Give a hint by revealing the first letter of a random word
+            for (const word of words) {
+                if (word.position) {
+                    const [startX, startY] = word.position;
+                    const direction = data.across[word.clue] ? 'across' : 'down';
+                    for (let i = 0; i < word.answer.length; i++) {
+                        const cell = direction === 'across'
+                            ? cells[startY * getMaxGridSize() + startX + i]
+                            : cells[(startY + i) * getMaxGridSize() + startX];
+
+                        if (!cell.value) {
+                            cell.value = cell.dataset.answer; // Reveal the first letter of the word
+                            cell.dataset.answer = ''; // Clear the answer
+                            break;
+                        }
+                    }
+                    hintsUsed++;
+                    score -= 5; // Deduct points for hint
+                    updateStatus();
+                    break;
+                }
+            }
+        }
+
         }
 
         function showAnswer() {
-            // Placeholder function for showing answers
+             const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const data = subjects[currentSubject].clues;
+            const words = [...Object.values(data.across), ...Object.values(data.down)];
+
+            // Show full answers for all clues
+            for (const word of words) {
+                const [startX, startY] = word.position;
+                const direction = data.across[word.clue] ? 'across' : 'down';
+                for (let i = 0; i < word.answer.length; i++) {
+                    const cell = direction === 'across'
+                        ? cells[startY * getMaxGridSize() + startX + i]
+                        : cells[(startY + i) * getMaxGridSize() + startX];
+                    cell.value = cell.dataset.answer;
+                    cell.classList.remove('white');
+                    cell.classList.add('black');
+                }
+                answersRevealed++;
+                score -= 10; // Deduct points for showing answer
+                updateStatus();
+            }
+        }
         }
 
         function checkAnswers() {
