@@ -51,13 +51,16 @@
         <button onclick="giveHint()">Hint</button>
         <button onclick="showAnswer()">Show Answer</button>
         <button onclick="checkAnswers()">Check Answers</button>
+        <button onclick="moveToNextLevel()">Next Level</button>
         <div id="current-level">Level: 1</div>
+        <div id="score">Score: 0</div>
+        <div id="badges">Badges: 0</div>
         <select id="topic" onchange="changeTopic()">
-            <option value="level1">Level 1</option>
-            <option value="level2">Level 2</option>
-            <option value="level3">Level 3</option>
-            <option value="level4">Level 4</option>
-            <option value="level5">Level 5</option>
+            <option value="physics">Physics</option>
+            <option value="history">History</option>
+            <option value="football">Football</option>
+            <option value="movies">Movies</option>
+            <option value="music">Music</option>
         </select>
     </div>
     <div id="across"></div>
@@ -65,64 +68,79 @@
 
     <script>
         const crosswordData = {
-            level1: {
+            physics: {
                 clues: {
                     across: {
-                        1: { clue: "1 Across: A ship of the desert", answer: "CAMEL", position: [0, 0] },
-                        2: { clue: "2 Across: A natural satellite", answer: "MOON", position: [2, 1] }
+                        1: { clue: "1 Across: Force per unit area", answer: "PRESSURE", position: [0, 0] },
+                        2: { clue: "2 Across: SI unit of force", answer: "NEWTON", position: [0, 3] },
                     },
                     down: {
-                        1: { clue: "1 Down: A period of 24 hours", answer: "DAY", position: [0, 0] }
+                        1: { clue: "1 Down: Measurement of energy", answer: "JOULE", position: [0, 0] },
+                        2: { clue: "2 Down: Fundamental quantity", answer: "MASS", position: [1, 0] },
+                        3: { clue: "3 Down: Unit of work", answer: "WATT", position: [0, 6] }
                     }
                 }
             },
-            level2: {
+            history: {
                 clues: {
                     across: {
-                        1: { clue: "1 Across: An object that orbits a planet", answer: "MOON", position: [0, 0] },
-                        2: { clue: "2 Across: A famous painter", answer: "MONET", position: [1, 2] }
+                        1: { clue: "1 Across: Ancient Egyptian writing", answer: "HIEROGLYPH", position: [0, 0] },
+                        2: { clue: "2 Across: WW2 leader", answer: "CHURCHILL", position: [0, 2] },
                     },
                     down: {
-                        1: { clue: "1 Down: A mammal that flies", answer: "BAT", position: [0, 0] }
+                        1: { clue: "1 Down: British Prime Minister", answer: "CHURCHILL", position: [0, 2] },
+                        2: { clue: "2 Down: Roman emperor", answer: "CAESAR", position: [0, 4] },
+                        3: { clue: "3 Down: Historical document", answer: "MAGNA", position: [2, 0] }
                     }
                 }
             },
-            level3: {
+            football: {
                 clues: {
                     across: {
-                        1: { clue: "1 Across: A feline animal", answer: "LION", position: [0, 0] },
-                        2: { clue: "2 Across: A large African river", answer: "NILE", position: [1, 2] }
+                        1: { clue: "1 Across: Goalkeeper's area", answer: "PENALTY", position: [0, 0] },
+                        2: { clue: "2 Across: Popular football competition", answer: "WORLD", position: [1, 1] },
                     },
                     down: {
-                        1: { clue: "1 Down: A type of bird", answer: "OWL", position: [0, 0] }
+                        1: { clue: "1 Down: The goal", answer: "GOAL", position: [0, 0] },
+                        2: { clue: "2 Down: The team", answer: "TEAM", position: [2, 0] },
+                        3: { clue: "3 Down: Football competition", answer: "WORLD", position: [1, 1] }
                     }
                 }
             },
-            level4: {
+            movies: {
                 clues: {
                     across: {
-                        1: { clue: "1 Across: A precious metal", answer: "GOLD", position: [0, 0] },
-                        2: { clue: "2 Across: A summer month", answer: "JUNE", position: [1, 2] }
+                        1: { clue: "1 Across: Popular film genre", answer: "COMEDY", position: [0, 0] },
+                        2: { clue: "2 Across: Famous film director", answer: "SPIELBERG", position: [1, 0] },
                     },
                     down: {
-                        1: { clue: "1 Down: A flying insect", answer: "BEE", position: [0, 0] }
+                        1: { clue: "1 Down: Popular genre", answer: "COMEDY", position: [0, 0] },
+                        2: { clue: "2 Down: Famous director", answer: "SPIELBERG", position: [1, 0] },
+                        3: { clue: "3 Down: Action hero", answer: "STATHAM", position: [1, 7] }
                     }
                 }
             },
-            level5: {
+            music: {
                 clues: {
                     across: {
-                        1: { clue: "1 Across: A large mammal", answer: "WHALE", position: [0, 0] },
-                        2: { clue: "2 Across: A type of fruit", answer: "APPLE", position: [1, 2] }
+                        1: { clue: "1 Across: Popular genre", answer: "ROCK", position: [0, 0] },
+                        2: { clue: "2 Across: Instrument", answer: "GUITAR", position: [1, 0] },
                     },
                     down: {
-                        1: { clue: "1 Down: A small insect", answer: "ANT", position: [0, 0] }
+                        1: { clue: "1 Down: Genre", answer: "ROCK", position: [0, 0] },
+                        2: { clue: "2 Down: Instrument", answer: "GUITAR", position: [1, 0] },
+                        3: { clue: "3 Down: Role of a performer", answer: "SINGER", position: [0, 4] }
                     }
                 }
             }
         };
 
-        let currentLevel = 'level1';
+        let currentTopic = 'physics';
+        let currentLevel = 1;
+        let score = 0;
+        let badges = 0;
+        let hintsUsed = 0;
+        let answersRevealed = 0;
 
         function createGrid() {
             const crossword = document.getElementById('crossword');
@@ -132,6 +150,7 @@
             crossword.style.gridTemplateColumns = `repeat(${size}, 30px)`;
             crossword.style.gridTemplateRows = `repeat(${size}, 30px)`;
 
+            // Create grid cells
             for (let i = 0; i < size * size; i++) {
                 const cell = document.createElement('input');
                 cell.type = 'text';
@@ -144,8 +163,8 @@
         }
 
         function getMaxGridSize() {
-            const words = Object.values(crosswordData[currentLevel].clues.across)
-                .concat(Object.values(crosswordData[currentLevel].clues.down));
+            const words = Object.values(crosswordData[currentTopic].clues.across)
+                .concat(Object.values(crosswordData[currentTopic].clues.down));
             const maxX = Math.max(...words.map(word => word.position[0] + word.answer.length));
             const maxY = Math.max(...words.map(word => word.position[1] + word.answer.length));
             return Math.max(maxX, maxY);
@@ -154,18 +173,20 @@
         function placeWords() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
-            const data = crosswordData[currentLevel].clues;
+            const data = crosswordData[currentTopic].clues;
 
             function getCell(x, y) {
                 return cells[y * 10 + x];
             }
 
+            // Reset cell background colors and data attributes
             for (let cell of cells) {
                 cell.classList.remove('white', 'black');
                 cell.dataset.answer = '';
                 cell.dataset.clue = '';
             }
 
+            // Place across words
             Object.values(data.across).forEach(word => {
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
@@ -176,6 +197,7 @@
                 }
             });
 
+            // Place down words
             Object.values(data.down).forEach(word => {
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
@@ -194,46 +216,44 @@
         function displayClues() {
             const acrossClues = document.getElementById('across');
             const downClues = document.getElementById('down');
-            acrossClues.innerHTML = '<h3>Across</h3>';
-            downClues.innerHTML = '<h3>Down</h3>';
+            acrossClues.innerHTML = '<h2>Across</h2>';
+            downClues.innerHTML = '<h2>Down</h2>';
+            const clues = crosswordData[currentTopic].clues;
 
-            const clues = crosswordData[currentLevel].clues;
-
-            Object.values(clues.across).forEach(clue => {
-                const clueElement = document.createElement('div');
-                clueElement.classList.add('clue');
-                clueElement.textContent = clue.clue;
-                acrossClues.appendChild(clueElement);
+            Object.values(clues.across).forEach((word, index) => {
+                acrossClues.innerHTML += `<div class="clue">${word.clue}</div>`;
             });
 
-            Object.values(clues.down).forEach(clue => {
-                const clueElement = document.createElement('div');
-                clueElement.classList.add('clue');
-                clueElement.textContent = clue.clue;
-                downClues.appendChild(clueElement);
+            Object.values(clues.down).forEach((word, index) => {
+                downClues.innerHTML += `<div class="clue">${word.clue}</div>`;
             });
         }
 
         function giveHint() {
+            if (hintsUsed >= 1) {
+                alert("You've already used your hint for this level!");
+                return;
+            }
+            hintsUsed++;
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
-            const data = crosswordData[currentLevel].clues;
-            const words = [...Object.values(data.across), ...Object.values(data.down)];
+            const data = crosswordData[currentTopic].clues;
 
-            for (const word of words) {
-                if (word.position) {
-                    const [startX, startY] = word.position;
-                    const direction = data.across[word.clue] ? 'across' : 'down';
-                    for (let i = 0; i < word.answer.length; i++) {
-                        const cell = direction === 'across'
-                            ? cells[startY * 10 + startX + i]
-                            : cells[(startY + i) * 10 + startX];
+            for (const word of Object.values(data.across)) {
+                const [startX, startY] = word.position;
+                const cell = cells[startY * 10 + startX];
+                if (cell.classList.contains('white') && cell.dataset.answer) {
+                    cell.value = cell.dataset.answer;
+                    break;
+                }
+            }
 
-                        if (!cell.value) {
-                            cell.value = cell.dataset.answer; // Reveal the first letter of the word
-                            return; // Reveal only one hint at a time
-                        }
-                    }
+            for (const word of Object.values(data.down)) {
+                const [startX, startY] = word.position;
+                const cell = cells[startY * 10 + startX];
+                if (cell.classList.contains('white') && cell.dataset.answer) {
+                    cell.value = cell.dataset.answer;
+                    break;
                 }
             }
         }
@@ -241,29 +261,29 @@
         function showAnswer() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
-            const data = crosswordData[currentLevel].clues;
+            const data = crosswordData[currentTopic].clues;
 
-            for (const word of Object.values(data.across)) {
+            Object.values(data.across).forEach(word => {
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = cells[startY * 10 + startX + i];
                     cell.value = word.answer[i];
                 }
-            }
+            });
 
-            for (const word of Object.values(data.down)) {
+            Object.values(data.down).forEach(word => {
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = cells[(startY + i) * 10 + startX];
                     cell.value = word.answer[i];
                 }
-            }
+            });
         }
 
         function checkAnswers() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
-            const data = crosswordData[currentLevel].clues;
+            const data = crosswordData[currentTopic].clues;
             let allCorrect = true;
 
             Object.values(data.across).forEach(word => {
@@ -290,23 +310,32 @@
 
             if (allCorrect) {
                 alert("Congratulations! You've completed the level!");
-                // Proceed to the next level
-                let levelOptions = document.getElementById('topic');
-                let currentLevelIndex = Array.from(levelOptions.options).findIndex(option => option.value === currentLevel);
-                if (currentLevelIndex < levelOptions.options.length - 1) {
-                    currentLevel = levelOptions.options[currentLevelIndex + 1].value;
-                    document.getElementById('current-level').textContent = `Level: ${currentLevelIndex + 2}`;
-                    createGrid();
-                } else {
-                    alert("You've completed all levels!");
-                }
+                score += 10; // Increase score
+                document.getElementById('score').textContent = `Score: ${score}`;
+                badges += 1; // Award badge
+                document.getElementById('badges').textContent = `Badges: ${badges}`;
+                moveToNextLevel();
+            }
+        }
+
+        function moveToNextLevel() {
+            let levelOptions = document.getElementById('topic');
+            let currentLevelIndex = Array.from(levelOptions.options).findIndex(option => option.value === currentTopic);
+            if (currentLevelIndex < levelOptions.options.length - 1) {
+                currentTopic = levelOptions.options[currentLevelIndex + 1].value;
+                currentLevel++;
+                document.getElementById('current-level').textContent = `Level: ${currentLevel}`;
+                createGrid();
+            } else {
+                alert("You've completed all levels!");
             }
         }
 
         function changeTopic() {
             const levelOptions = document.getElementById('topic');
-            currentLevel = levelOptions.value;
-            document.getElementById('current-level').textContent = `Level: ${levelOptions.selectedIndex + 1}`;
+            currentTopic = levelOptions.value;
+            currentLevel = 1;
+            document.getElementById('current-level').textContent = `Level: ${currentLevel}`;
             createGrid();
         }
 
@@ -314,6 +343,7 @@
     </script>
 </body>
 </html>
+
 
 
 
