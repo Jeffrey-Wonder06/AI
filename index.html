@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #0000ff;
+            background-color: #f0f0f0;
             text-align: center;
             margin: 0;
             padding: 0;
@@ -76,7 +76,7 @@
         #across, #down {
             margin: 20px auto;
             max-width: 600px;
-            text-align: center;
+            text-align: left;
         }
         .clue {
             margin: 5px 0;
@@ -86,7 +86,7 @@
 <body>
     <div id="welcome-screen">
         <div id="welcome-message">Welcome to Wonder World</div>
-        <div id="subtext">Will you like to play my crossword game?</div>
+        <div id="subtext">Will you like to play my game?</div>
         <button onclick="startGame()">Yes</button>
         <button onclick="window.close()">No</button>
     </div>
@@ -102,6 +102,7 @@
         <button onclick="selectSubject('geography')">Geography</button>
         <button onclick="selectSubject('inventors')">Inventors</button>
     </div>
+
     <div id="crossword"></div>
     <div id="controls">
         <button onclick="giveHint()">Hint</button>
@@ -127,26 +128,33 @@
             football: {
                 clues: {
                     across: {
-                        1: { clue: "1 Across(6 letters): The most FIFA world cups", answer: "BRAZIL", position: [1, 4] },
-                        2: { clue: "2 Across(6 letters): won world cup 2018", answer: "FRANCE", position: [0, 1] },
-                        3: { clue: "3 Across(7 letters): Awarded for a foul in the 18", answer: "PENALTY", position: [5, 7] },
-                        4: { clue: "4 Across(4 letters): Term for a score", answer: "GOAL", position: [8, 9] },
-                        5: { clue: "5 Across(5 letters): Hosted 2022 FIFA world cup", answer: "QATAR", position: [1, 9] },
-       
-                        }, 
+                        1: { clue: "1 Across: Most FIFA World Cups won", answer: "BRAZIL", position: [1, 4] },
+                        2: { clue: "2 Across: Won World Cup 2018", answer: "FRANCE", position: [0, 2] }
+                    },
                     down: {
-                        1: { clue: "1 Down(5 letters): The GOAT", answer: "MESSI", position: [5, 0] },
-                        2: { clue: "2 Down(7 letters): The most popular footballer", answer: "RONALDO", position: [9, 3] },
-                        3: { clue: "3 Down(6 letters): Also known as 'The Red Devils'", answer: "UNITED", position: [3, 6] },
-                        },
+                        1: { clue: "1 Down: The GOAT of football", answer: "MESSI", position: [5, 1] }
                     }
                 }
+            },
+            science: {
+                clues: {
+                    across: {
+                        1: { clue: "1 Across: Unit of power", answer: "WATT", position: [1, 2] },
+                        2: { clue: "2 Across: Measurement of matter", answer: "MASS", position: [0, 4] }
+                    },
+                    down: {
+                        1: { clue: "1 Down: Famous scientist known for laws of motion", answer: "NEWTON", position: [2, 0] }
+                    }
+                }
+            }
+            // Add similar structure for arts, music, movies, business, history, geography, inventors
         };
 
         function startGame() {
             document.getElementById('welcome-screen').style.display = 'none';
             document.getElementById('subject-selection').style.display = 'flex';
         }
+
         function selectSubject(subject) {
             currentSubject = subject;
             currentLevel = 1;
@@ -188,7 +196,7 @@
             const data = subjects[currentSubject].clues;
 
             function getCell(x, y) {
-                return cells[y * 10 + x];
+                return cells[y * getMaxGridSize() + x];
             }
 
             // Reset cell background colors and data attributes
@@ -249,89 +257,30 @@
         }
 
         function giveHint() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-            const words = [...Object.values(data.across), ...Object.values(data.down)];
-
-            // Give a hint by revealing the first letter of a random word
-            for (const word of words) {
-                if (word.position) {
-                    const [startX, startY] = word.position;
-                    const direction = data.across[word.clue] ? 'across' : 'down';
-                    for (let i = 0; i < word.answer.length; i++) {
-                        const cell = direction === 'across'
-                            ? cells[startY * 10 + startX + i]
-                            : cells[(startY + i) * 10 + startX];
-
-                        if (!cell.value) {
-                            cell.value = cell.dataset.answer; // Reveal the first letter of the word
-                            cell.dataset.answer = ''; // Clear the answer
-                            break;
-                        }
-                    }
-                    hintsUsed++;
-                    score -= 5; // Deduct points for hint
-                    updateStatus();
-                    break;
-                }
-            }
+            // Placeholder function for hint
         }
 
         function showAnswer() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-            const words = [...Object.values(data.across), ...Object.values(data.down)];
-
-            // Show full answers for all clues
-            for (const word of words) {
-                const [startX, startY] = word.position;
-                const direction = data.across[word.clue] ? 'across' : 'down';
-                for (let i = 0; i < word.answer.length; i++) {
-                    const cell = direction === 'across'
-                        ? cells[startY * 10 + startX + i]
-                        : cells[(startY + i) * 10 + startX];
-                    cell.value = cell.dataset.answer;
-                    cell.classList.remove('white');
-                    cell.classList.add('black');
-                }
-                answersRevealed++;
-                score -= 10; // Deduct points for showing answer
-                updateStatus();
-            }
+            // Placeholder function for showing answers
         }
 
         function checkAnswers() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-            const words = [...Object.values(data.across), ...Object.values(data.down)];
+            let correct = 0;
 
-            let correct = true;
-            for (const word of words) {
-                const [startX, startY] = word.position;
-                const direction = data.across[word.clue] ? 'across' : 'down';
-                for (let i = 0; i < word.answer.length; i++) {
-                    const cell = direction === 'across'
-                        ? cells[startY * 10 + startX + i]
-                        : cells[(startY + i) * 10 + startX];
-                    if (cell.value !== cell.dataset.answer) {
-                        correct = false;
-                        break;
-                    }
+            for (let cell of cells) {
+                if (cell.value.toUpperCase() === cell.dataset.answer) {
+                    cell.classList.add('black');
+                    correct++;
+                } else {
+                    cell.classList.remove('black');
                 }
-                if (!correct) break;
             }
 
-            if (correct) {
-                alert('Congratulations! Level Completed!');
-                score += 50; // Award points for completing the level
-                badges += 1; // Award a badge for completing the level
-                updateStatus();
+            if (correct === cells.length) {
+                alert('Congratulations! You have completed the crossword.');
                 moveToNextLevel();
-            } else {
-                alert('Some answers are incorrect. Please try again.');
             }
         }
 
@@ -340,14 +289,10 @@
             document.getElementById('current-level').textContent = `Level: ${currentLevel}`;
             createGrid(); // Reload the grid for the next level
         }
-
-        function updateStatus() {
-            document.getElementById('score').textContent = `Score: ${score}`;
-            document.getElementById('badges').textContent = `Badges: ${badges}`;
-        }
     </script>
 </body>
 </html>
+
 
 
 
