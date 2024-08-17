@@ -51,12 +51,13 @@
         <button onclick="giveHint()">Hint</button>
         <button onclick="showAnswer()">Show Answer</button>
         <button onclick="checkAnswers()">Check Answers</button>
-        <button onclick="moveToNextLevel()">Next Level</button>
         <div id="current-level">Level: 1</div>
-        <div id="score">Score: 0</div>
-        <div id="badges">Badges: 0</div>
         <select id="topic" onchange="changeTopic()">
-            <option value="simple">Simple Puzzle</option>
+            <option value="level1">Level 1</option>
+            <option value="level2">Level 2</option>
+            <option value="level3">Level 3</option>
+            <option value="level4">Level 4</option>
+            <option value="level5">Level 5</option>
         </select>
     </div>
     <div id="across"></div>
@@ -64,25 +65,64 @@
 
     <script>
         const crosswordData = {
-            simple: {
+            level1: {
                 clues: {
                     across: {
-                        1: { clue: "1 Across: A domesticated animal known for its wool", answer: "SHEEP", position: [0, 0] }
+                        1: { clue: "1 Across: A ship of the desert", answer: "CAMEL", position: [0, 0] },
+                        2: { clue: "2 Across: A natural satellite", answer: "MOON", position: [2, 1] }
                     },
                     down: {
-                        1: { clue: "1 Down: A large body of water", answer: "SEA", position: [0, 0] },
-                        2: { clue: "2 Down: A plant with fragrant flowers", answer: "ROSE", position: [2, 2] }
+                        1: { clue: "1 Down: A period of 24 hours", answer: "DAY", position: [0, 0] }
+                    }
+                }
+            },
+            level2: {
+                clues: {
+                    across: {
+                        1: { clue: "1 Across: An object that orbits a planet", answer: "MOON", position: [0, 0] },
+                        2: { clue: "2 Across: A famous painter", answer: "MONET", position: [1, 2] }
+                    },
+                    down: {
+                        1: { clue: "1 Down: A mammal that flies", answer: "BAT", position: [0, 0] }
+                    }
+                }
+            },
+            level3: {
+                clues: {
+                    across: {
+                        1: { clue: "1 Across: A feline animal", answer: "LION", position: [0, 0] },
+                        2: { clue: "2 Across: A large African river", answer: "NILE", position: [1, 2] }
+                    },
+                    down: {
+                        1: { clue: "1 Down: A type of bird", answer: "OWL", position: [0, 0] }
+                    }
+                }
+            },
+            level4: {
+                clues: {
+                    across: {
+                        1: { clue: "1 Across: A precious metal", answer: "GOLD", position: [0, 0] },
+                        2: { clue: "2 Across: A summer month", answer: "JUNE", position: [1, 2] }
+                    },
+                    down: {
+                        1: { clue: "1 Down: A flying insect", answer: "BEE", position: [0, 0] }
+                    }
+                }
+            },
+            level5: {
+                clues: {
+                    across: {
+                        1: { clue: "1 Across: A large mammal", answer: "WHALE", position: [0, 0] },
+                        2: { clue: "2 Across: A type of fruit", answer: "APPLE", position: [1, 2] }
+                    },
+                    down: {
+                        1: { clue: "1 Down: A small insect", answer: "ANT", position: [0, 0] }
                     }
                 }
             }
         };
 
-        let currentTopic = 'simple';
-        let currentLevel = 1;
-        let score = 0;
-        let badges = 0;
-        let hintsUsed = 0;
-        let answersRevealed = 0;
+        let currentLevel = 'level1';
 
         function createGrid() {
             const crossword = document.getElementById('crossword');
@@ -92,7 +132,6 @@
             crossword.style.gridTemplateColumns = `repeat(${size}, 30px)`;
             crossword.style.gridTemplateRows = `repeat(${size}, 30px)`;
 
-            // Create grid cells
             for (let i = 0; i < size * size; i++) {
                 const cell = document.createElement('input');
                 cell.type = 'text';
@@ -105,8 +144,8 @@
         }
 
         function getMaxGridSize() {
-            const words = Object.values(crosswordData[currentTopic].clues.across)
-                .concat(Object.values(crosswordData[currentTopic].clues.down));
+            const words = Object.values(crosswordData[currentLevel].clues.across)
+                .concat(Object.values(crosswordData[currentLevel].clues.down));
             const maxX = Math.max(...words.map(word => word.position[0] + word.answer.length));
             const maxY = Math.max(...words.map(word => word.position[1] + word.answer.length));
             return Math.max(maxX, maxY);
@@ -115,13 +154,18 @@
         function placeWords() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
-            const data = crosswordData[currentTopic].clues;
+            const data = crosswordData[currentLevel].clues;
 
             function getCell(x, y) {
-                return cells[y * getMaxGridSize() + x];
+                return cells[y * 10 + x];
             }
 
-            // Place across words
+            for (let cell of cells) {
+                cell.classList.remove('white', 'black');
+                cell.dataset.answer = '';
+                cell.dataset.clue = '';
+            }
+
             Object.values(data.across).forEach(word => {
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
@@ -132,7 +176,6 @@
                 }
             });
 
-            // Place down words
             Object.values(data.down).forEach(word => {
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
@@ -154,7 +197,7 @@
             acrossClues.innerHTML = '<h3>Across</h3>';
             downClues.innerHTML = '<h3>Down</h3>';
 
-            const clues = crosswordData[currentTopic].clues;
+            const clues = crosswordData[currentLevel].clues;
 
             Object.values(clues.across).forEach(clue => {
                 const clueElement = document.createElement('div');
@@ -172,90 +215,106 @@
         }
 
         function giveHint() {
-            if (hintsUsed < 3) {
-                const words = Object.values(crosswordData[currentTopic].clues.across)
-                    .concat(Object.values(crosswordData[currentTopic].clues.down));
-                const randomWord = words[Math.floor(Math.random() * words.length)];
-                const [startX, startY] = randomWord.position;
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const data = crosswordData[currentLevel].clues;
+            const words = [...Object.values(data.across), ...Object.values(data.down)];
 
-                // Reveal the first letter of the word
-                const cell = document.querySelector(`#crossword input[data-clue="${randomWord.clue}"]`);
-                if (cell) {
-                    cell.value = randomWord.answer[0];
-                    hintsUsed++;
-                    score -= 10; // Deduct points for using a hint
-                    updateStatus();
+            for (const word of words) {
+                if (word.position) {
+                    const [startX, startY] = word.position;
+                    const direction = data.across[word.clue] ? 'across' : 'down';
+                    for (let i = 0; i < word.answer.length; i++) {
+                        const cell = direction === 'across'
+                            ? cells[startY * 10 + startX + i]
+                            : cells[(startY + i) * 10 + startX];
+
+                        if (!cell.value) {
+                            cell.value = cell.dataset.answer; // Reveal the first letter of the word
+                            return; // Reveal only one hint at a time
+                        }
+                    }
                 }
-            } else {
-                alert("No more hints available!");
             }
         }
 
         function showAnswer() {
-            const cells = document.querySelectorAll('#crossword input.white');
-            cells.forEach(cell => {
-                cell.value = cell.dataset.answer;
-            });
-            answersRevealed++;
-            score -= 50; // Deduct points for revealing the answer
-            updateStatus();
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const data = crosswordData[currentLevel].clues;
+
+            for (const word of Object.values(data.across)) {
+                const [startX, startY] = word.position;
+                for (let i = 0; i < word.answer.length; i++) {
+                    const cell = cells[startY * 10 + startX + i];
+                    cell.value = word.answer[i];
+                }
+            }
+
+            for (const word of Object.values(data.down)) {
+                const [startX, startY] = word.position;
+                for (let i = 0; i < word.answer.length; i++) {
+                    const cell = cells[(startY + i) * 10 + startX];
+                    cell.value = word.answer[i];
+                }
+            }
         }
 
         function checkAnswers() {
-            const cells = document.querySelectorAll('#crossword input.white');
-            let correct = true;
-            cells.forEach(cell => {
-                if (cell.value.toUpperCase() !== cell.dataset.answer.toUpperCase()) {
-                    correct = false;
-                    cell.style.backgroundColor = 'red'; // Highlight incorrect answers
-                } else {
-                    cell.style.backgroundColor = 'lightgreen'; // Highlight correct answers
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const data = crosswordData[currentLevel].clues;
+            let allCorrect = true;
+
+            Object.values(data.across).forEach(word => {
+                const [startX, startY] = word.position;
+                for (let i = 0; i < word.answer.length; i++) {
+                    const cell = cells[startY * 10 + startX + i];
+                    if (cell.value !== word.answer[i]) {
+                        allCorrect = false;
+                        cell.classList.add('black');
+                    }
                 }
             });
-            if (correct) {
-                alert("Congratulations! All answers are correct.");
-                badges++; // Award a badge for a correct completion
-                moveToNextLevel();
-            } else {
-                alert("Some answers are incorrect. Please try again.");
-            }
-            updateStatus();
-        }
 
-        function moveToNextLevel() {
-            if (currentLevel < 20) {
-                currentLevel++;
-                hintsUsed = 0;
-                createGrid();
-            } else {
-                alert('Congratulations! You have completed all levels for this topic.');
-            }
-            updateStatus();
-        }
+            Object.values(data.down).forEach(word => {
+                const [startX, startY] = word.position;
+                for (let i = 0; i < word.answer.length; i++) {
+                    const cell = cells[(startY + i) * 10 + startX];
+                    if (cell.value !== word.answer[i]) {
+                        allCorrect = false;
+                        cell.classList.add('black');
+                    }
+                }
+            });
 
-        function updateStatus() {
-            document.getElementById('current-level').textContent = `Level: ${currentLevel}`;
-            document.getElementById('score').textContent = `Score: ${score}`;
-            document.getElementById('badges').textContent = `Badges: ${badges}`;
+            if (allCorrect) {
+                alert("Congratulations! You've completed the level!");
+                // Proceed to the next level
+                let levelOptions = document.getElementById('topic');
+                let currentLevelIndex = Array.from(levelOptions.options).findIndex(option => option.value === currentLevel);
+                if (currentLevelIndex < levelOptions.options.length - 1) {
+                    currentLevel = levelOptions.options[currentLevelIndex + 1].value;
+                    document.getElementById('current-level').textContent = `Level: ${currentLevelIndex + 2}`;
+                    createGrid();
+                } else {
+                    alert("You've completed all levels!");
+                }
+            }
         }
 
         function changeTopic() {
-            const select = document.getElementById('topic');
-            currentTopic = select.value;
-            currentLevel = 1;
-            hintsUsed = 0;
-            answersRevealed = 0;
-            score = 0;
-            badges = 0;
+            const levelOptions = document.getElementById('topic');
+            currentLevel = levelOptions.value;
+            document.getElementById('current-level').textContent = `Level: ${levelOptions.selectedIndex + 1}`;
             createGrid();
-            updateStatus();
         }
 
-        createGrid(); // Initialize grid
-        updateStatus();
+        window.onload = createGrid;
     </script>
 </body>
 </html>
+
 
 
 
