@@ -71,65 +71,12 @@
             physics: {
                 clues: {
                     across: {
-                        1: { clue: "1 Across: Force per unit area", answer: "PRESSURE", position: [0, 0] },
-                        2: { clue: "2 Across: SI unit of force", answer: "NEWTON", position: [0, 3] },
+                        1: { clue: "1 Across: Unit of power", answer: "WATT", position: [0, 1] },
+                        2: { clue: "2 Across: Amount of matter", answer: "MASS", position: [1, 1] },
+                        3: { clue: "3 Across: SI unit of force", answer: "NEWTON", position: [0, 4] },
                     },
                     down: {
-                        1: { clue: "1 Down: Measurement of energy", answer: "JOULE", position: [0, 0] },
-                        2: { clue: "2 Down: Fundamental quantity", answer: "MASS", position: [1, 0] },
-                        3: { clue: "3 Down: Unit of work", answer: "WATT", position: [0, 6] }
-                    }
-                }
-            },
-            history: {
-                clues: {
-                    across: {
-                        1: { clue: "1 Across: Ancient Egyptian writing", answer: "HIEROGLYPH", position: [0, 0] },
-                        2: { clue: "2 Across: WW2 leader", answer: "CHURCHILL", position: [0, 2] },
-                    },
-                    down: {
-                        1: { clue: "1 Down: British Prime Minister", answer: "CHURCHILL", position: [0, 2] },
-                        2: { clue: "2 Down: Roman emperor", answer: "CAESAR", position: [0, 4] },
-                        3: { clue: "3 Down: Historical document", answer: "MAGNA", position: [2, 0] }
-                    }
-                }
-            },
-            football: {
-                clues: {
-                    across: {
-                        1: { clue: "1 Across: Goalkeeper's area", answer: "PENALTY", position: [0, 0] },
-                        2: { clue: "2 Across: Popular football competition", answer: "WORLD", position: [1, 1] },
-                    },
-                    down: {
-                        1: { clue: "1 Down: The goal", answer: "GOAL", position: [0, 0] },
-                        2: { clue: "2 Down: The team", answer: "TEAM", position: [2, 0] },
-                        3: { clue: "3 Down: Football competition", answer: "WORLD", position: [1, 1] }
-                    }
-                }
-            },
-            movies: {
-                clues: {
-                    across: {
-                        1: { clue: "1 Across: Popular film genre", answer: "COMEDY", position: [0, 0] },
-                        2: { clue: "2 Across: Famous film director", answer: "SPIELBERG", position: [1, 0] },
-                    },
-                    down: {
-                        1: { clue: "1 Down: Popular genre", answer: "COMEDY", position: [0, 0] },
-                        2: { clue: "2 Down: Famous director", answer: "SPIELBERG", position: [1, 0] },
-                        3: { clue: "3 Down: Action hero", answer: "STATHAM", position: [1, 7] }
-                    }
-                }
-            },
-            music: {
-                clues: {
-                    across: {
-                        1: { clue: "1 Across: Popular genre", answer: "ROCK", position: [0, 0] },
-                        2: { clue: "2 Across: Instrument", answer: "GUITAR", position: [1, 0] },
-                    },
-                    down: {
-                        1: { clue: "1 Down: Genre", answer: "ROCK", position: [0, 0] },
-                        2: { clue: "2 Down: Instrument", answer: "GUITAR", position: [1, 0] },
-                        3: { clue: "3 Down: Role of a performer", answer: "SINGER", position: [0, 4] }
+                        1: { clue: "1 Down: Unit of power", answer: "WATT", position: [0, 1] },
                     }
                 }
             }
@@ -191,9 +138,13 @@
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = getCell(startX + i, startY);
-                    cell.classList.add('white');
-                    cell.dataset.answer = word.answer[i];
-                    cell.dataset.clue = word.clue;
+                    if (cell.classList.contains('white') && cell.dataset.answer === word.answer[i]) {
+                        cell.dataset.answer = word.answer[i]; // Confirming the shared letter
+                    } else {
+                        cell.classList.add('white');
+                        cell.dataset.answer = word.answer[i];
+                        cell.dataset.clue = word.clue;
+                    }
                 }
             });
 
@@ -343,6 +294,7 @@
     </script>
 </body>
 </html>
+
 
 
 
