@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #800080;
             text-align: center;
         }
         #welcome {
@@ -16,6 +16,7 @@
         #subject-selection {
             display: none;
             flex-wrap: wrap;
+            justify-content: center;
         }
         #subject-selection button {
             margin: 10px;
@@ -114,7 +115,6 @@
         let answersRevealed = 0;
 
         function startGame() {
-            console.log("Start game triggered");
             document.getElementById('welcome').style.display = 'none';
             document.getElementById('subject-selection').style.display = 'flex';
         }
@@ -257,33 +257,34 @@
                     const cell = direction === 'across'
                         ? cells[startY * 12 + startX + i]
                         : cells[(startY + i) * 12 + startX];
-
-                    cell.value = cell.dataset.answer; // Show the answer
+                    cell.value = cell.dataset.answer;
+                    cell.classList.add('black'); // Answer cell styling
                 }
-                answersRevealed++;
-                score -= 15; // Deduct points for revealing the answer
             }
+            answersRevealed++;
+            score -= 15; // Deduct points for showing answers
             updateStatus();
         }
 
         function checkAnswers() {
-            // Logic to check if all answers are correct
-            let allCorrect = true;
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
+            let allCorrect = true;
+
             for (let cell of cells) {
                 if (cell.value !== cell.dataset.answer) {
                     allCorrect = false;
-                    break;
+                    cell.classList.add('black');
                 }
             }
 
             if (allCorrect) {
+                alert('Congratulations! You completed the crossword.');
                 score += 15; // Award points for completing the level
-                badges++;
+                updateStatus();
                 moveToNextLevel();
             } else {
-                alert('Some answers are incorrect. Please try again.');
+                alert('Some answers are incorrect. Please check again.');
             }
         }
 
@@ -299,6 +300,326 @@
             document.getElementById('badges').textContent = `Badges: ${badges}`;
         }
 
+        // Define your subjects with clues here
+        const subjects = {
+            football: {
+                clues: {
+                    across: {
+                        1: { clue: 'Lionel Messi\'s position', answer: 'forward', position: [0, 0] },
+                        // Add more clues as needed
+                    },
+                    down: {
+                        1: { clue: 'Famous Brazilian footballer', answer: 'pele', position: [0, 0] },
+                        // Add more clues as needed
+                    }
+                }
+            },
+            science: {
+                clues: {
+                    across: {
+                        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crossword Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #800080;
+            text-align: center;
+        }
+        #welcome {
+            display: block;
+        }
+        #subject-selection {
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        #subject-selection button {
+            margin: 10px;
+            padding: 10px;
+        }
+        #crossword {
+            display: grid;
+            gap: 1px;
+            background-color: brown;
+            margin: 20px auto;
+        }
+        #crossword input {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            background-color: darkgrey;
+        }
+        #crossword input.white {
+            background-color: white;
+        }
+        #crossword input.black {
+            background-color: black;
+            color: black;
+        }
+        #controls {
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        #controls button {
+            margin: 5px;
+        }
+        #across, #down {
+            margin: 20px auto;
+            max-width: 600px;
+            text-align: left;
+        }
+        .clue {
+            margin: 5px 0;
+        }
+        .hint {
+            background-color: yellow; /* To distinguish hint cells */
+        }
+        #welcome h1 {
+            font-size: 2em;
+            color: #FF6347; /* Changing color */
+            animation: colorChange 2s infinite; /* Color changing animation */
+        }
+        @keyframes colorChange {
+            0% { color: #FF6347; }
+            50% { color: #4682B4; }
+            100% { color: #FF6347; }
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome">
+        <h1>Welcome to Wonder World</h1>
+        <p>Would you like to play my game?</p>
+        <button onclick="startGame()">Yes</button>
+        <button onclick="window.close()">No</button>
+    </div>
+
+    <div id="subject-selection">
+        <button onclick="selectSubject('football')">Football</button>
+        <button onclick="selectSubject('science')">Science</button>
+        <button onclick="selectSubject('arts')">Arts</button>
+        <button onclick="selectSubject('music')">Music</button>
+        <button onclick="selectSubject('movies')">Movies</button>
+        <button onclick="selectSubject('business')">Business</button>
+        <button onclick="selectSubject('history')">History</button>
+        <button onclick="selectSubject('geography')">Geography</button>
+        <button onclick="selectSubject('inventors')">Inventors</button>
+    </div>
+
+    <div id="crossword"></div>
+    <div id="controls">
+        <button onclick="giveHint()">Hint</button>
+        <button onclick="showAnswer()">Show Answer</button>
+        <button onclick="checkAnswers()">Check Answers</button>
+        <button onclick="moveToNextLevel()">Next Level</button>
+        <div id="current-level">Level: 1</div>
+        <div id="score">Score: 0</div>
+        <div id="badges">Badges: 0</div>
+    </div>
+    <div id="across"></div>
+    <div id="down"></div>
+
+    <script>
+        let currentSubject = '';
+        let currentLevel = 1;
+        let score = 0;
+        let badges = 0;
+        let hintsUsed = 0;
+        let answersRevealed = 0;
+
+        function startGame() {
+            document.getElementById('welcome').style.display = 'none';
+            document.getElementById('subject-selection').style.display = 'flex';
+        }
+
+        function selectSubject(subject) {
+            currentSubject = subject;
+            currentLevel = 1;
+            document.getElementById('subject-selection').style.display = 'none';
+            createGrid();
+        }
+
+        function createGrid() {
+            const crossword = document.getElementById('crossword');
+            crossword.innerHTML = ''; // Clear existing grid
+
+            const size = 12; // Fixed grid size for 12x12
+            crossword.style.gridTemplateColumns = `repeat(${size}, 40px)`;
+            crossword.style.gridTemplateRows = `repeat(${size}, 40px)`;
+
+            // Create grid cells
+            for (let i = 0; i < size * size; i++) {
+                const cell = document.createElement('input');
+                cell.type = 'text';
+                cell.maxLength = 1;
+                crossword.appendChild(cell);
+            }
+
+            placeWords();
+            displayClues();
+        }
+
+        function placeWords() {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const data = subjects[currentSubject].clues;
+
+            function getCell(x, y) {
+                return cells[y * 12 + x];
+            }
+
+            // Reset cell background colors and data attributes
+            for (let cell of cells) {
+                cell.classList.remove('white', 'black', 'hint');
+                cell.dataset.answer = '';
+                cell.dataset.clue = '';
+            }
+
+            // Place across words
+            Object.values(data.across).forEach(word => {
+                const [startX, startY] = word.position;
+                for (let i = 0; i < word.answer.length; i++) {
+                    const cell = getCell(startX + i, startY);
+                    cell.classList.add('white');
+                    cell.dataset.answer = word.answer[i];
+                    cell.dataset.clue = word.clue;
+                }
+            });
+
+            // Place down words
+            Object.values(data.down).forEach(word => {
+                const [startX, startY] = word.position;
+                for (let i = 0; i < word.answer.length; i++) {
+                    const cell = getCell(startX, startY + i);
+                    if (cell.classList.contains('white') && cell.dataset.answer === word.answer[i]) {
+                        cell.dataset.answer = word.answer[i]; // Confirming the shared letter
+                    } else {
+                        cell.classList.add('white');
+                        cell.dataset.answer = word.answer[i];
+                        cell.dataset.clue = word.clue;
+                    }
+                }
+            });
+        }
+
+        function displayClues() {
+            const acrossClues = document.getElementById('across');
+            const downClues = document.getElementById('down');
+            acrossClues.innerHTML = '<h3>Across</h3>';
+            downClues.innerHTML = '<h3>Down</h3>';
+
+            const clues = subjects[currentSubject].clues;
+
+            Object.values(clues.across).forEach(clue => {
+                const clueElement = document.createElement('div');
+                clueElement.classList.add('clue');
+                clueElement.textContent = clue.clue;
+                acrossClues.appendChild(clueElement);
+            });
+
+            Object.values(clues.down).forEach(clue => {
+                const clueElement = document.createElement('div');
+                clueElement.classList.add('clue');
+                clueElement.textContent = clue.clue;
+                downClues.appendChild(clueElement);
+            });
+        }
+
+        function giveHint() {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const data = subjects[currentSubject].clues;
+            const words = [...Object.values(data.across), ...Object.values(data.down)];
+
+            // Give a hint by revealing the first letter of a random word
+            for (const word of words) {
+                if (word.position) {
+                    const [startX, startY] = word.position;
+                    const direction = data.across[word.clue] ? 'across' : 'down';
+                    for (let i = 0; i < word.answer.length; i++) {
+                        const cell = direction === 'across'
+                            ? cells[startY * 12 + startX + i]
+                            : cells[(startY + i) * 12 + startX];
+
+                        if (!cell.value) {
+                            cell.value = cell.dataset.answer; // Reveal the first letter of the word
+                            cell.dataset.answer = ''; // Clear the answer
+                            cell.classList.add('hint'); // Add hint styling
+                            break;
+                        }
+                    }
+                    hintsUsed++;
+                    score -= 2; // Deduct points for hint
+                    updateStatus();
+                    break;
+                }
+            }
+        }
+
+        function showAnswer() {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const data = subjects[currentSubject].clues;
+            const words = [...Object.values(data.across), ...Object.values(data.down)];
+
+            // Show full answers for all clues
+            for (const word of words) {
+                const [startX, startY] = word.position;
+                const direction = data.across[word.clue] ? 'across' : 'down';
+                for (let i = 0; i < word.answer.length; i++) {
+                    const cell = direction === 'across'
+                        ? cells[startY * 12 + startX + i]
+                        : cells[(startY + i) * 12 + startX];
+                    cell.value = cell.dataset.answer;
+                    cell.classList.add('black'); // Answer cell styling
+                }
+            }
+            answersRevealed++;
+            score -= 15; // Deduct points for showing answers
+            updateStatus();
+        }
+
+        function checkAnswers() {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            let allCorrect = true;
+
+            for (let cell of cells) {
+                if (cell.value !== cell.dataset.answer) {
+                    allCorrect = false;
+                    cell.classList.add('black');
+                }
+            }
+
+            if (allCorrect) {
+                alert('Congratulations! You completed the crossword.');
+                score += 15; // Award points for completing the level
+                updateStatus();
+                moveToNextLevel();
+            } else {
+                alert('Some answers are incorrect. Please check again.');
+            }
+        }
+
+        function moveToNextLevel() {
+            currentLevel++;
+            updateStatus();
+            createGrid();
+        }
+
+        function updateStatus() {
+            document.getElementById('current-level').textContent = `Level: ${currentLevel}`;
+            document.getElementById('score').textContent = `Score: ${score}`;
+            document.getElementById('badges').textContent = `Badges: ${badges}`;
+        }
+
+        // Define your subjects with clues here
         const subjects = {
             football: {
                 clues: {
@@ -391,14 +712,20 @@
                   2: { clue: "Down(9 letters): Collection of Nigerian movies", answer: "Nollywood", position: [10, 0] },
                   3: { clue: "Down(4 letters): Superhero with a hammer", answer: "Thor", position: [0, 4] },
                   4: { clue: "Down(6 letters): Mission imposible and Top gun actor", answer: "Cruise", position: [6, 4] },
-              }
-           }
-       }
-            
-    };
+                    }
+                }
+            },
+            // Add more subjects and clues as needed
+        };
     </script>
 </body>
 </html>
+
+        };
+    </script>
+</body>
+</html>
+
 
 
 
