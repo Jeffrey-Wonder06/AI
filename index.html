@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #008080;
+            background-color: #000080;
             text-align: center;
         }
         #welcome {
@@ -214,59 +214,92 @@
 
         function giveHint() {
             const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-            const words = [...Object.values(data.across), ...Object.values(data.down)];
+    const cells = crossword.getElementsByTagName('input');
+    const data = subjects[currentSubject].clues;
+    const words = [...Object.values(data.across), ...Object.values(data.down)];
 
-            // Give a hint by revealing the first letter of a random word
-            for (const word of words) {
-                if (word.position) {
-                    const [startX, startY] = word.position;
-                    const direction = data.across[word.clue] ? 'across' : 'down';
-                    for (let i = 0; i < word.answer.length; i++) {
-                        const cell = direction === 'across'
-                            ? cells[startY * 12 + startX + i]
-                            : cells[(startY + i) * 12 + startX];
+    // Track if a hint was given
+    let hintGiven = false;
 
-                        if (!cell.value) {
-                            cell.value = cell.dataset.answer; // Reveal the first letter of the word
-                            cell.dataset.answer = ''; // Clear the answer
-                            cell.classList.add('hint'); // Add hint styling
-                            break;
+    // Loop through all words
+    for (const word of words) {
+        if (word.position) {
+            const [startX, startY] = word.position;
+            const direction = data.across[word.clue] ? 'across' : 'down';
+
+            // Find the next letter in the word that is not yet filled in
+            for (let i = 0; i < word.answer.length; i++) {
+                const cellIndex = direction === 'across'
+                    ? startY * 12 + startX + i
+                    : (startY + i) * 12 + startX;
+                const cell = cells[cellIndex];
+
+                if (!cell.value && !cell.dataset.answer) {
+                    // Reveal the next letter of the word
+                    cell.value = word.answer[i];
+                    cell.dataset.answer = word.answer[i]; // Store the correct letter
+                    cell.classList.add('hint'); // Add hint styling
                         }
                     }
                     hintsUsed++;
                     score -= 2; // Deduct points for hint
                     updateStatus();
+                    hintGiven = true;
                     break;
                 }
             }
+             if (hintGiven) break;
         }
+    }
+
+    if (!hintGiven) {
+        alert("No more hints available!");
+    }
+}
 
         function showAnswer() {
             const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-            const words = [...Object.values(data.across), ...Object.values(data.down)];
+    const cells = crossword.getElementsByTagName('input');
+    const data = subjects[currentSubject].clues;
 
-            // Show full answers for all clues
-            for (const word of words) {
-                const [startX, startY] = word.position;
-                const direction = data.across[word.clue] ? 'across' : 'down';
-                for (let i = 0; i < word.answer.length; i++) {
-                    const cell = direction === 'across'
-                        ? cells[startY * 12 + startX + i]
-                        : cells[(startY + i) * 12 + startX];
-                    cell.value = cell.dataset.answer;
-                    cell.classList.add('black'); // Answer cell styling
+    // Clear previous answers from cells
+    for (const cell of cells) {
+        cell.dataset.answer = ''; // Reset the answer
+        cell.value = ''; // Clear any user input
+        cell.classList.remove('hint'); // Remove hint styling
+    }
+
+    // Fill the grid with the clues
+    const words = [...Object.values(data.across), ...Object.values(data.down)];
+
+    for (const word of words) {
+        if (word.position) {
+            const [startX, startY] = word.position;
+            const direction = data.across[word.clue] ? 'across' : 'down';
+
+            for (let i = 0; i < word.answer.length; i++) {
+                const cellIndex = direction === 'across'
+                    ? startY * 12 + startX + i
+                    : (startY + i) * 12 + startX;
+                const cell = cells[cellIndex];
+                cell.dataset.answer = word.answer[i]; // Store the correct letter
+            }
+        }
+    }
+
+    // Fill the empty cells with placeholder values or styling
+    for (const cell of cells) {
+        if (!cell.dataset.answer) {
+            cell.value = ''; // Ensure empty cells are clear
+            cell.style.backgroundColor = 'lightgrey';
                 }
             }
             answersRevealed++;
-            score -= 15; // Deduct points for showing answers
+            score -= 8; // Deduct points for showing answers
             updateStatus();
         }
 
-        function checkAnswers() {
+        function submit() {
             const crossword = document.getElementById('crossword');
             const cells = crossword.getElementsByTagName('input');
             let allCorrect = true;
@@ -286,12 +319,6 @@
             } else {
                 alert('Some answers are incorrect. Please check again.');
             }
-        }
-
-        function moveToNextLevel() {
-            currentLevel++;
-            updateStatus();
-            createGrid();
         }
 
         function updateStatus() {
@@ -413,18 +440,18 @@
       history: {
          clues: {
               across: { 
-                  1: { clue: "Across(6 letters): President of the US during the American civil war", answer: "Licoln", position: [0, 0] },
+                  1: { clue: "Across(7 letters): President of the US during the American civil war", answer: "Lincoln", position: [0, 0] },
                   2: { clue: "Across(8 letters): sailed around the world", answer: "Magellan", position: [2, 4] },
                   3: { clue: "Across(7 letters): South Africa's first black president", answer: "Mandela", position: [2, 9] },
                   4: { clue: "Across(9 letters): British prime minister during world war II", answer: "Churchill", position: [0, 11] }, 
               },
               down: {
                   1: { clue: "Down(8 letters): Father of nationalism(Nigeria)", answer: "Macaulay", position: [0, 2] },
-                  2: { clue: "Down(8 letters): Discovered America", answer: "Columbus", position: [2, 0] },
-                  3: { clue: "Down(6 letters): Led World war II", answer: "Hitler", position: [6, 1] },
-                  4: { clue: "Down(7 letters): Ancient Egyptian structure", answer: "pyramid", position: [8, 1] },
-                  5: { clue: "Down(6 letters): Nigerian civil war faction", answer: "biafra", position: [10, 6] },
-                  6: { clue: "Down(6 letters): Zik of Africa", answer: "Azikwe", position: [11, 0] },
+                  2: { clue: "Down(8 letters): Discovered America", answer: "Columbus", position: [3, 0] },
+                  3: { clue: "Down(6 letters): Led World war II", answer: "Hitler", position: [7, 1] },
+                  4: { clue: "Down(7 letters): Ancient Egyptian structure", answer: "pyramid", position: [9, 1] },
+                  5: { clue: "Down(6 letters): Nigerian civil war faction", answer: "biafra", position: [11, 6] },
+                  6: { clue: "Down(4 letters): Discovered river Niger", answer: "Park", position: [11, 0] },
               }   
           }
       },
