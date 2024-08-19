@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #008000;
+            background-color: #000000;
             text-align: center;
         }
         #welcome {
@@ -142,15 +142,45 @@
             displayClues();
         }
 
-        function placeWords() {
+function placeWords() {
     const crossword = document.getElementById('crossword');
     const cells = crossword.getElementsByTagName('input');
     const data = subjects[currentSubject].clues;
 
-    function getCell(x, y) {
-    const cells = document.getElementById('crossword').getElementsByTagName('input');
-    return cells[y * 12 + x];
+    // Clear the grid cells before placing new words
+    for (let cell of cells) {
+        cell.value = '';
+        cell.classList.remove('white');
+        cell.classList.remove('black');
+        delete cell.dataset.answer;
+        delete cell.dataset.clue;
+    }
+
+    // Place across words
+    Object.values(data.across).forEach(word => {
+        const [startX, startY] = word.position;
+        for (let i = 0; i < word.answer.length; i++) {
+            const cell = getCell(startX + i, startY);
+            cell.value = word.answer[i].toUpperCase();
+            cell.classList.add('white');
+            cell.dataset.answer = word.answer[i].toLowerCase();
+            cell.dataset.clue = word.clue;
+        }
+    });
+
+    // Place down words
+    Object.values(data.down).forEach(word => {
+        const [startX, startY] = word.position;
+        for (let i = 0; i < word.answer.length; i++) {
+            const cell = getCell(startX, startY + i);
+            cell.value = word.answer[i].toUpperCase();
+            cell.classList.add('white');
+            cell.dataset.answer = word.answer[i].toLowerCase();
+            cell.dataset.clue = word.clue;
+        }
+    });
 }
+ 
 
 function giveHint() {
     const crossword = document.getElementById('crossword');
@@ -185,12 +215,12 @@ function showAnswer() {
     const cells = crossword.getElementsByTagName('input');
     const data = subjects[currentSubject].clues;
 
-    // Place across words
+    // Iterate over across words
     Object.values(data.across).forEach(word => {
         const [startX, startY] = word.position;
         for (let i = 0; i < word.answer.length; i++) {
             const cell = getCell(startX + i, startY);
-            if (cell.classList.contains('white')) {
+            if (cell) {
                 cell.value = word.answer[i].toUpperCase();
                 cell.classList.remove('black');
                 cell.classList.add('white');
@@ -199,6 +229,22 @@ function showAnswer() {
             }
         }
     });
+
+    // Iterate over down words
+    Object.values(data.down).forEach(word => {
+        const [startX, startY] = word.position;
+        for (let i = 0; i < word.answer.length; i++) {
+            const cell = getCell(startX, startY + i);
+            if (cell) {
+                cell.value = word.answer[i].toUpperCase();
+                cell.classList.remove('black');
+                cell.classList.add('white');
+                cell.dataset.answer = word.answer[i].toLowerCase();
+                cell.dataset.clue = word.clue;
+            }
+        }
+    });
+}
 
     answersRevealed++;
     updateScore();
