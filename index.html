@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #ff00ff;
+            background-color: #000080;
             text-align: center;
         }
         #welcome {
@@ -152,23 +152,24 @@ function createGrid() {
     displayClues();
 }
 
-// Places words on the grid based on current subject's clues
 function placeWords() {
     const crossword = document.getElementById('crossword');
     const cells = crossword.getElementsByTagName('input');
     const data = subjects[currentSubject].clues;
 
     // Clear the grid cells before placing new words
-    Array.from(cells).forEach(cell => {
+    for (let cell of cells) {
         cell.value = '';
-        cell.classList.remove('white', 'black', 'hint');
+        cell.classList.remove('white');
+        cell.classList.remove('black');
         delete cell.dataset.answer;
         delete cell.dataset.clue;
-    });
+    }
 
     // Place across words
     Object.values(data.across).forEach(word => {
         const [startX, startY] = word.position;
+        console.log(`Placing across word: ${word.answer}`);
         for (let i = 0; i < word.answer.length; i++) {
             const cell = getCell(startX + i, startY);
             if (cell) {
@@ -183,6 +184,7 @@ function placeWords() {
     // Place down words
     Object.values(data.down).forEach(word => {
         const [startX, startY] = word.position;
+        console.log(`Placing down word: ${word.answer}`);
         for (let i = 0; i < word.answer.length; i++) {
             const cell = getCell(startX, startY + i);
             if (cell) {
@@ -194,7 +196,6 @@ function placeWords() {
         }
     });
 }
-
 
 // Provides a hint by revealing one letter of the current word
 function giveHint() {
