@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #000080;
+            background-color: #008080;
             text-align: center;
         }
         #welcome {
@@ -111,13 +111,6 @@
         let hintsUsed = 0;
         let answersRevealed = 0;
 
-function getCell(x, y) {
-    const crossword = document.getElementById('crossword');
-    const cells = crossword.getElementsByTagName('input');
-    const index = x + y * 12; // Assuming a 12x12 grid
-    return cells[index] || null;
-}
-
         // Starts the game by hiding the welcome message and showing subject selection
 function startGame() {
     document.getElementById('welcome').style.display = 'none';
@@ -151,6 +144,13 @@ function createGrid() {
     placeWords();
     displayClues();
 }
+function getCell(x, y) {
+    const crossword = document.getElementById('crossword');
+    const cells = crossword.getElementsByTagName('input');
+    const index = x + y * 12; // Assuming a 12x12 grid
+    return cells[index] || null;
+}
+
 
 function placeWords() {
     const crossword = document.getElementById('crossword');
