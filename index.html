@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #000000;
+            background-color: #00ffff;
             text-align: center;
         }
         #welcome {
@@ -362,27 +362,72 @@
             return cells[index] || null;
         }
 
-        function giveHint() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-            const currentWord = data.hints[currentHint];
+let score = 100; // Example initial score
 
-            if (!currentWord || currentHint >= currentWord.answer.length) return;
+function getHint() {
+    const crossword = document.getElementById('crossword');
+    const cells = crossword.getElementsByTagName('input');
 
-            const [startX, startY] = currentWord.position;
-            const cell = getCell(startX + currentHint, startY);
+    let hintProvided = false;
 
-            if (cell && cell.classList.contains('white') && !cell.dataset.answer) {
-                cell.value = currentWord.answer[currentHint].toUpperCase(); // Show hint in uppercase
-                cell.dataset.answer = currentWord.answer[currentHint].toLowerCase(); // Store answer in lowercase
-                cell.dataset.clue = currentWord.clue;
-                cell.classList.add('hint');
-                hintsUsed++;
-                updateScore();
-                currentHint++;
+    // First, check for the next letter in words that are almost filled
+    Array.from(cells).forEach(cell => {
+        if (cell.dataset.answer) {
+            const wordCells = getWordCells(cell);
+            const filledCells = wordCells.filter(c => c.value.trim() !== '');
+
+            // If the number of filled cells is one less than the total word length
+            if (filledCells.length === wordCells.length - 1) {
+                const nextCell = wordCells.find(c => c.dataset.answer && c.value.trim() === '');
+                if (nextCell) {
+                    nextCell.value = nextCell.dataset.answer.toUpperCase();
+                    hintProvided = true;
+                    deductPoints(2);
+                    return;
+                }
             }
         }
+    });
+
+    // If no hint was provided, show the first letter of an empty word space
+    if (!hintProvided) {
+        const emptyCell = Array.from(cells).find(cell => cell.value.trim() === '' && cell.dataset.answer);
+        if (emptyCell) {
+            emptyCell.value = emptyCell.dataset.answer.toUpperCase();
+            hintProvided = true;
+            deductPoints(2);
+        }
+    }
+
+    if (!hintProvided) {
+        alert("No hint available.");
+    }
+}
+
+function getWordCells(startCell) {
+    const crossword = document.getElementById('crossword');
+    const cells = crossword.getElementsByTagName('input');
+    const wordCells = [];
+
+    const startCellRow = startCell.dataset.row;
+    const startCellCol = startCell.dataset.col;
+    const wordDirection = startCell.dataset.direction;
+
+    // Collect all cells in the same word direction
+    Array.from(cells).forEach(cell => {
+        if (cell.dataset.row === startCellRow && cell.dataset.direction === wordDirection) {
+            wordCells.push(cell);
+        }
+    });
+
+    return wordCells;
+}
+
+function deductPoints(amount) {
+    score -= amount;
+    document.getElementById('score').innerText = `Score: ${score}`;
+}
+
 
        function showAnswer() {
     const crossword = document.getElementById('crossword');
