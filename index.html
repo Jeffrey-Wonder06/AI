@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #00ffff;
+            background-color: #800080;
             text-align: center;
         }
         #welcome {
@@ -143,46 +143,44 @@
         }
 
         function placeWords() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
+    const crossword = document.getElementById('crossword');
+    const cells = crossword.getElementsByTagName('input');
+    const data = subjects[currentSubject].clues;
 
-            function getCell(x, y) {
-                return cells[y * 12 + x];
-            }
+    function getCell(x, y) {
+        return cells[y * 12 + x];
+    }
 
-            // Reset cell background colors and data attributes
-            for (let cell of cells) {
-                cell.classList.remove('white', 'black', 'hint');
-                cell.dataset.answer = '';
-                cell.dataset.clue = '';
-            }
+    // Reset cell background colors and data attributes
+    for (let cell of cells) {
+        cell.classList.remove('white', 'black', 'hint');
+        cell.dataset.answer = '';
+        cell.dataset.clue = '';
+    }
 
-            // Place across words
-            Object.values(data.across).forEach(word => {
-                const [startX, startY] = word.position;
-                for (let i = 0; i < word.answer.length; i++) {
-                    const cell = getCell(startX + i, startY);
-                    if (cell.classList.contains('white') && cell.dataset.answer === word.answer[i].toLowerCase()) {
-                        cell.dataset.answer = word.answer[i].toLowerCase(); // Confirming the shared letter
-                    } else {
-                    cell.classList.add('white');
-                    cell.dataset.answer = word.answer[i].toLowerCase(); // Store answer in lowercase
-                    cell.dataset.clue = word.clue;
-                }
-            });
+    // Place across words
+    Object.values(data.across).forEach(word => {
+        const [startX, startY] = word.position;
+        for (let i = 0; i < word.answer.length; i++) {
+            const cell = getCell(startX + i, startY);
+            cell.classList.add('white');
+            cell.dataset.answer = word.answer[i].toLowerCase(); // Store answer in lowercase
+            cell.dataset.clue = word.clue;
+        }
+    });
 
-            // Place down words
-            Object.values(data.down).forEach(word => {
-                const [startX, startY] = word.position;
-                for (let i = 0; i < word.answer.length; i++) {
-                    const cell = getCell(startX, startY + i);
-                    if (cell.classList.contains('white') && cell.dataset.answer === word.answer[i].toLowerCase()) {
-                        cell.dataset.answer = word.answer[i].toLowerCase(); // Confirming the shared letter
-                    } else {
-                        cell.classList.add('white');
-                        cell.dataset.answer = word.answer[i].toLowerCase();
-                        cell.dataset.clue = word.clue;
+    // Place down words
+    Object.values(data.down).forEach(word => {
+        const [startX, startY] = word.position;
+        for (let i = 0; i < word.answer.length; i++) {
+            const cell = getCell(startX, startY + i);
+            if (cell.classList.contains('white') && cell.dataset.answer === word.answer[i].toLowerCase()) {
+                // Confirm the shared letter
+                cell.dataset.answer = word.answer[i].toLowerCase(); // Confirming the shared letter
+            } else {
+                cell.classList.add('white');
+                cell.dataset.answer = word.answer[i].toLowerCase();
+                cell.dataset.clue = word.clue;
                     }
                 }
             });
