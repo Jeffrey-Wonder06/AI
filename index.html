@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #808000;
+            background-color: #000000;
             text-align: center;
         }
         #welcome {
@@ -384,29 +384,21 @@
             }
         }
 
-        function showAnswer() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
+       function showAnswer() {
+    const crossword = document.getElementById('crossword');
+    const cells = crossword.getElementsByTagName('input');
 
-            // Reveal all answers
-            Object.values(data.across).concat(Object.values(data.down)).forEach(word => {
-                const [startX, startY] = word.position;
-                for (let i = 0; i < word.answer.length; i++) {
-                    const cell = getCell(startX + i, startY);
-                    if (cell) {
-                        cell.value = word.answer[i].toUpperCase();
-                        cell.dataset.answer = word.answer[i].toLowerCase();
-                        cell.dataset.clue = word.clue;
-                        cell.classList.add('black');
-                    }
-                }
-            });
-
-            answersRevealed++;
-            score -= 15;
-            updateScore();
+    // Reveal answers in all cells
+    Array.from(cells).forEach(cell => {
+        if (cell.dataset.answer) {
+            cell.value = cell.dataset.answer.toUpperCase();
         }
+    });
+
+    answersRevealed++;
+    score -= 8;
+    updateScore();
+       }
 
         function submit() {
             const crossword = document.getElementById('crossword');
