@@ -148,99 +148,39 @@
     const data = subjects[currentSubject].clues;
 
     function getCell(x, y) {
-        return cells[y * 12 + x];
-    }
+    const cells = document.getElementById('crossword').getElementsByTagName('input');
+    return cells[y * 12 + x];
+}
 
-    // Reset cell background colors and data attributes
-    for (let cell of cells) {
-        cell.classList.remove('white', 'black', 'hint');
-        cell.dataset.answer = '';
-        cell.dataset.clue = '';
-    }
-
-    // Place across words
-    Object.values(data.across).forEach(word => {
-        const [startX, startY] = word.position;
-        for (let i = 0; i < word.answer.length; i++) {
-            const cell = getCell(startX + i, startY);
-            cell.classList.add('white');
-            cell.dataset.answer = word.answer[i].toLowerCase(); // Store answer in lowercase
-            cell.dataset.clue = word.clue;
-        }
-    });
-
-    // Place down words
-    Object.values(data.down).forEach(word => {
-        const [startX, startY] = word.position;
-        for (let i = 0; i < word.answer.length; i++) {
-            const cell = getCell(startX, startY + i);
-            if (cell.classList.contains('white') && cell.dataset.answer === word.answer[i].toLowerCase()) {
-                // Confirm the shared letter
-                cell.dataset.answer = word.answer[i].toLowerCase(); // Confirming the shared letter
-            } else {
-                cell.classList.add('white');
-                cell.dataset.answer = word.answer[i].toLowerCase();
-                cell.dataset.clue = word.clue;
-                    }
-                }
-            });
-        }
-
-        function displayClues() {
-            const acrossClues = document.getElementById('across');
-            const downClues = document.getElementById('down');
-            acrossClues.innerHTML = '<h3>Across</h3>';
-            downClues.innerHTML = '<h3>Down</h3>';
-
-            const clues = subjects[currentSubject].clues;
-
-            Object.values(clues.across).forEach(clue => {
-                const clueElement = document.createElement('div');
-                clueElement.classList.add('clue');
-                clueElement.textContent = clue.clue;
-                acrossClues.appendChild(clueElement);
-            });
-
-            Object.values(clues.down).forEach(clue => {
-                const clueElement = document.createElement('div');
-                clueElement.classList.add('clue');
-                clueElement.textContent = clue.clue;
-                downClues.appendChild(clueElement);
-            });
-        }
-
-        function giveHint() {
+function giveHint() {
     const crossword = document.getElementById('crossword');
     const cells = crossword.getElementsByTagName('input');
     const data = subjects[currentSubject].clues;
     const currentWord = data.hints[currentHint];
 
-    // Ensure currentWord and currentHint are valid
     if (!currentWord || currentHint >= currentWord.answer.length) return;
 
     const [startX, startY] = currentWord.position;
     const cell = getCell(startX + currentHint, startY);
 
-    // Fill in the cell with hint
     if (cell && cell.classList.contains('white') && !cell.dataset.answer) {
         cell.value = currentWord.answer[currentHint].toUpperCase(); // Show hint in uppercase
         cell.dataset.answer = currentWord.answer[currentHint].toLowerCase(); // Store answer in lowercase
         cell.dataset.clue = currentWord.clue;
-                            cell.classList.add('hint');
-                            hintsUsed++;
-                            score -= 2;
-                            hintGiven = true;
-                            updateScore();
-                            return; // Exit after giving one hint
-                        }
-                    }
+        cell.classList.add('hint');
+        hintsUsed++;
+        score -= 2;
+        hintGiven = true;
+        updateScore();
+        return; // Exit after giving one hint
+    }
 
-            if (!hintGiven) {
-                alert('No more hints available!');
-            }
-        }
+    if (!hintGiven) {
+        alert('No more hints available!');
+    }
+}
 
-        function showAnswer() {
+function showAnswer() {
     const crossword = document.getElementById('crossword');
     const cells = crossword.getElementsByTagName('input');
     const data = subjects[currentSubject].clues;
@@ -252,40 +192,39 @@
             const cell = getCell(startX + i, startY);
             if (cell.classList.contains('white')) {
                 cell.value = word.answer[i].toUpperCase();
-                cell.classList.remove('black'); // Remove black class
-                cell.classList.add('white'); // Ensure the cell is white
+                cell.classList.remove('black');
+                cell.classList.add('white');
                 cell.dataset.answer = word.answer[i].toLowerCase();
                 cell.dataset.clue = word.clue;
             }
         }
-            });
+    });
 
-            answersRevealed++;
-            updateScore();
+    answersRevealed++;
+    updateScore();
+}
+
+function submit() {
+    const crossword = document.getElementById('crossword');
+    const cells = crossword.getElementsByTagName('input');
+    let allCorrect = true;
+
+    for (let cell of cells) {
+        if (cell.value !== cell.dataset.answer) {
+            allCorrect = false;
+            cell.classList.add('black');
         }
+    }
 
-        function submit() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            let allCorrect = true;
-
-            for (let cell of cells) {
-                if (cell.value !== cell.dataset.answer) {
-                    allCorrect = false;
-                    cell.classList.add('black');
-                }
-            }
-
-            if (allCorrect) {
-                alert('Congratulations! You completed the crossword.');
-                score += 15; // Award points for completing the level
-                updateStatus();
-            } else {
-                alert('Some answers are incorrect. Please check again.');
-            }
-
-        }
-
+    if (allCorrect) {
+        alert('Congratulations! You completed the crossword.');
+        score += 15; // Award points for completing the level
+        updateScore();
+        updateStatus();
+    } else {
+        alert('Some answers are incorrect. Please check again.');
+    }
+}
         function updateScore() {
             document.getElementById('score').textContent = `Score: ${score}`;
         }
@@ -394,7 +333,7 @@
                    7: { clue: "Across(3 letters): compulsory levy imposed by the government", answer: "tax", position: [0, 11] },
                },
                down: {
-                   1: { clue: "Down(12 letters): company's financial statement", amswer: "balancesheet", position: [0, 0] },
+                   1: { clue: "Down(12 letters): company's financial statement", answer: "balancesheet", position: [0, 0] },
                    2: { clue: "Down(9 letters): the study of resource allocation", answer: "economics", position: [4, 2] },
                    3: { clue: "Down(4 letters): one man business", answer: "sole", position: [8, 4] },
                }
