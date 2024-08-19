@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #800080;
+            background-color: #ff00ff;
             text-align: center;
         }
         #welcome {
@@ -113,176 +113,7 @@
         let answersRevealed = 0;
         let currentHint = 0; // Define the currentHint variable
 
-        function startGame() {
-            document.getElementById('welcome').style.display = 'none';
-            document.getElementById('subject-selection').style.display = 'flex';
-        }
-
-        function selectSubject(subject) {
-            currentSubject = subject;
-            document.getElementById('subject-selection').style.display = 'none';
-            createGrid();
-        }
-
-        function createGrid() {
-            const crossword = document.getElementById('crossword');
-            crossword.innerHTML = ''; // Clear existing grid
-
-            const size = 12; // Fixed grid size for 12x12
-            crossword.style.gridTemplateColumns = `repeat(${size}, 40px)`;
-            crossword.style.gridTemplateRows = `repeat(${size}, 40px)`;
-
-            // Create grid cells
-            for (let i = 0; i < size * size; i++) {
-                const cell = document.createElement('input');
-                cell.type = 'text';
-                cell.maxLength = 1;
-                crossword.appendChild(cell);
-            }
-            placewords();
-            displayClues();
-        }
-
-        function placeWords() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-
-            // Clear the grid cells before placing new words
-            for (let cell of cells) {
-                cell.classList.remove('white');// Remove white class from all cells
-                cell.value = ''; // Clear cell value
-                delete cell.dataset.answer;
-                delete cell.dataset.clue;
-            }
-
-            // Place across words
-            Object.values(data.across).forEach(word => {
-                const [startX, startY] = word.position;
-                for (let i = 0; i < word.answer.length; i++) {
-                    const cell = getCell(startX + i, startY);
-                    if (cell) {
-                        cell.value = word.answer[i].toUpperCase();
-                        cell.classList.add('white'); // Add white class to cells that are part of the word
-                        cell.dataset.answer = word.answer[i].toLowerCase();
-                        cell.dataset.clue = word.clue;
-                    }
-                }
-            });
-
-            // Place down words
-            Object.values(data.down).forEach(word => {
-                const [startX, startY] = word.position;
-                for (let i = 0; i < word.answer.length; i++) {
-                    const cell = getCell(startX, startY + i);
-                    if (cell) {
-                        cell.value = word.answer[i].toUpperCase();
-                        cell.classList.add('white'); // Add white class to cells that are part of the word
-                        cell.dataset.answer = word.answer[i].toLowerCase();
-                        cell.dataset.clue = word.clue;
-                    }
-                }
-            });
-        }
-
-        function getCell(x, y) {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const size = 12; // Grid size
-            const index = x + y * size;
-            return cells[index] || null;
-        }
-
-        function giveHint() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-            const currentWord = data.hints[currentHint];
-
-            if (!currentWord || currentHint >= currentWord.answer.length) return;
-
-            const [startX, startY] = currentWord.position;
-            const cell = getCell(startX + currentHint, startY);
-
-            if (cell && cell.classList.contains('white') && !cell.dataset.answer) {
-                cell.value = currentWord.answer[currentHint].toUpperCase(); // Show hint in uppercase
-                cell.dataset.answer = currentWord.answer[currentHint].toLowerCase(); // Store answer in lowercase
-                cell.dataset.clue = currentWord.clue;
-                cell.classList.add('hint');
-                hintsUsed++;
-                score -= 2;
-                currentHint++; // Increment hint index
-                updateScore();
-            } else {
-                alert('No more hints available!');
-            }
-        }
-
-        function showAnswer() {
-            placeWords();
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-
-            // Reveal all words
-            Object.values(data.across).concat(Object.values(data.down)).forEach(word => {
-                const [startX, startY] = word.position;
-                for (let i = 0; i < word.answer.length; i++) {
-                    const cell = getCell(startX + i, startY);
-                    if (cell) {
-                        cell.value = word.answer[i].toUpperCase();
-                        cell.dataset.answer = word.answer[i].toLowerCase();
-                        cell.classList.add('black');
-                    }
-                }
-            });
-
-            answersRevealed++;
-            score -= 15;
-            updateScore();
-        }
-
-        function submit() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            let correct = true;
-            let filled = true;
-            const data = subjects[currentSubject].clues;
-
-            Object.values(data.across).concat(Object.values(data.down)).forEach(word => {
-                const [startX, startY] = word.position;
-                for (let i = 0; i < word.answer.length; i++) {
-                    const cell = getCell(startX + i, startY);
-                    if (cell) {
-                        if (cell.value.toLowerCase() !== cell.dataset.answer) {
-                            correct = false;
-                        }
-                        if (!cell.value) {
-                            filled = false;
-                        }
-                    }
-                }
-            });
-
-            if (correct && filled) {
-                alert('Congratulations! You completed the crossword!');
-                score += 15;
-                badges++;
-                updateScore();
-            } else if (filled) {
-                alert('There are errors in your crossword. Please check your answers.');
-            } else {
-                alert('You have not filled all the cells. Please complete the crossword.');
-            }
-        }
-
-        function updateScore() {
-            document.getElementById('score').textContent = 'Score: ' + score;
-            document.getElementById('badges').textContent = 'Badges: ' + badges;
-        }
-
-
-        // Define your subjects with clues here
+        // Define crossword data for each subject
         const subjects = {
             football: {
                 clues: {
@@ -443,16 +274,197 @@
                3: { clue: "Down(7 letters): invented the pasteurisation method of preservation", answer: "Pasteur", position: [6, 1] },
                4: { clue: "Down(7 letters): invented the electric motor", answer: "Faraday", position: [9, 4] },
                5: { clue: "Down(4 letters): invented automobile(car)", answer: "Benz", position: [11, 8] },
-            }
-         }
-      },
+                    }
+                }
+            },
+            // Add more subjects with their clues and answers
+        };
 
-    
-            
-      };
-   </script>       
-</body>           
-</html>                    
+        function startGame() {
+            document.getElementById('welcome').style.display = 'none';
+            document.getElementById('subject-selection').style.display = 'flex';
+        }
+
+        function selectSubject(subject) {
+            currentSubject = subject;
+            document.getElementById('subject-selection').style.display = 'none';
+            createGrid();
+        }
+
+        function createGrid() {
+            const crossword = document.getElementById('crossword');
+            crossword.innerHTML = ''; // Clear existing grid
+
+            const size = 12; // Fixed grid size for 12x12
+            crossword.style.gridTemplateColumns = `repeat(${size}, 40px)`;
+            crossword.style.gridTemplateRows = `repeat(${size}, 40px)`;
+
+            // Create grid cells
+            for (let i = 0; i < size * size; i++) {
+                const cell = document.createElement('input');
+                cell.type = 'text';
+                cell.maxLength = 1;
+                crossword.appendChild(cell);
+            }
+            placeWords(); // Ensure words are placed after grid creation
+            displayClues();
+        }
+
+        function placeWords() {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const data = subjects[currentSubject].clues;
+
+            // Clear the grid cells before placing new words
+            for (let cell of cells) {
+                cell.classList.remove('white'); // Remove white class from all cells
+                cell.value = ''; // Clear cell value
+                delete cell.dataset.answer;
+                delete cell.dataset.clue;
+            }
+
+            // Place across words
+            Object.values(data.across).forEach(word => {
+                const [startX, startY] = word.position;
+                for (let i = 0; i < word.answer.length; i++) {
+                    const cell = getCell(startX + i, startY);
+                    if (cell) {
+                        cell.value = word.answer[i].toUpperCase();
+                        cell.classList.add('white'); // Add white class to cells that are part of the word
+                        cell.dataset.answer = word.answer[i].toLowerCase();
+                        cell.dataset.clue = word.clue;
+                    }
+                }
+            });
+
+            // Place down words
+            Object.values(data.down).forEach(word => {
+                const [startX, startY] = word.position;
+                for (let i = 0; i < word.answer.length; i++) {
+                    const cell = getCell(startX, startY + i);
+                    if (cell) {
+                        cell.value = word.answer[i].toUpperCase();
+                        cell.classList.add('white'); // Add white class to cells that are part of the word
+                        cell.dataset.answer = word.answer[i].toLowerCase();
+                        cell.dataset.clue = word.clue;
+                    }
+                }
+            });
+
+            console.log('Words placed');
+            console.log(crossword.innerHTML); // Check the HTML content of the crossword
+        }
+
+        function getCell(x, y) {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const size = 12; // Grid size
+            const index = x + y * size;
+            return cells[index] || null;
+        }
+
+        function giveHint() {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const data = subjects[currentSubject].clues;
+            const currentWord = data.hints[currentHint];
+
+            if (!currentWord || currentHint >= currentWord.answer.length) return;
+
+            const [startX, startY] = currentWord.position;
+            const cell = getCell(startX + currentHint, startY);
+
+            if (cell && cell.classList.contains('white') && !cell.dataset.answer) {
+                cell.value = currentWord.answer[currentHint].toUpperCase(); // Show hint in uppercase
+                cell.dataset.answer = currentWord.answer[currentHint].toLowerCase(); // Store answer in lowercase
+                cell.dataset.clue = currentWord.clue;
+                cell.classList.add('hint');
+                hintsUsed++;
+                updateScore();
+                currentHint++;
+            }
+        }
+
+        function showAnswer() {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const data = subjects[currentSubject].clues;
+
+            // Reveal all answers
+            Object.values(data.across).concat(Object.values(data.down)).forEach(word => {
+                const [startX, startY] = word.position;
+                for (let i = 0; i < word.answer.length; i++) {
+                    const cell = getCell(startX + i, startY);
+                    if (cell) {
+                        cell.value = word.answer[i].toUpperCase();
+                        cell.dataset.answer = word.answer[i].toLowerCase();
+                        cell.dataset.clue = word.clue;
+                        cell.classList.add('black');
+                    }
+                }
+            });
+
+            answersRevealed++;
+            score -= 15;
+            updateScore();
+        }
+
+        function submit() {
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            let correct = true;
+
+            // Check answers
+            Array.from(cells).forEach(cell => {
+                if (cell.classList.contains('white') && cell.value.toLowerCase() !== cell.dataset.answer) {
+                    correct = false;
+                }
+            });
+
+            if (correct) {
+                score += 15;
+                badges++;
+                updateScore();
+                alert('Level completed!');
+                // Load next level or complete game
+            } else {
+                alert('Incorrect answers. Please try again.');
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('score').innerText = `Score: ${score}`;
+            document.getElementById('badges').innerText = `Badges: ${badges}`;
+        }
+
+        function displayClues() {
+            const acrossDiv = document.getElementById('across');
+            const downDiv = document.getElementById('down');
+            acrossDiv.innerHTML = '';
+            downDiv.innerHTML = '';
+
+            const data = subjects[currentSubject].clues;
+
+            // Display across clues
+            Object.values(data.across).forEach((clue, index) => {
+                const clueElement = document.createElement('div');
+                clueElement.className = 'clue';
+                clueElement.innerText = `${index + 1}. ${clue.clue}`;
+                acrossDiv.appendChild(clueElement);
+            });
+
+            // Display down clues
+            Object.values(data.down).forEach((clue, index) => {
+                const clueElement = document.createElement('div');
+                clueElement.className = 'clue';
+                clueElement.innerText = `${index + 1}. ${clue.clue}`;
+                downDiv.appendChild(clueElement);
+            });
+        }
+    </script>
+</body>
+</html>
+                 
             
     
 
