@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #800080;
+            background-color: #808000;
             text-align: center;
         }
         #welcome {
@@ -228,6 +228,7 @@ function giveHint() {
 
 // Reveals all answers on the grid
 function showAnswer() {
+    placeWords();
     const crossword = document.getElementById('crossword');
     const cells = crossword.getElementsByTagName('input');
     const data = subjects[currentSubject].clues;
