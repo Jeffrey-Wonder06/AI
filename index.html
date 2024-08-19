@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #ff00ff;
+            background-color: #800080;
             text-align: center;
         }
         #welcome {
@@ -317,7 +317,7 @@
 
             // Clear the grid cells before placing new words
             for (let cell of cells) {
-                cell.classList.remove('white'); // Remove white class from all cells
+                cell.classList.remove('white', 'black'); // Remove white and black classes
                 cell.value = ''; // Clear cell value
                 delete cell.dataset.answer;
                 delete cell.dataset.clue;
@@ -329,10 +329,9 @@
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = getCell(startX + i, startY);
                     if (cell) {
-                        cell.value = word.answer[i].toUpperCase();
-                        cell.classList.add('white'); // Add white class to cells that are part of the word
                         cell.dataset.answer = word.answer[i].toLowerCase();
                         cell.dataset.clue = word.clue;
+                        cell.classList.add('white');
                     }
                 }
             });
@@ -343,14 +342,13 @@
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = getCell(startX, startY + i);
                     if (cell) {
-                        cell.value = word.answer[i].toUpperCase();
-                        cell.classList.add('white'); // Add white class to cells that are part of the word
                         cell.dataset.answer = word.answer[i].toLowerCase();
                         cell.dataset.clue = word.clue;
+                        cell.classList.add('white');
                     }
                 }
             });
-
+        }
             console.log('Words placed');
             console.log(crossword.innerHTML); // Check the HTML content of the crossword
         }
