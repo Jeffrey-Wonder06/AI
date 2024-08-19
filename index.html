@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #00ffff;
+            background-color: #800080;
             text-align: center;
         }
         #welcome {
@@ -426,6 +426,7 @@ function getWordCells(startCell) {
 function deductPoints(amount) {
     score -= amount;
     document.getElementById('score').innerText = `Score: ${score}`;
+    updateScore();
 }
 
 
