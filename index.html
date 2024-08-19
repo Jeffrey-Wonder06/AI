@@ -164,7 +164,7 @@
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = getCell(startX + i, startY);
                     cell.classList.add('white');
-                    cell.dataset.answer = word.answer[i];
+                    cell.dataset.answer = word.answer[i].toLowerCase(); // Store answer in lowercase
                     cell.dataset.clue = word.clue;
                 }
             });
@@ -174,11 +174,11 @@
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = getCell(startX, startY + i);
-                    if (cell.classList.contains('white') && cell.dataset.answer === word.answer[i]) {
-                        cell.dataset.answer = word.answer[i]; // Confirming the shared letter
+                    if (cell.classList.contains('white') && cell.dataset.answer === word.answer[i].toLowerCase()) {
+                        cell.dataset.answer = word.answer[i].toLowerCase(); // Confirming the shared letter
                     } else {
                         cell.classList.add('white');
-                        cell.dataset.answer = word.answer[i];
+                        cell.dataset.answer = word.answer[i].toLowerCase();
                         cell.dataset.clue = word.clue;
                     }
                 }
@@ -210,89 +210,65 @@
 
         function giveHint() {
             const crossword = document.getElementById('crossword');
-    const cells = crossword.getElementsByTagName('input');
-    const data = subjects[currentSubject].clues;
-    const words = [...Object.values(data.across), ...Object.values(data.down)];
+            const cells = crossword.getElementsByTagName('input');
+            const data = subjects[currentSubject].clues;
+            const words = [...Object.values(data.across), ...Object.values(data.down)];
 
-    // Track if a hint was given
-    let hintGiven = false;
+            let hintGiven = false;
 
-    // Loop through all words
-    for (const word of words) {
-        if (word.position) {
-            const [startX, startY] = word.position;
-            const direction = data.across[word.clue] ? 'across' : 'down';
+            for (const word of words) {
+                if (word.position) {
+                    const [startX, startY] = word.position;
+                    const direction = data.across[word.clue] ? 'across' : 'down';
 
-            // Find the next letter in the word that is not yet filled in
-            for (let i = 0; i < word.answer.length; i++) {
-                const cellIndex = direction === 'across'
-                    ? startY * 12 + startX + i
-                    : (startY + i) * 12 + startX;
-                const cell = cells[cellIndex];
+                    for (let i = 0; i < word.answer.length; i++) {
+                        const cellIndex = direction === 'across'
+                            ? startY * 12 + startX + i
+                            : (startY + i) * 12 + startX;
+                        const cell = cells[cellIndex];
 
-                if (!cell.value && !cell.dataset.answer) {
-                    // Reveal the next letter of the word
-                    cell.value = word.answer[i];
-                    cell.dataset.answer = word.answer[i]; // Store the correct letter
-                    cell.classList.add('hint'); // Add hint styling
+                        if (!cell.value && !cell.dataset.answer) {
+                            cell.value = word.answer[i];
+                            cell.dataset.answer = word.answer[i];
+                            cell.classList.add('hint');
+                            hintsUsed++;
+                            score -= 2;
+                            hintGiven = true;
+                            updateScore();
+                            return; // Exit after giving one hint
                         }
                     }
-                    hintsUsed++;
-                    score -= 2; // Deduct points for hint
-                    updateStatus();
-                    hintGiven = true;
-                    break;
                 }
             }
-             if (hintGiven) break;
-        }
-    }
 
-    if (!hintGiven) {
-        alert("No more hints available!");
-    }
-}
+            if (!hintGiven) {
+                alert('No more hints available!');
+            }
+        }
 
         function showAnswer() {
             const crossword = document.getElementById('crossword');
-    const cells = crossword.getElementsByTagName('input');
-    const data = subjects[currentSubject].clues;
+            const cells = crossword.getElementsByTagName('input');
+            const data = subjects[currentSubject].clues;
+            const words = [...Object.values(data.across), ...Object.values(data.down)];
 
-    // Clear previous answers from cells
-    for (const cell of cells) {
-        cell.dataset.answer = ''; // Reset the answer
-        cell.value = ''; // Clear any user input
-        cell.classList.remove('hint'); // Remove hint styling
-    }
+            words.forEach(word => {
+                const [startX, startY] = word.position;
+                const direction = data.across[word.clue] ? 'across' : 'down';
 
-    // Fill the grid with the clues
-    const words = [...Object.values(data.across), ...Object.values(data.down)];
-
-    for (const word of words) {
-        if (word.position) {
-            const [startX, startY] = word.position;
-            const direction = data.across[word.clue] ? 'across' : 'down';
-
-            for (let i = 0; i < word.answer.length; i++) {
-                const cellIndex = direction === 'across'
-                    ? startY * 12 + startX + i
-                    : (startY + i) * 12 + startX;
-                const cell = cells[cellIndex];
-                cell.dataset.answer = word.answer[i]; // Store the correct letter
-            }
-        }
-    }
-
-    // Fill the empty cells with placeholder values or styling
-    for (const cell of cells) {
-        if (!cell.dataset.answer) {
-            cell.value = ''; // Ensure empty cells are clear
-            cell.style.backgroundColor = 'lightgrey';
+                for (let i = 0; i < word.answer.length; i++) {
+                    const cellIndex = direction === 'across'
+                        ? startY * 12 + startX + i
+                        : (startY + i) * 12 + startX;
+                    const cell = cells[cellIndex];
+                    cell.value = word.answer[i];
+                    cell.dataset.answer = word.answer[i];
+                    cell.classList.add('black');
                 }
-            }
+            });
+
             answersRevealed++;
-            score -= 8; // Deduct points for showing answers
-            updateStatus();
+            updateScore();
         }
 
         function submit() {
@@ -314,11 +290,11 @@
             } else {
                 alert('Some answers are incorrect. Please check again.');
             }
+
         }
 
-        function updateStatus() {
+        function updateScore() {
             document.getElementById('score').textContent = `Score: ${score}`;
-            document.getElementById('badges').textContent = `Badges: ${badges}`;
         }
 
         // Define your subjects with clues here
