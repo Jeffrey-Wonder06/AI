@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #008080;
+            background-color: #800000;
             text-align: center;
         }
         #welcome {
@@ -144,13 +144,6 @@ function createGrid() {
     placeWords();
     displayClues();
 }
-function getCell(x, y) {
-    const crossword = document.getElementById('crossword');
-    const cells = crossword.getElementsByTagName('input');
-    const index = x + y * 12; // Assuming a 12x12 grid
-    return cells[index] || null;
-}
-
 
 function placeWords() {
     const crossword = document.getElementById('crossword');
@@ -195,6 +188,17 @@ function placeWords() {
             }
         }
     });
+}
+        
+function getCell(x, y) {
+    if (x < 0 || x >= 12 || y < 0 || y >= 12) {
+        console.error(`Invalid cell coordinates: x=${x}, y=${y}`);
+        return null;
+    }
+    const crossword = document.getElementById('crossword');
+    const cells = crossword.getElementsByTagName('input');
+    const index = x + y * 12;
+    return cells[index] || null;
 }
 
 // Provides a hint by revealing one letter of the current word
