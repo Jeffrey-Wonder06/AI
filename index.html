@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #ffff00;
+            background-color: #0000ff;
             text-align: center;
         }
         #welcome {
@@ -139,6 +139,8 @@ function createGrid() {
         const cell = document.createElement('input');
         cell.type = 'text';
         cell.maxLength = 1;
+        cell.style.backgroundColor = 'darkgrey'; // Set all cells to dark grey
+        cell.style.color = 'black'; // Set the text color to black
         crossword.appendChild(cell);
     }
 
@@ -153,6 +155,7 @@ function placeWords() {
     // Clear the grid cells before placing new words
     for (let cell of cells) {
         cell.value = '';
+        cell.style.backgroundColor = 'darkgrey'; // Reset all cells to dark grey
         cell.classList.remove('white');
         cell.classList.remove('black');
         delete cell.dataset.answer;
@@ -162,11 +165,10 @@ function placeWords() {
     // Place across words
     Object.values(data.across).forEach(word => {
         const [startX, startY] = word.position;
-        console.log(`Placing across word: ${word.answer}`);
         for (let i = 0; i < word.answer.length; i++) {
             const cell = getCell(startX + i, startY);
             if (cell) {
-                cell.value = word.answer[i].toUpperCase();
+                cell.style.backgroundColor = 'white'; // Set the cell to white
                 cell.classList.add('white');
                 cell.dataset.answer = word.answer[i].toLowerCase();
                 cell.dataset.clue = word.clue;
@@ -174,14 +176,13 @@ function placeWords() {
         }
     });
 
-    // Place down words
+   // Place down words
     Object.values(data.down).forEach(word => {
         const [startX, startY] = word.position;
-        console.log(`Placing down word: ${word.answer}`);
         for (let i = 0; i < word.answer.length; i++) {
             const cell = getCell(startX, startY + i);
             if (cell) {
-                cell.value = word.answer[i].toUpperCase();
+                cell.style.backgroundColor = 'white'; // Set the cell to white
                 cell.classList.add('white');
                 cell.dataset.answer = word.answer[i].toLowerCase();
                 cell.dataset.clue = word.clue;
