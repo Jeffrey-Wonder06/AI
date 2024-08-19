@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #ffff00;
+            background-color: #000000;
             text-align: center;
         }
         #welcome {
@@ -111,60 +111,65 @@
         let hintsUsed = 0;
         let answersRevealed = 0;
 
-        function startGame() {
-            document.getElementById('welcome').style.display = 'none';
-            document.getElementById('subject-selection').style.display = 'flex';
-        }
+        // Starts the game by hiding the welcome message and showing subject selection
+function startGame() {
+    document.getElementById('welcome').style.display = 'none';
+    document.getElementById('subject-selection').style.display = 'flex';
+}
 
-        function selectSubject(subject) {
-            currentSubject = subject;
-            document.getElementById('subject-selection').style.display = 'none';
-            createGrid();
-        }
+// Handles subject selection and starts the game by creating the grid
+function selectSubject(subject) {
+    currentSubject = subject;
+    document.getElementById('subject-selection').style.display = 'none';
+    createGrid();
+}
 
-        function createGrid() {
-            const crossword = document.getElementById('crossword');
-            crossword.innerHTML = ''; // Clear existing grid
+// Creates a 12x12 grid for the crossword
+function createGrid() {
+    const crossword = document.getElementById('crossword');
+    crossword.innerHTML = ''; // Clear existing grid
 
-            const size = 12; // Fixed grid size for 12x12
-            crossword.style.gridTemplateColumns = `repeat(${size}, 40px)`;
-            crossword.style.gridTemplateRows = `repeat(${size}, 40px)`;
+    const size = 12; // Fixed grid size for 12x12
+    crossword.style.gridTemplateColumns = `repeat(${size}, 40px)`;
+    crossword.style.gridTemplateRows = `repeat(${size}, 40px)`;
 
-            // Create grid cells
-            for (let i = 0; i < size * size; i++) {
-                const cell = document.createElement('input');
-                cell.type = 'text';
-                cell.maxLength = 1;
-                crossword.appendChild(cell);
-            }
+    // Create grid cells
+    for (let i = 0; i < size * size; i++) {
+        const cell = document.createElement('input');
+        cell.type = 'text';
+        cell.maxLength = 1;
+        crossword.appendChild(cell);
+    }
 
-            placeWords();
-            displayClues();
-        }
+    placeWords();
+    displayClues();
+}
 
+// Places words on the grid based on current subject's clues
 function placeWords() {
     const crossword = document.getElementById('crossword');
     const cells = crossword.getElementsByTagName('input');
     const data = subjects[currentSubject].clues;
 
     // Clear the grid cells before placing new words
-    for (let cell of cells) {
+    Array.from(cells).forEach(cell => {
         cell.value = '';
-        cell.classList.remove('white');
-        cell.classList.remove('black');
+        cell.classList.remove('white', 'black', 'hint');
         delete cell.dataset.answer;
         delete cell.dataset.clue;
-    }
+    });
 
     // Place across words
     Object.values(data.across).forEach(word => {
         const [startX, startY] = word.position;
         for (let i = 0; i < word.answer.length; i++) {
             const cell = getCell(startX + i, startY);
-            cell.value = word.answer[i].toUpperCase();
-            cell.classList.add('white');
-            cell.dataset.answer = word.answer[i].toLowerCase();
-            cell.dataset.clue = word.clue;
+            if (cell) {
+                cell.value = word.answer[i].toUpperCase();
+                cell.classList.add('white');
+                cell.dataset.answer = word.answer[i].toLowerCase();
+                cell.dataset.clue = word.clue;
+            }
         }
     });
 
@@ -173,16 +178,17 @@ function placeWords() {
         const [startX, startY] = word.position;
         for (let i = 0; i < word.answer.length; i++) {
             const cell = getCell(startX, startY + i);
-            cell.value = word.answer[i].toUpperCase();
-            cell.classList.add('white');
-            cell.dataset.answer = word.answer[i].toLowerCase();
-            cell.dataset.clue = word.clue;
-            updatescore();
+            if (cell) {
+                cell.value = word.answer[i].toUpperCase();
+                cell.classList.add('white');
+                cell.dataset.answer = word.answer[i].toLowerCase();
+                cell.dataset.clue = word.clue;
+            }
         }
     });
 }
- 
 
+// Provides a hint by revealing one letter of the current word
 function giveHint() {
     const crossword = document.getElementById('crossword');
     const cells = crossword.getElementsByTagName('input');
@@ -203,14 +209,12 @@ function giveHint() {
         score -= 2;
         hintGiven = true;
         updateScore();
-        return; // Exit after giving one hint
-    }
-
-    if (!hintGiven) {
+    } else if (!hintGiven) {
         alert('No more hints available!');
     }
 }
 
+// Reveals all answers on the grid
 function showAnswer() {
     const crossword = document.getElementById('crossword');
     const cells = crossword.getElementsByTagName('input');
@@ -245,12 +249,12 @@ function showAnswer() {
             }
         }
     });
-}
 
     answersRevealed++;
     updateScore();
 }
 
+// Submits the crossword, checking for correctness
 function submit() {
     const crossword = document.getElementById('crossword');
     const cells = crossword.getElementsByTagName('input');
@@ -267,14 +271,17 @@ function submit() {
         alert('Congratulations! You completed the crossword.');
         score += 15; // Award points for completing the level
         updateScore();
-        updateStatus();
+        updateStatus(); // Ensure this function is defined and working
     } else {
         alert('Some answers are incorrect. Please check again.');
     }
 }
-        function updateScore() {
-            document.getElementById('score').textContent = `Score: ${score}`;
-        }
+
+// Updates the displayed score
+function updateScore() {
+    document.getElementById('score').textContent = `Score: ${score}`;
+}
+
 
         // Define your subjects with clues here
         const subjects = {
