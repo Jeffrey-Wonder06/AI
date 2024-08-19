@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #000000;
+            background-color: #800080;
             text-align: center;
         }
         #welcome {
@@ -35,6 +35,7 @@
             font-size: 18px;
             border: 1px solid #ccc;
             background-color: darkgrey;
+            color: black;
         }
         #crossword input.white {
             background-color: white;
@@ -149,7 +150,8 @@
 
             // Clear the grid cells before placing new words
             for (let cell of cells) {
-                cell.classList.remove('white'); // Remove white class from all cells
+                cell.classList.remove('white');// Remove white class from all cells
+                cell.value = ''; // Clear cell value
                 delete cell.dataset.answer;
                 delete cell.dataset.clue;
             }
