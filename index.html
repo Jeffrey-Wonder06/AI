@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #800080;
+            background-color: #000000;
             text-align: center;
         }
         #welcome {
@@ -210,27 +210,22 @@
         }
 
         function giveHint() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-            const words = [...Object.values(data.across), ...Object.values(data.down)];
+    const crossword = document.getElementById('crossword');
+    const cells = crossword.getElementsByTagName('input');
+    const data = subjects[currentSubject].clues;
+    const currentWord = data.hints[currentHint];
 
-            let hintGiven = false;
+    // Ensure currentWord and currentHint are valid
+    if (!currentWord || currentHint >= currentWord.answer.length) return;
 
-            for (const word of words) {
-                if (word.position) {
-                    const [startX, startY] = word.position;
-                    const direction = data.across[word.clue] ? 'across' : 'down';
+    const [startX, startY] = currentWord.position;
+    const cell = getCell(startX + currentHint, startY);
 
-                    for (let i = 0; i < word.answer.length; i++) {
-                        const cellIndex = direction === 'across'
-                            ? startY * 12 + startX + i
-                            : (startY + i) * 12 + startX;
-                        const cell = cells[cellIndex];
-
-                        if (!cell.value && !cell.dataset.answer) {
-                            cell.value = word.answer[i];
-                            cell.dataset.answer = word.answer[i];
+    // Fill in the cell with hint
+    if (cell && cell.classList.contains('white') && !cell.dataset.answer) {
+        cell.value = currentWord.answer[currentHint].toUpperCase(); // Show hint in uppercase
+        cell.dataset.answer = currentWord.answer[currentHint].toLowerCase(); // Store answer in lowercase
+        cell.dataset.clue = currentWord.clue;
                             cell.classList.add('hint');
                             hintsUsed++;
                             score -= 2;
@@ -248,24 +243,23 @@
         }
 
         function showAnswer() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-            const words = [...Object.values(data.across), ...Object.values(data.down)];
+    const crossword = document.getElementById('crossword');
+    const cells = crossword.getElementsByTagName('input');
+    const data = subjects[currentSubject].clues;
 
-            words.forEach(word => {
-                const [startX, startY] = word.position;
-                const direction = data.across[word.clue] ? 'across' : 'down';
-
-                for (let i = 0; i < word.answer.length; i++) {
-                    const cellIndex = direction === 'across'
-                        ? startY * 12 + startX + i
-                        : (startY + i) * 12 + startX;
-                    const cell = cells[cellIndex];
-                    cell.value = word.answer[i];
-                    cell.dataset.answer = word.answer[i];
-                    cell.classList.add('black');
-                }
+    // Place across words
+    Object.values(data.across).forEach(word => {
+        const [startX, startY] = word.position;
+        for (let i = 0; i < word.answer.length; i++) {
+            const cell = getCell(startX + i, startY);
+            if (cell.classList.contains('white')) {
+                cell.value = word.answer[i].toUpperCase();
+                cell.classList.remove('black'); // Remove black class
+                cell.classList.add('white'); // Ensure the cell is white
+                cell.dataset.answer = word.answer[i].toLowerCase();
+                cell.dataset.clue = word.clue;
+            }
+        }
             });
 
             answersRevealed++;
