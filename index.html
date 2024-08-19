@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #ff00ff;
+            background-color: #00ffff;
             text-align: center;
         }
         #welcome {
@@ -163,6 +163,9 @@
                 const [startX, startY] = word.position;
                 for (let i = 0; i < word.answer.length; i++) {
                     const cell = getCell(startX + i, startY);
+                    if (cell.classList.contains('white') && cell.dataset.answer === word.answer[i].toLowerCase()) {
+                        cell.dataset.answer = word.answer[i].toLowerCase(); // Confirming the shared letter
+                    } else {
                     cell.classList.add('white');
                     cell.dataset.answer = word.answer[i].toLowerCase(); // Store answer in lowercase
                     cell.dataset.clue = word.clue;
