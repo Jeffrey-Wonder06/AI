@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #0000ff;
+            background-color: #C0C0C0;
             text-align: center;
         }
         #welcome {
@@ -34,7 +34,7 @@
             text-align: center;
             font-size: 18px;
             border: 1px solid #ccc;
-            background-color: white;
+            background-color: darkgrey;
         }
         #crossword input.white {
             background-color: white;
@@ -139,8 +139,6 @@ function createGrid() {
         const cell = document.createElement('input');
         cell.type = 'text';
         cell.maxLength = 1;
-        cell.style.backgroundColor = 'darkgrey'; // Set all cells to dark grey
-        cell.style.color = 'black'; // Set the text color to black
         crossword.appendChild(cell);
     }
 
@@ -154,10 +152,7 @@ function placeWords() {
 
     // Clear the grid cells before placing new words
     for (let cell of cells) {
-        cell.value = '';
-        cell.style.backgroundColor = 'darkgrey'; // Reset all cells to dark grey
-        cell.classList.remove('white');
-        cell.classList.remove('black');
+        cell.classList.remove('white'); // Remove white class from all cells
         delete cell.dataset.answer;
         delete cell.dataset.clue;
     }
@@ -168,13 +163,28 @@ function placeWords() {
         for (let i = 0; i < word.answer.length; i++) {
             const cell = getCell(startX + i, startY);
             if (cell) {
-                cell.style.backgroundColor = 'white'; // Set the cell to white
-                cell.classList.add('white');
+                cell.value = word.answer[i].toUpperCase();
+                cell.classList.add('white'); // Add white class to cells that are part of the word
                 cell.dataset.answer = word.answer[i].toLowerCase();
                 cell.dataset.clue = word.clue;
             }
         }
     });
+
+    // Place down words
+    Object.values(data.down).forEach(word => {
+        const [startX, startY] = word.position;
+        for (let i = 0; i < word.answer.length; i++) {
+            const cell = getCell(startX, startY + i);
+            if (cell) {
+                cell.value = word.answer[i].toUpperCase();
+                cell.classList.add('white'); // Add white class to cells that are part of the word
+                cell.dataset.answer = word.answer[i].toLowerCase();
+                cell.dataset.clue = word.clue;
+            }
+        }
+    });
+}
 
    // Place down words
     Object.values(data.down).forEach(word => {
@@ -192,13 +202,10 @@ function placeWords() {
 }
         
 function getCell(x, y) {
-    if (x < 0 || x >= 12 || y < 0 || y >= 12) {
-        console.error(`Invalid cell coordinates: x=${x}, y=${y}`);
-        return null;
-    }
     const crossword = document.getElementById('crossword');
     const cells = crossword.getElementsByTagName('input');
-    const index = x + y * 12;
+    const size = 12; // Grid size
+    const index = x + y * size;
     return cells[index] || null;
 }
 
