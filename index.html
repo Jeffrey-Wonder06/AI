@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #000080;
+            background-color: #800000;
             text-align: center;
         }
         #welcome {
@@ -97,9 +97,7 @@
     <div id="controls">
         <button onclick="giveHint()">Hint</button>
         <button onclick="showAnswer()">Show Answer</button>
-        <button onclick="checkAnswers()">Check Answers</button>
-        <button onclick="moveToNextLevel()">Next Level</button>
-        <div id="current-level">Level: 1</div>
+        <button onclick="submit()">Submit</button>
         <div id="score">Score: 0</div>
         <div id="badges">Badges: 0</div>
     </div>
@@ -108,7 +106,6 @@
 
     <script>
         let currentSubject = '';
-        let currentLevel = 1;
         let score = 0;
         let badges = 0;
         let hintsUsed = 0;
@@ -121,7 +118,6 @@
 
         function selectSubject(subject) {
             currentSubject = subject;
-            currentLevel = 1;
             document.getElementById('subject-selection').style.display = 'none';
             createGrid();
         }
@@ -315,14 +311,12 @@
                 alert('Congratulations! You completed the crossword.');
                 score += 15; // Award points for completing the level
                 updateStatus();
-                moveToNextLevel();
             } else {
                 alert('Some answers are incorrect. Please check again.');
             }
         }
 
         function updateStatus() {
-            document.getElementById('current-level').textContent = `Level: ${currentLevel}`;
             document.getElementById('score').textContent = `Score: ${score}`;
             document.getElementById('badges').textContent = `Badges: ${badges}`;
         }
