@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #808000;
+            background-color: #008000;
             text-align: center;
         }
         #welcome {
@@ -81,6 +81,7 @@
         <button onclick="startGame()">Yes</button>
         <button onclick="window.close()">No</button>
         <p><i>cook dat tin</i></p>
+        <hr style="height: 60px" color= "teal"/>
     </div>
 
     <div id="subject-selection">
@@ -92,7 +93,7 @@
             Use of hints reduces your score by 2.<br />
             Use of show answer reduces your score by 8.<br />
             <hr style="height: 30px" color= "gold"/>.<br />
-            SELECT A SUBJECT OF YOUR CHOICE
+            SELECT A SUBJECT OF YOUR CHOICE.<br />
             
         <button onclick="selectSubject('football')">Football</button>
         <button onclick="selectSubject('science')">Science</button>
@@ -393,8 +394,9 @@ function getHint() {
                 const row = position[0];
                 const col = position[1] + i;
                 const input = document.querySelector(`input[data-row="${row}"][data-col="${col}"]`);
-                input.value = answer[i];
+                input.value = answer[i].toUpperCase(); // Show first letter
                 input.classList.add('hint'); // Highlight the hinted cells
+                input.maxLength = 1; // Ensure only one letter is visible
             }
 
             currentHint++;
