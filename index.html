@@ -379,53 +379,48 @@
         }
 
 function giveHint() {
-    if (hintsUsed > 0) {
-        alert("Hint already used.");
-        return;
-    }
-
-    if (currentSubject === '') {
-        alert("Please select a subject first.");
-        return;
-    }
-
-    hintsUsed++;
-    score -= 2;
-    document.getElementById('score').innerText = `Score: ${score}`;
-
-    const clues = subjects[currentSubject].clues;
-    let hintGiven = false;
-
-    for (let direction in clues) {
-        for (let key in clues[direction]) {
-            const clue = clues[direction][key];
-            const hintPosition = clue.position;
-            const inputs = document.querySelectorAll(`#crossword input[data-row='${hintPosition[0]}'][data-col='${hintPosition[1]}']`);
-
-            console.log(`Checking position: [${hintPosition[0]}, ${hintPosition[1]}]`);
-            
-            for (let input of inputs) {
-                // Only give hint if cell is empty
-                if (input && !input.value) {
-                    input.classList.add('hint');
-                    input.value = clue.answer.charAt(0);
-                    hintGiven = true;
-                    console.log(`Hint given at position: [${hintPosition[0]}, ${hintPosition[1]}]`);
-                    break;
-                }
+            if (score < 2) {
+                alert("Not enough points for a hint.");
+                return;
             }
 
-            if (hintGiven) break;
+            if (hintsUsed > 0) {
+                alert("Hint already used.");
+                return;
+            }
+
+            if (currentSubject === '') {
+                alert("Please select a subject first.");
+                return;
+            }
+
+            hintsUsed++;
+            score -= 2;
+            document.getElementById('score').innerText = `Score: ${score}`;
+
+            const clues = subjects[currentSubject].clues;
+            let hintGiven = false;
+
+            for (let direction in clues) {
+                for (let key in clues[direction]) {
+                    const clue = clues[direction][key];
+                    const hintPosition = clue.position;
+                    const cell = getCell(hintPosition[0], hintPosition[1]);
+
+                    if (cell && !cell.value) {
+                        cell.classList.add('hint');
+                        cell.value = clue.answer.charAt(0);
+                        hintGiven = true;
+                        break;
+                    }
+                }
+                if (hintGiven) break;
+            }
+
+            if (!hintGiven) {
+                alert("No hints available.");
+            }
         }
-        if (hintGiven) break;
-    }
-
-    if (!hintGiven) {
-        alert("No hints available.");
-    }
-}
-
-
 
 
        function showAnswer() {
