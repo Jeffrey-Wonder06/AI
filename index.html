@@ -379,34 +379,15 @@
         }
 
 function getHint() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const data = subjects[currentSubject].clues;
-            const words = [...Object.values(data.across), ...Object.values(data.down)];
-
-            // Give a hint by revealing the first letter of a random word
-            for (const word of words) {
-                if (word.position) {
-                    const [startX, startY] = word.position;
-                    const direction = data.across[word.clue] ? 'across' : 'down';
-                    for (let i = 0; i < word.answer.length; i++) {
-                        const cell = direction === 'across'
-                            ? cells[startY * getMaxGridSize() + startX + i]
-                            : cells[(startY + i) * getMaxGridSize() + startX];
-
-                        if (!cell.value) {
-                            cell.value = cell.dataset.answer; // Reveal the first letter of the word
-                            cell.dataset.answer = ''; // Clear the answer
-                            break;
-                        }
-                    }
-                    hintsUsed++;
-                    score -= 2; // Deduct points for hint
-                    updateStatus();
-                    break;
-                }
-            }
-        }
+    if (hintsUsed < 1) {
+        // Logic to provide a hint
+        hintsUsed++;
+        score -= 2; // Reduce score
+        updateScore();
+    } else {
+        alert("No more hints available.");
+    }
+}
 
 
        function showAnswer() {
