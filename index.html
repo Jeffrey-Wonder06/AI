@@ -25,7 +25,7 @@
         #crossword {
             display: grid;
             gap: 1px;
-            background-color: brown;
+            background-color: green;
             margin: 20px auto;
         }
         #crossword input {
@@ -77,9 +77,9 @@
 <body>
     <div id="welcome">
         <h1><b>Welcome to Wonder World</b></h1>
-        <p>Would you like to play my crossword game?</p>
-        <button onclick="startGame()">Yes</button>
-        <button onclick="window.close()">No</button>
+        <p><b><i>Will you like to play my crossword game?</i></b></p>
+        <button onclick="startGame()"><b>Yes</b></button>
+        <button onclick="window.close()"><b>No</b></button>
         <p><i>cook dat tin</i></p>
         <hr style="height: 360px" color= "teal"/>
     </div>
@@ -126,7 +126,7 @@
         let badges = 0;
         let hintsUsed = 0;
         let answersRevealed = 0;
-        let currentHint = 0; // Define the currentHint variable
+        let currentHint = null; // Define the currentHint variable
 
         // Define crossword data for each subject
         const subjects = {
@@ -377,49 +377,27 @@
             return cells[index] || null;
         }
 
-function giveHint() {
-    if (hintsUsed > 0) {
-        alert("Hint already used.");
-        return;
-    }
-
-    if (currentSubject === '') {
-        alert("Please select a subject first.");
-        return;
-    }
-
-    hintsUsed++;
-    score -= 2;
-    document.getElementById('score').innerText = `Score: ${score}`;
-
-    // Find a hint from the clues
-    const clues = subjects[currentSubject].clues;
-    let hintGiven = false;
-
-    // Iterate over all across clues
-    for (let direction in clues) {
-        for (let key in clues[direction]) {
-            const clue = clues[direction][key];
-            const hintPosition = clue.position;
-
-            // Assuming you have a method to get the corresponding input element
-            const input = document.querySelector(`#crossword input[data-row='${hintPosition[0]}'][data-col='${hintPosition[1]}']`);
-
-            if (input && !input.value) {
-                input.classList.add('hint');
-                input.value = clue.answer.charAt(0); // Reveal the first letter of the answer
-                hintGiven = true;
-                break;
-            }
+function getHint() {
+        if (hintsUsed >= 1) { // Allow only one hint
+            alert("You have already used your hint.");
+            return;
         }
-        if (hintGiven) break;
-    }
 
-    if (!hintGiven) {
-        alert("No hints available.");
+        // Check if there are available hints
+        if (currentHint) {
+            const hintCell = document.querySelector(`input[data-position="${currentHint}"]`);
+            if (hintCell) {
+                hintCell.classList.add('hint');
+                hintCell.value = currentHint.answer[0]; // Show the first letter of the answer as a hint
+                hintsUsed++;
+                score -= 2; // Deduct points for using a hint
+                document.getElementById('score').innerText = `Score: ${score}`;
+                currentHint = null; // Reset current hint
+            }
+        } else {
+            alert("No hints available.");
+        }
     }
-}
-
 
        function showAnswer() {
     const crossword = document.getElementById('crossword');
