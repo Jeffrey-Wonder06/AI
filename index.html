@@ -402,12 +402,15 @@ function giveHint() {
             const hintPosition = clue.position;
             const inputs = document.querySelectorAll(`#crossword input[data-row='${hintPosition[0]}'][data-col='${hintPosition[1]}']`);
 
+            console.log(`Checking position: [${hintPosition[0]}, ${hintPosition[1]}]`);
+            
             for (let input of inputs) {
                 // Only give hint if cell is empty
                 if (input && !input.value) {
                     input.classList.add('hint');
                     input.value = clue.answer.charAt(0);
                     hintGiven = true;
+                    console.log(`Hint given at position: [${hintPosition[0]}, ${hintPosition[1]}]`);
                     break;
                 }
             }
@@ -421,6 +424,7 @@ function giveHint() {
         alert("No hints available.");
     }
 }
+
 
 
 
