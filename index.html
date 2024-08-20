@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #008000;
+            background-color: #008080;
             text-align: center;
         }
         #welcome {
@@ -81,17 +81,17 @@
         <button onclick="startGame()">Yes</button>
         <button onclick="window.close()">No</button>
         <p><i>cook dat tin</i></p>
-        <hr style="height: 60px" color= "teal"/>
+        <hr style="height: 160px" color= "teal"/>
     </div>
 
     <div id="subject-selection">
-        <h2>INTRODUCTION</h2>
-        <h3>
+        <h2>INTRODUCTION</h2>.<br />
             This is a crossword game, your knowledge will be tested on different subjects.<br />
-            you are to fill the white boxes with the right words.<br />
+            you are to fill the white cells with the right words.<br />
             Below the board is the direction, length and clue to the words.<br />
-            Use of hints reduces your score by 2.<br />
-            Use of show answer reduces your score by 8.<br />
+            Use of hints reduces your score by 2 and it can only be used once.<br />
+            Use of show answer reduces your score by 8 and cannot be undone.<br />
+            You are to submit if you've completed all the cells.<br />
             <hr style="height: 30px" color= "gold"/>.<br />
             SELECT A SUBJECT OF YOUR CHOICE.<br />
             
@@ -375,32 +375,34 @@
         }
 
 function getHint() {
-            hintsUsed++;
-            score -= 2;
-            document.getElementById('score').textContent = `Score: ${score}`;
+    hintsUsed++;
+    score -= 2;
+    document.getElementById('score').textContent = `Score: ${score}`;
 
-            const subjectData = subjects[currentSubject];
-            const acrossClues = subjectData.clues.across;
-            const downClues = subjectData.clues.down;
+    const subjectData = subjects[currentSubject];
+    const acrossClues = subjectData.clues.across;
+    const downClues = subjectData.clues.down;
 
-            const allClues = Object.values(acrossClues).concat(Object.values(downClues));
+    const allClues = Object.values(acrossClues).concat(Object.values(downClues));
 
-            if (currentHint >= allClues.length) {
-                currentHint = 0; // Reset the hint index if we've shown all hints
-            }
+    if (currentHint >= allClues.length) {
+        currentHint = 0; // Reset the hint index if we've shown all hints
+    }
 
-            const { position, answer } = allClues[currentHint];
-            for (let i = 0; i < answer.length; i++) {
-                const row = position[0];
-                const col = position[1] + i;
-                const input = document.querySelector(`input[data-row="${row}"][data-col="${col}"]`);
-                input.value = answer[i].toUpperCase(); // Show first letter
-                input.classList.add('hint'); // Highlight the hinted cells
-                input.maxLength = 1; // Ensure only one letter is visible
-            }
-
-            currentHint++;
+    const { position, answer } = allClues[currentHint];
+    for (let i = 0; i < answer.length; i++) {
+        const row = position[0] + (currentHint < Object.keys(acrossClues).length ? 0 : i); // Adjust row or column based on direction
+        const col = position[1] + (currentHint < Object.keys(acrossClues).length ? i : 0); // Adjust column or row based on direction
+        const input = document.querySelector(`input[data-row="${row}"][data-col="${col}"]`);
+        if (i === 0) { // Show only the first letter
+            input.value = answer[i].toUpperCase();
+            input.classList.add('hint'); // Highlight the hinted cell
         }
+        input.maxLength = 1; // Ensure only one letter is visible
+    }
+
+    currentHint++;
+}
 
        function showAnswer() {
     const crossword = document.getElementById('crossword');
@@ -434,7 +436,7 @@ function getHint() {
                 score += 15;
                 badges++;
                 updateScore();
-                alert('Level completed!');
+                alert('Subject completed!');
                 // Load next level or complete game
             } else {
                 alert('Incorrect answers. Please try again.');
