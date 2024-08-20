@@ -395,23 +395,28 @@ function getHint() {
 
     // Find a hint from the clues
     const clues = subjects[currentSubject].clues;
-    let hintGiven = true;
+    let hintGiven = false;
 
-    // Iterate over all across clues
+    // Iterate over all clues
     for (let direction in clues) {
         for (let key in clues[direction]) {
             const clue = clues[direction][key];
             const hintPosition = clue.position;
 
-            // Assuming you have a method to get the corresponding input element
-            const input = document.querySelector(`#crossword input[data-row='${hintPosition[0]}'][data-col='${hintPosition[1]}']`);
+            // Find input elements that match the clue's position
+            const inputs = document.querySelectorAll(`#crossword input[data-row='${hintPosition[0]}'][data-col='${hintPosition[1]}']`);
 
-            if (input && !input.value) {
-                input.classList.add('hint');
-                input.value = clue.answer.charAt(0); // Reveal the first letter of the answer
-                hintGiven = true;
-                break;
+            // Find an empty input element and provide a hint
+            for (let input of inputs) {
+                if (input && !input.value) {
+                    input.classList.add('hint');
+                    input.value = clue.answer.charAt(0); // Reveal the first letter of the answer
+                    hintGiven = true;
+                    break;
+                }
             }
+
+            if (hintGiven) break;
         }
         if (hintGiven) break;
     }
@@ -420,6 +425,28 @@ function getHint() {
         alert("No hints available.");
     }
 }
+
+// Function to initialize the crossword grid (Example)
+function initializeCrosswordGrid() {
+    const gridContainer = document.getElementById('crossword');
+    // Clear the existing grid if any
+    gridContainer.innerHTML = '';
+
+    // Example code to generate a 5x5 grid with data attributes
+    for (let row = 1; row <= 5; row++) {
+        for (let col = 1; col <= 5; col++) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.dataset.row = row;
+            input.dataset.col = col;
+            input.className = 'crossword-cell';
+            gridContainer.appendChild(input);
+        }
+    }
+}
+
+// Call this function on page load or when needed
+initializeCrosswordGrid();
 
 
        function showAnswer() {
