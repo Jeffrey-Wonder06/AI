@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #008080;
+            background-color: #ffff00;
             text-align: center;
         }
         #welcome {
@@ -80,10 +80,19 @@
         <p>Would you like to play my crossword game?</p>
         <button onclick="startGame()">Yes</button>
         <button onclick="window.close()">No</button>
-        <p>cook dat tin</p>
+        <p><i>cook dat tin</i></p>
     </div>
 
     <div id="subject-selection">
+        <h2>INTRODUCTION</h2>
+        <h3>
+            This is a crossword game, you are to fill the white boxes with the right words.<br />
+            Below the board is the direction, length and clue to the words.<br />
+            Use of hints reduces your score by 2.<br />
+            Use of show answer reduces your score by 8.<br />
+            <hr style="height: 30px" color= "gold"/>.<br />
+            SELECT A SUBJECT OF YOUR CHOICE
+            
         <button onclick="selectSubject('football')">Football</button>
         <button onclick="selectSubject('science')">Science</button>
         <button onclick="selectSubject('arts')">Arts</button>
