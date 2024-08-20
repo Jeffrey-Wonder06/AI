@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #00ff00;
+            background-color: #808000;
             text-align: center;
         }
         #welcome {
@@ -374,67 +374,30 @@
         }
 
 function getHint() {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
+            hintsUsed++;
+            score -= 2;
+            document.getElementById('score').textContent = `Score: ${score}`;
 
-            let hintProvided = false;
+            const subjectData = subjects[currentSubject];
+            const acrossClues = subjectData.clues.across;
+            const downClues = subjectData.clues.down;
 
-            // First, check for the next letter in words that are almost filled
-            Array.from(cells).forEach(cell => {
-                if (cell.dataset.answer) {
-                    const wordCells = getWordCells(cell);
-                    const filledCells = wordCells.filter(c => c.value.trim() !== '');
+            const allClues = Object.values(acrossClues).concat(Object.values(downClues));
 
-                    // If the number of filled cells is one less than the total word length
-                    if (filledCells.length === wordCells.length - 1) {
-                        const nextCell = wordCells.find(c => c.dataset.answer && c.value.trim() === '');
-                        if (nextCell) {
-                            nextCell.value = nextCell.dataset.answer.toUpperCase();
-                            hintProvided = true;
-                            deductPoints(2);
-                            return;
-                        }
-                    }
-                }
-            });
-
-            // If no hint was provided, show the first letter of an empty word space
-            if (!hintProvided) {
-                const emptyCell = Array.from(cells).find(cell => cell.value.trim() === '' && cell.dataset.answer);
-                if (emptyCell) {
-                    emptyCell.value = emptyCell.dataset.answer.toUpperCase();
-                    hintProvided = true;
-                    deductPoints(2);
-                }
+            if (currentHint >= allClues.length) {
+                currentHint = 0; // Reset the hint index if we've shown all hints
             }
 
-            if (!hintProvided) {
-                alert("No hint available.");
+            const { position, answer } = allClues[currentHint];
+            for (let i = 0; i < answer.length; i++) {
+                const row = position[0];
+                const col = position[1] + i;
+                const input = document.querySelector(`input[data-row="${row}"][data-col="${col}"]`);
+                input.value = answer[i];
+                input.classList.add('hint'); // Highlight the hinted cells
             }
-        }
 
-        function getWordCells(startCell) {
-            const crossword = document.getElementById('crossword');
-            const cells = crossword.getElementsByTagName('input');
-            const wordCells = [];
-
-            const startCellRow = startCell.dataset.row;
-            const startCellCol = startCell.dataset.col;
-            const wordDirection = startCell.dataset.direction;
-
-            // Collect all cells in the same word direction
-            Array.from(cells).forEach(cell => {
-                if (cell.dataset.row === startCellRow && cell.dataset.direction === wordDirection) {
-                    wordCells.push(cell);
-                }
-            });
-
-            return wordCells;
-        }
-
-        function deductPoints(amount) {
-            score -= amount;
-            updateScore();
+            currentHint++;
         }
 
        function showAnswer() {
