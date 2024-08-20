@@ -379,48 +379,34 @@
         }
 
 function getHint() {
-    if (hintsUsed > 0) {
-        alert("Hint already used.");
-        return;
-    }
+            const crossword = document.getElementById('crossword');
+            const cells = crossword.getElementsByTagName('input');
+            const data = subjects[currentSubject].clues;
+            const words = [...Object.values(data.across), ...Object.values(data.down)];
 
-    if (currentSubject === '') {
-        alert("Please select a subject first.");
-        return;
-    }
+            // Give a hint by revealing the first letter of a random word
+            for (const word of words) {
+                if (word.position) {
+                    const [startX, startY] = word.position;
+                    const direction = data.across[word.clue] ? 'across' : 'down';
+                    for (let i = 0; i < word.answer.length; i++) {
+                        const cell = direction === 'across'
+                            ? cells[startY * getMaxGridSize() + startX + i]
+                            : cells[(startY + i) * getMaxGridSize() + startX];
 
-    hintsUsed++;
-    score -= 2;
-    document.getElementById('score').innerText = `Score: ${score}`;
-
-    const clues = subjects[currentSubject].clues;
-    let hintGiven = false;
-
-    for (let direction in clues) {
-        for (let key in clues[direction]) {
-            const clue = clues[direction][key];
-            const hintPosition = clue.position;
-            const inputs = document.querySelectorAll(`#crossword input[data-row='${hintPosition[0]}'][data-col='${hintPosition[1]}']`);
-
-            for (let input of inputs) {
-                // Only give hint if cell is empty
-                if (input && !input.value) {
-                    input.classList.add('hint');
-                    input.value = clue.answer.charAt(0);
-                    hintGiven = true;
+                        if (!cell.value) {
+                            cell.value = cell.dataset.answer; // Reveal the first letter of the word
+                            cell.dataset.answer = ''; // Clear the answer
+                            break;
+                        }
+                    }
+                    hintsUsed++;
+                    score -= 2; // Deduct points for hint
+                    updateStatus();
                     break;
                 }
             }
-
-            if (hintGiven) break;
         }
-        if (hintGiven) break;
-    }
-
-    if (!hintGiven) {
-        alert("No hints available.");
-    }
-}
 
 
        function showAnswer() {
